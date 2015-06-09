@@ -65,6 +65,5 @@ public class TestMidi {
 			dev.close();
 
 	}
-	
 
 }

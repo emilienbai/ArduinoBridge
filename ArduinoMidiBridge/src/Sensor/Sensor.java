@@ -43,9 +43,13 @@ public class Sensor {
 	 */
 	private int preamplifier;
 	/**
-	 * state of the sensor
+	 * Muted state of the sensor
 	 */
 	private boolean isMuted;
+	/**
+	 * Soloed state of the sensor
+	 */
+	private boolean isSoloed;
 
 	/**
 	 * @param name Name of the sensor
@@ -129,6 +133,10 @@ public class Sensor {
 			System.err.println("Error sending impulsion from " + this.name);
 		}
 	}
+
+	/**
+	 * Mute this sensor
+	 */
 	public void mute(){
 		ShortMessage msg = new ShortMessage();
 		try {
@@ -141,11 +149,13 @@ public class Sensor {
 		}
 		this.isMuted = true;
 	}
-	
+
+	/**
+	 * Un-mute this sensor
+	 */
 	public void unMute(){
 		this.isMuted = false;
 	}
-	
 	public String getName() {
 		return name;
 	}
@@ -208,4 +218,20 @@ public class Sensor {
 		}
 	}
 
+	public void setIsSoloed(boolean isSoloed) {
+		this.isSoloed = isSoloed;
+	}
+
+	public boolean isSoloed() {
+		return isSoloed;
+	}
+
+	@Override
+	public String toString() {
+		return "Sensor{" +
+				"name='" + name + '\'' +
+				", arduinoIn=" + arduinoIn +
+				", midiPort=" + midiPort +
+				'}';
+	}
 }

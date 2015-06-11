@@ -51,6 +51,7 @@ public class MidiManager {
             return true;
         } catch (MidiUnavailableException e) {
             e.printStackTrace();
+            choosenDevice = null;
             return false;
         }
     }

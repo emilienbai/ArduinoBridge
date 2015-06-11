@@ -5,7 +5,7 @@ package IHM;
  */
 public class TestIHM {
     public static void main(String[] args){
-        MidiDeviceChoice myframe = new MidiDeviceChoice();
+        MidiDeviceChoice myFrame = new MidiDeviceChoice();
 
     }
 }

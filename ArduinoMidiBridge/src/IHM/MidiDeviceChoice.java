@@ -26,6 +26,7 @@ public class MidiDeviceChoice extends JFrame{
     private JPanel deviceDetails;
     private JLabel deviceDescription;
     private MidiDevice.Info choosenDevice = null;
+    private boolean readyToClose = false;
 
     public MidiDeviceChoice(){
         super("Choix du périphérique midi");
@@ -35,7 +36,7 @@ public class MidiDeviceChoice extends JFrame{
         Vector<MidiDevice.Info> availableDevice = MidiManager.getAvailableMidiDevices();
         deviceList.setListData(availableDevice);
 
-        /*Mask ProgressBar*/
+
         setContentPane(choiceWindow);
 
         pack();
@@ -48,63 +49,82 @@ public class MidiDeviceChoice extends JFrame{
         okButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showConfirmDialog(MidiDeviceChoice.this, "Tu as cliqué sur le bouton");
-            }
-        });
+                if (readyToClose) {
+                    dispose();
+                    MainWindows mainWindows = new MainWindows();
+                } else {
+                    JOptionPane.showMessageDialog(MidiDeviceChoice.this,
+                            "<html><center>Impossible de se connecter au " +
+                                    "périphérique midi sélectionné<br> " +
+                                    "Veuillez réessayer</center></html>",
+                            " Avertissement ",
+                            JOptionPane.WARNING_MESSAGE);
+                }
+                }
+            });
 
-        quitButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                exit(0);
+            quitButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed (ActionEvent e){
+                    exit(0);
+                }
             }
-        });
 
-        reloadButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                new Thread(new Runnable() {
-                    public void run() {
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                reloadProgress.setVisible(true);
-                            }
-                        });
-                        Vector<MidiDevice.Info> availableDevice = MidiManager.getAvailableMidiDevices();
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                deviceList.setListData(availableDevice);
-                                reloadProgress.setVisible(false);
-                            }
-                        });
-                    }
-                }).start();
+            );
+
+            reloadButton.addActionListener(new
+
+            ActionListener() {
+                @Override
+                public void actionPerformed (ActionEvent e){
+                    new Thread(new Runnable() {
+                        public void run() {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    reloadProgress.setVisible(true);
+                                }
+                            });
+                            Vector<MidiDevice.Info> availableDevice = MidiManager.getAvailableMidiDevices();
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    deviceList.setListData(availableDevice);
+                                    reloadProgress.setVisible(false);
+                                }
+                            });
+                        }
+                    }).start();
+                }
             }
-        });
 
-        deviceList.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                new Thread(new Runnable() {
-                    public void run() {
-                        choosenDevice = (MidiDevice.Info) deviceList.getSelectedValue();
-                        String description = choosenDevice.getDescription();
-                        String vendor = choosenDevice.getVendor();
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                deviceDescription.setText("<html>Description : "+description + "<br>"
-                                + "Vendeur : " + vendor + "</html>");
-                            }
-                        });
-                    }
-                }).start();
+            );
+
+            deviceList.addListSelectionListener(new
+
+            ListSelectionListener() {
+                @Override
+                public void valueChanged (ListSelectionEvent e){
+                    new Thread(new Runnable() {
+                        public void run() {
+                            choosenDevice = (MidiDevice.Info) deviceList.getSelectedValue();
+                            String description = choosenDevice.getDescription();
+                            String vendor = choosenDevice.getVendor();
+                            readyToClose = MidiManager.chooseMidiDevice(choosenDevice);
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    deviceDescription.setText("<html>Description : " + description + "<br>"
+                                            + "Vendeur : " + vendor + "</html>");
+                                }
+                            });
+                        }
+                    }).start();
+                }
             }
-        });
 
-        setVisible(true);
+            );
+
+            setVisible(true);
 
         }
-
-
 
 
     }

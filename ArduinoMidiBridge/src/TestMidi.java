@@ -41,7 +41,7 @@ public class TestMidi {
 				receiver.send(msg1, -1);
 				System.out.println("Message 1 envoyé");
 			} catch (InvalidMidiDataException e) {
-				// TODO Auto-generated catch block
+
 				e.printStackTrace();
 			}
 			
@@ -56,7 +56,6 @@ public class TestMidi {
 				receiver.send(msg2, -1);
 				System.out.println("Message 2 envoyé");
 			} catch (InvalidMidiDataException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			

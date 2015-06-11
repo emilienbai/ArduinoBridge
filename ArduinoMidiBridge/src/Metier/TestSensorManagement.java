@@ -45,7 +45,7 @@ public class TestSensorManagement {
         }
         //For each MidiDevice, open it up,
         // obtain it’s receiver, and try it out
-        MidiDevice dev = MidiSystem.getMidiDevice(info[50]);
+        MidiDevice dev = MidiSystem.getMidiDevice(info[66]);
         // 66 correspond à la piste 1 du virtual midi 0
         //c'est elle qu'il faut connecter pour faire des choses dans des logiciels extérieurs
         //VirMIDI [hw:2,0,1]

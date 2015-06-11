@@ -6,6 +6,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.Vector;
 
 import static java.awt.Frame.MAXIMIZED_BOTH;
 import static java.lang.System.exit;
@@ -31,9 +33,14 @@ public class MainWindows extends JFrame{
     private JLabel removeLabel;
     private JButton addSensorButton;
     private JButton muteAllButton;
+    private JPanel bottomPanel;
+    private JPanel centerPanel;
     private static JMenuBar menuBar;
     private static Color backgroundColor = new Color(70,73,75);
     private static Color textColor = new Color(191,201,239);
+    private Vector<Integer> availableMidiPort = new Vector<Integer>();
+    private static boolean addSensorOpen;
+
 
     private static void setMenuBar(){
         menuBar = new JMenuBar();
@@ -98,6 +105,16 @@ public class MainWindows extends JFrame{
 
     }
 
+    private void initMidiPort(){
+        for(int i = 0; i<128; i++){
+            availableMidiPort.add(i);
+        }
+    }
+
+    public static void setAddSensorOpen(boolean addSensorOpen) {
+        MainWindows.addSensorOpen = addSensorOpen;
+    }
+
     public MainWindows(){
         super("ArduinoBrigde");
 
@@ -108,6 +125,17 @@ public class MainWindows extends JFrame{
         this.setExtendedState(MAXIMIZED_BOTH);
         setMenuBar();
         this.setJMenuBar(menuBar);
+        this.initMidiPort();
+
+        /*Set the center panel Layout*/
+
+
+        centerPanel.setLayout(new GridLayout(30, 1));
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        centerPanel.add(new Testligne());
+
+
         setVisible(true);
 
 
@@ -115,6 +143,19 @@ public class MainWindows extends JFrame{
         addSensorButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if(!addSensorOpen) {
+                    addSensor addframe = new addSensor(availableMidiPort);
+                    addSensorOpen = true;
+                }
+            }
+        });
+
+        muteAllButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                centerPanel.add(new Testligne());
+                repaint();
+                pack();
 
             }
         });

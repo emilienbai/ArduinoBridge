@@ -51,7 +51,7 @@ public class MidiDeviceChoice extends JFrame{
             public void actionPerformed(ActionEvent e) {
                 if (readyToClose) {
                     dispose();
-                    MainWindows mainWindows = new MainWindows();
+                    OperatingWindows operatingWindows= new OperatingWindows();
                 } else {
                     JOptionPane.showMessageDialog(MidiDeviceChoice.this,
                             "<html><center>Impossible de se connecter au " +

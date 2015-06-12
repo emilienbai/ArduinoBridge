@@ -19,10 +19,10 @@ public class SensorManagement {
      * @param name name of the sensor
      * @param arduinoIn match with the analog input on the arduino
      * @param midiPort  midiPort where to send data
-     * @param receiver  MidiReceiver for the messages
+     *
      */
-    public static void addSensor(String name, int arduinoIn, int midiPort, Receiver receiver){
-        Sensor s = new Sensor(name, arduinoIn, midiPort, receiver);
+    public static void addSensor(String name, int arduinoIn, int midiPort){
+        Sensor s = new Sensor(name, arduinoIn, midiPort, MidiManager.getMidiReceiver());
         sensorList.add(s);
     }
 
@@ -51,6 +51,10 @@ public class SensorManagement {
         }
     }
 
+    /**
+     * This function send a litte midi impulsion
+     * @param midiPort the port where to send the impulsion
+     */
     public static void sendMidiImpulsion(int midiPort) {
         for (Sensor s : sensorList) {
             if (s.getMidiPort() == midiPort) {
@@ -196,11 +200,10 @@ public class SensorManagement {
 
     /**
      * change receiver for all the sensors
-     * @param receiver the new receiver to set
      */
-    public static void changeReceiver(Receiver receiver){
+    public static void changeReceiver(){
         for (Sensor s :sensorList){
-            s.setMidireceiver(receiver);
+            s.setMidireceiver(MidiManager.getMidiReceiver());
         }
     }
 }

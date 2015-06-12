@@ -56,6 +56,10 @@ public class MidiManager {
         }
     }
 
+    public static Receiver getMidiReceiver() {
+        return midiReceiver;
+    }
+
     public static void exit(){
         choosenDevice.close();
     }

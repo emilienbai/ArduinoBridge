@@ -13,8 +13,8 @@ import Sensor.Sensor;
 public class TestSensorManagement {
     public static void main (String[] args) throws InterruptedException, MidiUnavailableException {
         Receiver rcvr = init();
-        SensorManagement.addSensor("ChannelOne", 0, 60, rcvr);
-        SensorManagement.addSensor("ChannelTwo", 1, 61, rcvr);
+        SensorManagement.addSensor("ChannelOne", 0, 60);
+        SensorManagement.addSensor("ChannelTwo", 1, 61);
         SensorManagement.sendMidiMessage("0-1024-1-1022");
         Thread.sleep(1000);
         SensorManagement.solo(60);

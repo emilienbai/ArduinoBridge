@@ -4,8 +4,6 @@ import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Receiver;
-import Metier.SensorManagement;
-import Sensor.Sensor;
 
 /**
  * Created by Emilien Bai (emilien.bai@insa-lyon.fr) on 06/2015.
@@ -45,7 +43,7 @@ public class TestSensorManagement {
         }
         //For each MidiDevice, open it up,
         // obtain it’s receiver, and try it out
-        MidiDevice dev = MidiSystem.getMidiDevice(info[66]);
+        MidiDevice dev = MidiSystem.getMidiDevice(info[115]);
         // 66 correspond à la piste 1 du virtual midi 0
         //c'est elle qu'il faut connecter pour faire des choses dans des logiciels extérieurs
         //VirMIDI [hw:2,0,1]

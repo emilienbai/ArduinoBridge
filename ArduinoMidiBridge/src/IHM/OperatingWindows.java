@@ -1,15 +1,14 @@
 package IHM;
 
+import Arduino.arduinoInData;
+import Metier.MidiManager;
 import Metier.SensorManagement;
-import sun.java2d.loops.GeneralRenderer;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Vector;
 
 /**
@@ -23,18 +22,20 @@ public class OperatingWindows extends JFrame {
     private JScrollPane centerPanelScroll;
     private static JPanel centerPanel;
     private JLabel activeSensors;
+    private static JLabel sensorNumberLb;
     private static JMenuBar menuBar;
-    private static final Color BACKGROUND_COLOR = new Color(70,73,75);
-    private static final Color FOREGROUND_COLOR = new Color(191,201,239);
+    public static final Color BACKGROUND_COLOR = new Color(70,73,75);
+    public static final Color FOREGROUND_COLOR = new Color(191,201,239);
     private static Vector<Integer> availableMidiPort = new Vector<Integer>();
     private static boolean addSensorOpen;
     private static java.util.List<SensorRow> sensorRowList = new ArrayList<SensorRow>();
     private JTextField newSensorName;
     private JComboBox arduinoPort;
-    private JComboBox availableMidiCombo;
+    private static JComboBox availableMidiCombo;
     private String newName = null;
     private int newArduChan = -1;
     private int newMidiPort = -1;
+
 
 
     private static void setMenuBar(){
@@ -133,21 +134,38 @@ public class OperatingWindows extends JFrame {
         mainConstraint.gridy = 0;
         mainConstraint.gridx = 0;
 
-        centerPanel = new JPanel(new GridLayout(30, 1));
+
+        GridBagLayout centerLayout = new GridBagLayout();
+        GridBagConstraints centerConstraint = new GridBagConstraints();
+        centerPanel = new JPanel(centerLayout);
         centerPanel.setBackground(BACKGROUND_COLOR);
 
         centerPanelScroll = new JScrollPane(centerPanel);
         centerPanelScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         centerPanelScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        centerPanelScroll.setBackground(BACKGROUND_COLOR);
+        centerPanelScroll.setForeground(FOREGROUND_COLOR);
 
 
-
-        activeSensors = new JLabel("Capteurs actifs");
+        /*************Active sensor Label**********/
+        centerConstraint.anchor = GridBagConstraints.FIRST_LINE_START;
+        centerConstraint.gridx = 0;
+        centerConstraint.gridy = 0;
+        centerConstraint.weightx = 1;
+        activeSensors = new JLabel("Capteurs actifs : ");
         activeSensors.setBackground(BACKGROUND_COLOR);
         activeSensors.setForeground(FOREGROUND_COLOR);
-        centerPanel.add(activeSensors);
+        centerPanel.add(activeSensors, centerConstraint);
         mainPanel.add(centerPanelScroll, mainConstraint);
 
+
+        /*********Sensor Number Label*******/
+        centerConstraint.anchor = GridBagConstraints.EAST;
+        centerConstraint.gridx=1;
+        JLabel sensorNumberLb = new JLabel("0");
+        sensorNumberLb.setBackground(BACKGROUND_COLOR);
+        sensorNumberLb.setForeground(FOREGROUND_COLOR);
+        centerPanel.add(sensorNumberLb, centerConstraint);
 
         /******************************************/
         /**************Bottom Panel****************/
@@ -239,6 +257,19 @@ public class OperatingWindows extends JFrame {
         availableMidiCombo.setForeground(FOREGROUND_COLOR);
         bottomPanel.add(availableMidiCombo);
 
+        availableMidiCombo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        newMidiPort = (int) availableMidiCombo.getSelectedItem();
+                        System.out.println("Port sélectionné : " + newMidiPort);
+                    }
+                }).start();
+            }
+        });
+
         /*****************AddSensor****************/
         addSensorButton = new JButton("Ajouter un capteur");
         addSensorButton.setBackground(BACKGROUND_COLOR);
@@ -252,19 +283,31 @@ public class OperatingWindows extends JFrame {
                     @Override
                     public void run() {
                         newArduChan = (int) arduinoPort.getSelectedItem();
-                        newMidiPort = (int) availableMidiCombo.getSelectedItem();
+                        //newMidiPort = (int) availableMidiCombo.getSelectedItem();
+                        System.out.println("Canal Arduino : " +newArduChan+" Port Midi : "+newMidiPort);
 
                         if(newName != null && newArduChan != -1 && newMidiPort != -1){
                             SensorManagement.addSensor(newName, newArduChan, newMidiPort);
                             SensorRow sensorRow = new SensorRow(newName, newArduChan, newMidiPort);
-                            availableMidiPort.remove(newMidiPort);
+                            availableMidiPort.removeElement(newMidiPort);
                             sensorRowList.add(sensorRow);
+                            DeleteButton db = new DeleteButton(sensorRow, centerPanel, OperatingWindows.this, sensorNumberLb);
+                            centerConstraint.gridy = centerConstraint.gridy + 1;
+                            centerConstraint.gridx = 0;
+                            centerConstraint.weightx = 10;
+                            newName=null;
+                            newArduChan = -1;
+                            newMidiPort = -1;
+                            resetMidiCombo();
 
                             SwingUtilities.invokeLater(new Runnable() {
                                 public void run() {
-                                    centerPanel.add(sensorRow);
-                                    resetMidiCombo();
+                                    centerPanel.add(sensorRow, centerConstraint);
+                                    centerConstraint.gridx = 1;
+                                    centerPanel.add(db, centerConstraint);
                                     newSensorName.setText("");
+                                    int nb = Integer.parseInt(sensorNumberLb.getText());
+                                    sensorNumberLb.setText(String.valueOf(++nb));
                                     repaint();
                                     pack();
                                 }
@@ -288,25 +331,28 @@ public class OperatingWindows extends JFrame {
 
         setContentPane(mainPanel);
         pack();
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         this.setLocationRelativeTo(null);
         this.setExtendedState(MAXIMIZED_BOTH);
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                super.windowClosing(e);
+                MidiManager.exit();
+                arduinoInData.close();
+            }
+        });
         setMenuBar();
         this.setJMenuBar(menuBar);
 
         setVisible(true);
 
-
-
-
-
-
-
     }
 
-    private void resetMidiCombo(){
-        availableMidiCombo = new JComboBox(availableMidiPort);
+    public static void resetMidiCombo(){
+        availableMidiPort.sort(new sortVectors());
     }
+
 
     public static void main (String[] args){
         JFrame frame = new OperatingWindows();
@@ -314,4 +360,29 @@ public class OperatingWindows extends JFrame {
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setVisible(true);
     }
+
+    public static void removeFromSensorList(int midiPort){
+
+        availableMidiPort.add(midiPort);    //on le remet dans les dispos
+        for(SensorRow s : sensorRowList){
+            if (s.getMidiPort() == midiPort){
+                sensorRowList.remove(s);
+                break;
+            }
+        }
+
+    }
 }
+
+    class sortVectors implements Comparator<Integer> {
+
+        @Override
+        public int compare(Integer o1, Integer o2) {
+            // TODO Auto-generated method stub
+            if(o1<02){
+                return -1;
+            }else if(o1>o2)
+                return 1;
+            return 0;
+        }
+    }

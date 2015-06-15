@@ -1,9 +1,7 @@
 package IHM;
 
-import Metier.MidiManager;
 import Metier.SensorManagement;
 
-import javax.sound.midi.MidiDevice;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -12,30 +10,20 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.util.Vector;
 
 /**
  * Created by Emilien Bai (emilien.bai@insa-lyon.fr)on 06/2015.
  */
 public class SensorRow extends JPanel {
-    private JLabel nameLabel;
-    private JLabel arduinoChannelLabel;
-    private JLabel midiPortLabel;
-    private JLabel inputLabel;
     private JProgressBar incomingSignal;
-    private JLabel preampLabel;
     private JSlider preamplifierSlider;
     private JTextField preamplifierValue;
-    private JLabel minLabel;
-    private JLabel maxLabel;
-    private JLabel outLabel;
     private JTextField minOutValue;
     private JTextField maxOutValue;
     private JLabel outputValue;
     private JButton muteButton;
     private JButton soloButton;
     private JButton impulseButton;
-    private JButton deleteButton;
     private int arduinoChannel;
     private int midiPort;
     private int minOutVal;
@@ -61,35 +49,40 @@ public class SensorRow extends JPanel {
 
 
         /*Name*/
-        nameLabel = new JLabel(name);
-        nameLabel.setMaximumSize(new Dimension(115,50));
+        JLabel nameLabel = new JLabel(name);
+        nameLabel.setMaximumSize(new Dimension(115, 50));
         nameLabel.setMinimumSize(new Dimension(80, 10));
-        nameLabel.setPreferredSize(new Dimension(115,10));
+        nameLabel.setPreferredSize(new Dimension(115, 10));
 
         nameLabel.setForeground(new Color(221, 101, 4));
         this.add(nameLabel);
-        /*Arduino input Chanel*/
-        arduinoChannelLabel = new JLabel("Arduino : "+String.valueOf(arduChan));
+
+        /*********Arduino input Chanel*******/
+        JLabel arduinoChannelLabel = new JLabel("Arduino : " + String.valueOf(arduChan));
         changeColor(arduinoChannelLabel);
         this.add(arduinoChannelLabel);
-        /*Midi Port*/
-        midiPortLabel = new JLabel(String.valueOf("Midi : "+midiPort));
+
+        /**********Midi Port**********/
+        JLabel midiPortLabel = new JLabel(String.valueOf("Midi : " + midiPort));
         changeColor(midiPortLabel);
         this.add(midiPortLabel);
-        /*Label for Input Signal*/
-        inputLabel = new JLabel("In :");
+
+        /**********Label for Input Signal**********/
+        JLabel inputLabel = new JLabel("In :");
         changeColor(inputLabel);
         this.add(inputLabel);
-        /*Incoming signal "vu-meter"
+
+        /**********Incoming signal "vu-meter"*********
         * TODO A method to animate theses fuckers*/
         incomingSignal = new JProgressBar(SwingConstants.HORIZONTAL, 0, 1024);
         changeColor(incomingSignal);
         this.add(incomingSignal);
-        /* Preamplifier Label*/
-        preampLabel = new JLabel("Preamp :");
+
+        /**********Preamplifier Label**********/
+        JLabel preampLabel = new JLabel("Preamp :");
         changeColor(preampLabel);
         this.add(preampLabel);
-        /*Preamplifier Slider*/
+        /**********Preamplifier Slider**********/
         preamplifierSlider = new JSlider(SwingConstants.HORIZONTAL, 0, 300, 100);
         changeColor(preamplifierSlider);
         this.add(preamplifierSlider);
@@ -110,7 +103,9 @@ public class SensorRow extends JPanel {
                 }).start();
             }
         });
-        /*Preamplifier manual value*/
+
+
+        /**********Preamplifier manual value**********/
         preamplifierValue = new JTextField("100");
         changeColor(preamplifierValue);
         this.add(preamplifierValue);
@@ -156,8 +151,8 @@ public class SensorRow extends JPanel {
             }
         });
 
-        /*Minimum Label*/
-        minLabel = new JLabel("%  Min :");
+        /**********Minimum Label**********/
+        JLabel minLabel = new JLabel("%  Min :");
         changeColor(minLabel);
         this.add(minLabel);
         /*minimum output value*/
@@ -212,8 +207,8 @@ public class SensorRow extends JPanel {
             }
         });
 
-        /*MaximumLabel*/
-        maxLabel = new JLabel("Max :");
+        /**********MaximumLabel**********/
+        JLabel maxLabel = new JLabel("Max :");
         changeColor(maxLabel);
         this.add(maxLabel);
         /*maximum output value*/
@@ -268,15 +263,15 @@ public class SensorRow extends JPanel {
             }
         });
 
-        /*Output Label*/
-        outLabel = new JLabel("Out :");
+        /**********Output Label**********/
+        JLabel outLabel = new JLabel("Out :");
         changeColor(outLabel);
         this.add(outLabel);
-        /*Output Value*/
+        /**********Output Value**********/
         outputValue = new JLabel("000");
         changeColor(outputValue);
         this.add(outputValue);
-        /*Mute Button*/
+        /**********Mute Button**********/
         muteButton = new JButton("Mute");
         changeColor(muteButton);
         this.add(muteButton);
@@ -310,7 +305,7 @@ public class SensorRow extends JPanel {
             }
         });
 
-        /*SoloButton*/
+        /**********SoloButton**********/
         soloButton = new JButton("Solo");
         changeColor(soloButton);
         this.add(soloButton);
@@ -343,7 +338,7 @@ public class SensorRow extends JPanel {
             }
         });
 
-        /*Impulse Button*/
+        /**********Impulse Button**********/
         impulseButton = new JButton("Impulsion");
         changeColor(impulseButton);
         this.add(impulseButton);
@@ -375,10 +370,8 @@ public class SensorRow extends JPanel {
             }
         });
 
-        /*deleteButton*/
-        deleteButton = new JButton("Supprimer");
-        changeColor(deleteButton);
-        this.add(deleteButton);
+
+
     }
 
     /**
@@ -398,15 +391,5 @@ public class SensorRow extends JPanel {
         return arduinoChannel;
     }
 
-    public static void main (String args[]){
-        JFrame frame = new JFrame("foo");
-        JPanel panel = new JPanel(new FlowLayout());
-        panel.setBackground(Color.red);
-        panel.add(new SensorRow("Tom Bass", 1, 1));
-        frame.setContentPane(panel);
-        frame.setExtendedState(Frame.MAXIMIZED_BOTH);
-        frame.pack();
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.setVisible(true);
-    }
+
 }

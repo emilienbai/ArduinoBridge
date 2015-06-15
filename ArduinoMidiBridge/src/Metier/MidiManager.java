@@ -47,6 +47,7 @@ public class MidiManager {
     public static boolean chooseMidiDevice(MidiDevice.Info info){
         try {
             choosenDevice = MidiSystem.getMidiDevice(info);
+            choosenDevice.open();
             midiReceiver = choosenDevice.getReceiver();
             return true;
         } catch (MidiUnavailableException e) {

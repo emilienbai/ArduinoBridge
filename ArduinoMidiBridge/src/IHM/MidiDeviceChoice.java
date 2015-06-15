@@ -4,7 +4,6 @@ import Metier.MidiManager;
 
 import javax.sound.midi.MidiDevice;
 import javax.swing.*;
-import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.event.ActionEvent;
@@ -72,9 +71,7 @@ public class MidiDeviceChoice extends JFrame{
 
             );
 
-            reloadButton.addActionListener(new
-
-            ActionListener() {
+            reloadButton.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed (ActionEvent e){
                     new Thread(new Runnable() {
@@ -98,9 +95,7 @@ public class MidiDeviceChoice extends JFrame{
 
             );
 
-            deviceList.addListSelectionListener(new
-
-            ListSelectionListener() {
+            deviceList.addListSelectionListener(new ListSelectionListener() {
                 @Override
                 public void valueChanged (ListSelectionEvent e){
                     new Thread(new Runnable() {

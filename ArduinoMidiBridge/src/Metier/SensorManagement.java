@@ -1,9 +1,9 @@
 package Metier;
 
 import Sensor.Sensor;
-import javax.sound.midi.Receiver;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -28,10 +28,16 @@ public class SensorManagement {
 
     /**
      * delete a sensor from the list
-     * @param sensor the sensor to remove
+     * @param midiPort the midiPort to remove
      */
-    public static void deleteSensor(Sensor sensor){
-        sensorList.remove(sensor);
+    public static void deleteSensor(int midiPort){
+        Iterator<Sensor> iterator = sensorList.iterator();
+        while (iterator.hasNext()){
+            Sensor s = iterator.next();
+            if (s.getMidiPort()==midiPort){
+                iterator.remove();
+            }
+        }
     }
 
     /**

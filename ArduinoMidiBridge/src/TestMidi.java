@@ -1,9 +1,10 @@
 //Ceci importe la classe Scanner du package java.util
-import java.util.Scanner; 
-//Ceci importe toutes les classes du package java.util
-import java.util.*;
-//Ceci importe la ibrairie necessaire à faire du midi
+
 import javax.sound.midi.*;
+import java.util.Scanner;
+
+//Ceci importe toutes les classes du package java.util
+//Ceci importe la ibrairie necessaire à faire du midi
 
 
 public class TestMidi {

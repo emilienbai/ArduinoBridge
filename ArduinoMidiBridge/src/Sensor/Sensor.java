@@ -50,6 +50,19 @@ public class Sensor {
 	 * Soloed state of the sensor
 	 */
 	private boolean isSoloed;
+	/**
+	 * Muted by mute all button
+	 */
+	private boolean isMutedAll;
+	/**
+	 * Muted cause of solo Button
+	 */
+	private boolean isMutedBySolo;
+	/**
+	 * last outputValue
+	 */
+	private int outputValue;
+
 
 	/**
 	 * @param name Name of the sensor
@@ -68,19 +81,24 @@ public class Sensor {
 		this.maxRange = 127;
 		this.preamplifier = 100;
 		this.isMuted = false;
+		this.isSoloed = false;
+		this.isMutedAll = false;
+		this.isMutedBySolo = false;
+		this.outputValue = 0;
 	}
 	/**
 	 * This method send midi messages to the receiver
 	 * @param dataFromSensor
 	 */
 	public void sendMidiMessage(int dataFromSensor){
-		if(!isMuted){
+		if(!isMuted && !isMutedBySolo && !isMutedAll){
 			int velocity; //velocity of the message to send;
 			velocity = calculate(dataFromSensor);
 			ShortMessage msg = new ShortMessage();
 			try {
 				msg.setMessage(ShortMessage.NOTE_ON, this.midiPort, velocity);
 				this.midireceiver.send(msg, -1);
+				this.outputValue = velocity;
 				System.out.println("Message sent");
 			} catch (InvalidMidiDataException e) {
 				e.printStackTrace();
@@ -224,6 +242,34 @@ public class Sensor {
 
 	public boolean isSoloed() {
 		return isSoloed;
+	}
+
+	public int getOutputValue() {
+		return outputValue;
+	}
+
+	public boolean isMuted() {
+		return isMuted;
+	}
+
+	public void setIsMuted(boolean isMuted) {
+		this.isMuted = isMuted;
+	}
+
+	public boolean isMutedAll() {
+		return isMutedAll;
+	}
+
+	public void setIsMutedAll(boolean isMutedAll) {
+		this.isMutedAll = isMutedAll;
+	}
+
+	public boolean isMutedBySolo() {
+		return isMutedBySolo;
+	}
+
+	public void setIsMutedBySolo(boolean isMutedBySolo) {
+		this.isMutedBySolo = isMutedBySolo;
 	}
 
 	@Override

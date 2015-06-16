@@ -30,10 +30,28 @@ public class MidiDeviceChoice extends JFrame{
     public MidiDeviceChoice(){
         super("Choix du périphérique midi");
 
-        /* TODO Change that, the list need to be generated before and given as a parameter */
+
         /*Filling the List*/
-        Vector<MidiDevice.Info> availableDevice = MidiManager.getAvailableMidiDevices();
-        deviceList.setListData(availableDevice);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        reloadProgress.setVisible(true);
+                    }
+                });
+                Vector<MidiDevice.Info> availableDevice = MidiManager.getAvailableMidiDevices();
+                deviceList.setListData(availableDevice);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        reloadProgress.setVisible(false);
+                    }
+                });
+            }
+        }).start();
+
 
 
         setContentPane(choiceWindow);

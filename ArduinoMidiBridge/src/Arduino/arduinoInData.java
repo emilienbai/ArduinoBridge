@@ -1,5 +1,6 @@
 package Arduino;
 
+import IHM.OperatingWindows;
 import Metier.SensorManagement;
 import gnu.io.CommPortIdentifier;
 import gnu.io.SerialPort;
@@ -104,6 +105,7 @@ public class arduinoInData implements SerialPortEventListener {
                     @Override
                     public void run() {
                         SensorManagement.sendMidiMessage(inputLine);
+                        OperatingWindows.refreshInterface(inputLine);
                     }
                 }).start();
                 System.out.println(inputLine);

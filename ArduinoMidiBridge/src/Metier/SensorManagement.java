@@ -2,6 +2,7 @@ package Metier;
 
 import Sensor.Sensor;
 
+import javax.sound.midi.Receiver;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -19,7 +20,6 @@ public class SensorManagement {
      * @param name name of the sensor
      * @param arduinoIn match with the analog input on the arduino
      * @param midiPort  midiPort where to send data
-     *
      */
     public static void addSensor(String name, int arduinoIn, int midiPort){
         Sensor s = new Sensor(name, arduinoIn, midiPort, MidiManager.getMidiReceiver());
@@ -137,7 +137,7 @@ public class SensorManagement {
      */
     public static void muteAll (){
         for (Sensor s : sensorList){
-            s.mute();
+            s.setIsMutedAll(true);
         }
     }
 
@@ -146,7 +146,7 @@ public class SensorManagement {
      */
     public static void unMuteAll(){
         for (Sensor s : sensorList){
-            s.unMute();
+            s.setIsMutedAll(false);
         }
     }
 
@@ -158,7 +158,7 @@ public class SensorManagement {
         for (Sensor s : sensorList){
             if(s.getMidiPort() != midiPort){
                 if (!s.isSoloed()){
-                    s.mute();   //we mute every port which
+                    s.setIsMutedBySolo(true);   //we mute every port which
                     // is not solo already
                 }
             }
@@ -183,7 +183,7 @@ public class SensorManagement {
         }
         if (soloedSensors.isEmpty()){
             for (Sensor s : sensorList){
-                s.unMute();
+                s.setIsMutedBySolo(false);
             }
         }
     }
@@ -193,6 +193,7 @@ public class SensorManagement {
      */
     public static void newSetup(){
         sensorList = new ArrayList<Sensor>();
+        soloedSensors = new ArrayList<Sensor>();
     }
 
     /**
@@ -205,6 +206,19 @@ public class SensorManagement {
     }
 
     /**
+     * get the output value of a sensor
+     * @param midiPort the midi port we want
+     * @return the output value
+     */
+    public static int getOutputValue(int midiPort){
+        for (Sensor s: sensorList){
+            if(s.getMidiPort()==midiPort){
+                return s.getOutputValue();
+            }
+        }
+        return -1;
+    }
+    /**
      * change receiver for all the sensors
      */
     public static void changeReceiver(){
@@ -212,4 +226,14 @@ public class SensorManagement {
             s.setMidireceiver(MidiManager.getMidiReceiver());
         }
     }
+
+    /**
+     * change receiver for all the sensors
+     */
+    public static void changeReceiver(Receiver rcvr){
+        for (Sensor s :sensorList){
+            s.setMidireceiver(rcvr);
+        }
+    }
+
 }

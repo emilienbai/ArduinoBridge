@@ -40,6 +40,8 @@ public class DeleteButton extends JButton {
                             public void run() {
                                 OperatingWindows.removeFromSensorList(toDelete.getMidiPort());
                                 OperatingWindows.resetMidiCombo();
+                                OperatingWindows.removeFromDBList(DeleteButton.this);
+                                //TODO à tester dès que possible
                                 from.remove(toDelete);
                                 from.remove(DeleteButton.this);
                                 sensorNumber.setText(String.valueOf(nb));
@@ -54,5 +56,10 @@ public class DeleteButton extends JButton {
 
         });
     }
+
+    public String toString(){
+        String toReturn = "Bouton supprimer de la ligne " + this.toDelete.getName();
+        return toReturn;
+           }
 
 }

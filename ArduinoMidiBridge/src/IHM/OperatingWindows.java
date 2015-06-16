@@ -22,13 +22,13 @@ public class OperatingWindows extends JFrame {
     private JScrollPane centerPanelScroll;
     private static JPanel centerPanel;
     private JLabel activeSensors;
-    private static JLabel sensorNumberLb;
     private static JMenuBar menuBar;
-    public static final Color BACKGROUND_COLOR = new Color(70,73,75);
-    public static final Color FOREGROUND_COLOR = new Color(191,201,239);
+
+
     private static Vector<Integer> availableMidiPort = new Vector<Integer>();
-    private static boolean addSensorOpen;
+    private static boolean isMutedAll;
     private static java.util.List<SensorRow> sensorRowList = new ArrayList<SensorRow>();
+    private static java.util.List<DeleteButton> deleteButtonList = new ArrayList<DeleteButton>();
     private JTextField newSensorName;
     private JComboBox arduinoPort;
     private static JComboBox availableMidiCombo;
@@ -36,7 +36,12 @@ public class OperatingWindows extends JFrame {
     private int newArduChan = -1;
     private int newMidiPort = -1;
 
-
+    public static final Color BACKGROUND_COLOR = new Color(70,73,75);
+    public static final Color FOREGROUND_COLOR = new Color(191,201,239);
+    public static final Color MUTE_COLOR = new Color(174, 36, 33);
+    public static final Color SOLO_COLOR = new Color(169, 162, 0);
+    public static final Color IMPULSE_COLOR = new Color(45, 121, 36);
+    public static final Color NAME_COLOR = new Color(221, 101, 4);
 
     private static void setMenuBar(){
         menuBar = new JMenuBar();
@@ -112,10 +117,6 @@ public class OperatingWindows extends JFrame {
         }
     }
 
-    public static void setAddSensorOpen(boolean addSensorOpen) {
-        OperatingWindows.addSensorOpen = addSensorOpen;
-    }
-
 
     public OperatingWindows(){
         super("ArduinoBrigde");
@@ -137,6 +138,7 @@ public class OperatingWindows extends JFrame {
 
         GridBagLayout centerLayout = new GridBagLayout();
         GridBagConstraints centerConstraint = new GridBagConstraints();
+        centerConstraint.fill = GridBagConstraints.HORIZONTAL;
         centerPanel = new JPanel(centerLayout);
         centerPanel.setBackground(BACKGROUND_COLOR);
 
@@ -179,18 +181,40 @@ public class OperatingWindows extends JFrame {
         mainPanel.add(bottomPanel, mainConstraint);
 
         /*****************Mute All*****************/
+        isMutedAll = false;
         muteAllButton = new JButton(("Mute All"));
         muteAllButton.setBackground(BACKGROUND_COLOR);
         muteAllButton.setForeground(FOREGROUND_COLOR);
         bottomPanel.add(muteAllButton);
 
-        //Todo la vraie méthode
         muteAllButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                centerPanel.add(new SensorRow("Does it Work ?", 2, 1));
-                repaint();
-                pack();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(!isMutedAll){
+                            SensorManagement.muteAll();
+                            isMutedAll = true;
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    muteAllButton.setBackground(MUTE_COLOR);
+                                }
+                            });
+                        }
+                        else{
+                            SensorManagement.unMuteAll();
+                            isMutedAll = false;
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    muteAllButton.setBackground(BACKGROUND_COLOR);
+                                }
+                            });
+                        }
+                    }
+                }).start();
             }
         });
 
@@ -282,9 +306,9 @@ public class OperatingWindows extends JFrame {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
+                        //TODO zob
                         newArduChan = (int) arduinoPort.getSelectedItem();
                         //newMidiPort = (int) availableMidiCombo.getSelectedItem();
-                        System.out.println("Canal Arduino : " +newArduChan+" Port Midi : "+newMidiPort);
 
                         if(newName != null && newArduChan != -1 && newMidiPort != -1){
                             SensorManagement.addSensor(newName, newArduChan, newMidiPort);
@@ -292,9 +316,10 @@ public class OperatingWindows extends JFrame {
                             availableMidiPort.removeElement(newMidiPort);
                             sensorRowList.add(sensorRow);
                             DeleteButton db = new DeleteButton(sensorRow, centerPanel, OperatingWindows.this, sensorNumberLb);
+                            deleteButtonList.add(db);
                             centerConstraint.gridy = centerConstraint.gridy + 1;
                             centerConstraint.gridx = 0;
-                            centerConstraint.weightx = 10;
+                            centerConstraint.weightx = 1;
                             newName=null;
                             newArduChan = -1;
                             newMidiPort = -1;
@@ -304,6 +329,7 @@ public class OperatingWindows extends JFrame {
                                 public void run() {
                                     centerPanel.add(sensorRow, centerConstraint);
                                     centerConstraint.gridx = 1;
+                                    centerConstraint.weightx = 0.5;
                                     centerPanel.add(db, centerConstraint);
                                     newSensorName.setText("");
                                     int nb = Integer.parseInt(sensorNumberLb.getText());
@@ -340,6 +366,8 @@ public class OperatingWindows extends JFrame {
                 super.windowClosing(e);
                 MidiManager.exit();
                 arduinoInData.close();
+                dispose();
+                System.exit(0);
             }
         });
         setMenuBar();
@@ -372,13 +400,34 @@ public class OperatingWindows extends JFrame {
         }
 
     }
+
+    public static void removeFromDBList(DeleteButton db){
+        deleteButtonList.remove(db);
+    }
+
+    public static void refreshInterface(String dataIn){
+        String[] splitted = dataIn.split("-");
+        //every instruction is separated by a -
+        for (int i = 0; i<splitted.length; i+=2 ){
+            int sensorNumber = Integer.parseInt(splitted[i]);
+            for(SensorRow s : sensorRowList){
+                if (s.getArduinoChannel()==sensorNumber){
+                    int input = Integer.parseInt(splitted[i + 1]);
+                    s.setIncomingSignal(input); //Setting the in value
+                    int output = SensorManagement.getOutputValue(s.getMidiPort());
+                    s.setOutputValue(output);
+                }
+            }
+        }
+
+
+    }
 }
 
     class sortVectors implements Comparator<Integer> {
 
         @Override
         public int compare(Integer o1, Integer o2) {
-            // TODO Auto-generated method stub
             if(o1<02){
                 return -1;
             }else if(o1>o2)

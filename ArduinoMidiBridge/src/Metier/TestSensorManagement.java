@@ -11,6 +11,7 @@ import javax.sound.midi.Receiver;
 public class TestSensorManagement {
     public static void main (String[] args) throws InterruptedException, MidiUnavailableException {
         Receiver rcvr = init();
+        SensorManagement.changeReceiver(rcvr);
         SensorManagement.addSensor("ChannelOne", 0, 60);
         SensorManagement.addSensor("ChannelTwo", 1, 61);
         SensorManagement.sendMidiMessage("0-1024-1-1022");

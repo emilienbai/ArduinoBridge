@@ -2,9 +2,8 @@ package Metier;
 
 import Sensor.Sensor;
 import org.w3c.dom.Document;
-import org.w3c.dom.*;
-import org.xml.sax.SAXException;
-
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -240,6 +239,12 @@ public class SensorManagement {
         return sensorList;
     }
 
+    /**
+     * Save the actuatl setup in xml format in the specified file
+     * @param saveFile where the save is effected
+     * @return true if it worked
+     */
+    //Todo adapt interface to save answer
     public static boolean saveSetup(File saveFile){
         BufferedWriter file = null;
         try {

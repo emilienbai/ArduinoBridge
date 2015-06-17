@@ -1,11 +1,14 @@
 package IHM;
 
-import Arduino.arduinoInData;
+import Metier.arduinoInData;
 import Metier.MidiManager;
 import Metier.SensorManagement;
 import Sensor.Sensor;
 
 import javax.swing.*;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.Border;
+import javax.swing.border.EtchedBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
@@ -41,13 +44,20 @@ public class OperatingWindows extends JFrame {
     /*********************************************************************/
     /******************************COLORS*********************************/
     /*********************************************************************/
-    public static final Color BACKGROUND_COLOR = new Color(62, 65, 67);
-    public static final Color BUTTON_COLOR = new Color(59, 62, 64);
-    public static final Color FOREGROUND_COLOR = new Color(191,201,239);
+    public static final Color BACKGROUND_COLOR = new Color(40, 42, 44);
+    public static final Color BUTTON_COLOR = new Color(30, 32, 34);
+    public static final Color FOREGROUND_COLOR = new Color(126, 145, 185);
     public static final Color MUTE_COLOR = new Color(174, 36, 33);
     public static final Color SOLO_COLOR = new Color(169, 162, 0);
     public static final Color IMPULSE_COLOR = new Color(45, 121, 36);
     public static final Color NAME_COLOR = new Color(221, 101, 4);
+
+    /************/
+    /**BORDERS***/
+    /************/
+    public static final Border RAISED_BORDER = BorderFactory.createBevelBorder(BevelBorder.RAISED);
+    public static final Border LOWERED_BORDER = BorderFactory.createBevelBorder(BevelBorder.LOWERED);
+    public static final Border ETCHED_BORDER = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
 
     private void setMenuBar(){
         menuBar = new JMenuBar();
@@ -453,7 +463,6 @@ public class OperatingWindows extends JFrame {
                     @Override
                     public void run() {
                         OperatingWindows.this.cleanAction();
-                        //TODO add a jProgress bar
                     }
                 });
                 java.util.List<Sensor> sensorList = SensorManagement.getSensorList();

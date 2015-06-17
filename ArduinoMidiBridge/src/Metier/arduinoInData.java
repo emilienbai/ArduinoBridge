@@ -1,16 +1,14 @@
-package Arduino;
+package Metier;
 
 import IHM.OperatingWindows;
-import Metier.SensorManagement;
-import gnu.io.CommPortIdentifier;
-import gnu.io.SerialPort;
-import gnu.io.SerialPortEvent;
-import gnu.io.SerialPortEventListener;
+import gnu.io.*;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.Enumeration;
+import java.util.TooManyListenersException;
 
 /**
  * Created by Emilien Bai (emilien.bai@insa-lyon.fr)on 06/2015.
@@ -18,12 +16,18 @@ import java.util.Enumeration;
 public class arduinoInData implements SerialPortEventListener {
     private static SerialPort serialPort;
     /** The port we're normally going to use. */
-    private static final String PORT_NAMES[] = {
-            "/dev/tty.usbserial-A9007UX1", // Mac OS X
-            "/dev/ttyACM0", // Raspberry Pi
-            "/dev/ttyUSB0", // Linux
-            "COM3", // Windows
+    public static final String PORT_NAMES[] = {
+            "/dev/tty.usbserial-* - Mac OS X - remplacer l'étoile par le vrai numéro", // Mac OS X
+            "/dev/ttyACM0 - Raspberry Pi & Linux", // Raspberry Pi
+            "/dev/ttyUSB0 - Linux", // Linux
+            "COM3 - Windows", // Windows
     };
+
+    public static final int NO_ERR = 0;
+    public static final int PORT_NOT_FOUND = 1;
+    public static final int PORT_IN_USE = 2;
+    public static final int SERIAL_ERR = 3;
+    public static final int TOO_MANY_LIST_ERR = 4;
     /**
      * A BufferedReader which will be fed by a InputStreamReader
      * converting the bytes into characters
@@ -36,11 +40,17 @@ public class arduinoInData implements SerialPortEventListener {
     private static final int TIME_OUT = 500;
     /** Default bits per second for COM port. */
     private static final int DATA_RATE = 115200;
-//TODO adapt to make com port selectable
-    public void initialize() {
+
+    /**
+     * Initialize the connection with the arduino using specified port
+     * @param port the port to use (example /dev/ttyACM0 )
+     * @return code of good connection or error.
+     */
+    public int initialize(String port) {
         // the next line is for Raspberry Pi and
         // gets us into the while loop and was suggested here was suggested http://www.raspberrypi.org/phpBB3/viewtopic.php?f=81&t=32186
-        System.setProperty("gnu.io.rxtx.SerialPorts", "/dev/ttyACM0");
+        String[] truePort = port.split(" - ");
+        System.setProperty("gnu.io.rxtx.SerialPorts", truePort[0]);
 
         CommPortIdentifier portId = null;
         Enumeration portEnum = CommPortIdentifier.getPortIdentifiers();
@@ -49,7 +59,8 @@ public class arduinoInData implements SerialPortEventListener {
         while (portEnum.hasMoreElements()) {
             CommPortIdentifier currPortId = (CommPortIdentifier) portEnum.nextElement();
             for (String portName : PORT_NAMES) {
-                if (currPortId.getName().equals(portName)) {
+                String[] newPortName = portName.split(" - ");
+                if (currPortId.getName().startsWith(newPortName[0])) {
                     portId = currPortId;
                     break;
                 }
@@ -57,30 +68,49 @@ public class arduinoInData implements SerialPortEventListener {
         }
         if (portId == null) {
             System.err.println("Could not find COM port.");
-            return;
+            return PORT_NOT_FOUND;
         }
 
-        try {
             // open serial port, and use class name for the appName.
+        try {
             serialPort = (SerialPort) portId.open(this.getClass().getName(),
                     TIME_OUT);
+        } catch (PortInUseException e) {
+            e.printStackTrace();
+            return PORT_IN_USE;
+        }
 
-            // set port parameters
+        // set port parameters
+        try {
             serialPort.setSerialPortParams(DATA_RATE,
                     SerialPort.DATABITS_8,
                     SerialPort.STOPBITS_1,
                     SerialPort.PARITY_NONE);
+        } catch (UnsupportedCommOperationException e) {
+            e.printStackTrace();
+            return SERIAL_ERR;
+        }
 
-            // open the streams
+        // open the streams
+        try {
             input = new BufferedReader(new InputStreamReader(serialPort.getInputStream()));
             output = serialPort.getOutputStream();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return SERIAL_ERR;
+        }
+
 
             // add event listeners
+        try {
             serialPort.addEventListener(this);
             serialPort.notifyOnDataAvailable(true);
-        } catch (Exception e) {
-            System.err.println(e.toString());
+            System.out.println("ajout de l'envent listener");
+        } catch (TooManyListenersException e) {
+            e.printStackTrace();
+            return TOO_MANY_LIST_ERR;
         }
+        return NO_ERR;
     }
 
     /**
@@ -101,6 +131,7 @@ public class arduinoInData implements SerialPortEventListener {
         if (oEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
             try {
                 String inputLine=input.readLine();
+                System.out.println("lecture d'une ligne");
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -114,5 +145,10 @@ public class arduinoInData implements SerialPortEventListener {
             }
         }
         // Ignore all the other eventTypes, but you should consider the other ones.
+    }
+
+    public static void main (String[] args){
+        arduinoInData aid = new arduinoInData();
+        aid.initialize("/dev/ttyACM0");
     }
 }

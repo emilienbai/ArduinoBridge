@@ -4,6 +4,7 @@ import Metier.SensorManagement;
 import Sensor.Sensor;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
@@ -34,13 +35,15 @@ class SensorRow extends JPanel {
     private boolean soloState;
     private String name;
 
-    private static final Color BACKGROUND_COLOR = OperatingWindows.BACKGROUND_COLOR;
-    private static final Color BUTTON_COLOR = OperatingWindows.BUTTON_COLOR;
-    private static final Color FOREGROUND_COLOR = OperatingWindows.FOREGROUND_COLOR;
-    private static final Color MUTE_COLOR = OperatingWindows.MUTE_COLOR;
-    private static final Color SOLO_COLOR = OperatingWindows.SOLO_COLOR;
-    private static final Color IMPULSE_COLOR = OperatingWindows.IMPULSE_COLOR;
-    private static final Color NAME_COLOR = OperatingWindows.NAME_COLOR;
+    private static Color BACKGROUND_COLOR = OperatingWindows.BACKGROUND_COLOR;
+    private static Color BUTTON_COLOR = OperatingWindows.BUTTON_COLOR;
+    private static Color FOREGROUND_COLOR = OperatingWindows.FOREGROUND_COLOR;
+    private static Color MUTE_COLOR = OperatingWindows.MUTE_COLOR;
+    private static Color SOLO_COLOR = OperatingWindows.SOLO_COLOR;
+    private static Color IMPULSE_COLOR = OperatingWindows.IMPULSE_COLOR;
+    private static Color NAME_COLOR = OperatingWindows.NAME_COLOR;
+
+    private static Border ETCHED_BORDER = OperatingWindows.ETCHED_BORDER;
 
 
     public SensorRow(String name, int arduChan, int midiPort, int minRange, int maxRange, int preamplifier){
@@ -61,7 +64,7 @@ class SensorRow extends JPanel {
         JLabel nameLabel = new JLabel(name);
         nameLabel.setMaximumSize(new Dimension(115, 50));
         nameLabel.setMinimumSize(new Dimension(80, 10));
-        nameLabel.setPreferredSize(new Dimension(105, 10));
+        nameLabel.setPreferredSize(new Dimension(105, 20));
         nameLabel.setForeground(NAME_COLOR);
         constraint.gridx = 0;
         constraint.gridy = 0;
@@ -75,7 +78,7 @@ class SensorRow extends JPanel {
         /*********Arduino input Chanel*******/
         JLabel arduinoChannelLabel = new JLabel("Arduino : " + String.valueOf(arduChan));
         changeColor(arduinoChannelLabel);
-        arduinoChannelLabel.setPreferredSize(new Dimension(85,10));
+        arduinoChannelLabel.setPreferredSize(new Dimension(85,20));
         constraint.weightx = 0;
         constraint.gridx = constraint.gridx + 1;
         this.add(arduinoChannelLabel, constraint);
@@ -83,7 +86,7 @@ class SensorRow extends JPanel {
         /**********Midi Port**********/
         JLabel midiPortLabel = new JLabel(String.valueOf("Midi : " + midiPort));
         changeColor(midiPortLabel);
-        midiPortLabel.setPreferredSize(new Dimension(70, 10));
+        midiPortLabel.setPreferredSize(new Dimension(70, 20));
         constraint.gridx = constraint.gridx + 1;
         this.add(midiPortLabel, constraint);
 
@@ -314,6 +317,7 @@ class SensorRow extends JPanel {
         muteButton = new JButton("Mute");
         muteButton.setBackground(BUTTON_COLOR);
         muteButton.setForeground(FOREGROUND_COLOR);
+        muteButton.setBorder(ETCHED_BORDER);
         //muteButton.setPreferredSize(new Dimension(70,25));
         constraint.gridx = constraint.gridx + 1;
         constraint.weightx = 1;
@@ -352,6 +356,7 @@ class SensorRow extends JPanel {
         soloButton = new JButton("Solo");
         soloButton.setBackground(BUTTON_COLOR);
         soloButton.setForeground(FOREGROUND_COLOR);
+        soloButton.setBorder(ETCHED_BORDER);
         constraint.gridx = constraint.gridx + 1;
         this.add(soloButton, constraint);
 
@@ -387,6 +392,7 @@ class SensorRow extends JPanel {
         impulseButton = new JButton("Impulsion");
         impulseButton.setBackground(BUTTON_COLOR);
         impulseButton.setForeground(FOREGROUND_COLOR);
+        impulseButton.setBorder(ETCHED_BORDER);
         constraint.gridx = constraint.gridx + 1;
         this.add(impulseButton, constraint);
 

@@ -62,8 +62,11 @@ public class MidiManager {
     }
 
     public static void exit(){
-        choosenDevice.close();
+        if(choosenDevice != null) {
+            choosenDevice.close();
+        }
     }
+
 
 
 }

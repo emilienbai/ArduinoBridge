@@ -29,11 +29,13 @@ class SensorRow extends JPanel {
     private int midiPort;
     private int minOutVal;
     private int maxOutVal;
+    private int preamplifierIntValue;
     private boolean muteState;
     private boolean soloState;
     private String name;
 
     private static final Color BACKGROUND_COLOR = OperatingWindows.BACKGROUND_COLOR;
+    private static final Color BUTTON_COLOR = OperatingWindows.BUTTON_COLOR;
     private static final Color FOREGROUND_COLOR = OperatingWindows.FOREGROUND_COLOR;
     private static final Color MUTE_COLOR = OperatingWindows.MUTE_COLOR;
     private static final Color SOLO_COLOR = OperatingWindows.SOLO_COLOR;
@@ -41,12 +43,13 @@ class SensorRow extends JPanel {
     private static final Color NAME_COLOR = OperatingWindows.NAME_COLOR;
 
 
-    public SensorRow(String name, int arduChan, int midiPort){
+    public SensorRow(String name, int arduChan, int midiPort, int minRange, int maxRange, int preamplifier){
         super(new GridBagLayout());
         GridBagConstraints constraint = new GridBagConstraints();
         this.name = name;
-        minOutVal = 0;
-        maxOutVal = 127;
+        this.minOutVal = minRange;
+        this.maxOutVal = maxRange;
+        this.preamplifierIntValue = preamplifier;
         muteState = false;
         soloState = false;
         this.arduinoChannel = arduChan;
@@ -107,6 +110,7 @@ class SensorRow extends JPanel {
         this.add(preampLabel, constraint);
         /**********Preamplifier Slider**********/
         preamplifierSlider = new JSlider(SwingConstants.HORIZONTAL, 0, 300, 100);
+        preamplifierSlider.setValue(this.preamplifierIntValue);
         changeColor(preamplifierSlider);
         constraint.gridx = constraint.gridx + 1;
         this.add(preamplifierSlider, constraint);
@@ -130,7 +134,7 @@ class SensorRow extends JPanel {
 
 
         /**********Preamplifier manual value**********/
-        preamplifierValue = new JTextField("100");
+        preamplifierValue = new JTextField(String.valueOf(this.preamplifierIntValue));
         changeColor(preamplifierValue);
         preamplifierValue.setPreferredSize(new Dimension(30, 18));
         constraint.gridx = constraint.gridx + 1;
@@ -183,7 +187,7 @@ class SensorRow extends JPanel {
         constraint.gridx = constraint.gridx + 1;
         this.add(minLabel, constraint);
         /**minimum output value**/
-        minOutValue = new JTextField("000");
+        minOutValue = new JTextField(String.valueOf(this.minOutVal));
         changeColor(minOutValue);
         minOutValue.setPreferredSize(new Dimension(30, 18));
         constraint.gridx = constraint.gridx + 1;
@@ -242,7 +246,7 @@ class SensorRow extends JPanel {
         constraint.gridx = constraint.gridx + 1;
         this.add(maxLabel, constraint);
         /*maximum output value*/
-        maxOutValue = new JTextField("127");
+        maxOutValue = new JTextField(String.valueOf(this.maxOutVal));
         changeColor(maxOutValue);
         maxOutValue.setPreferredSize(new Dimension(30, 18));
         constraint.gridx = constraint.gridx + 1;
@@ -302,12 +306,14 @@ class SensorRow extends JPanel {
         this.add(outLabel, constraint);
         /**********Output Value**********/
         outputValue = new JLabel("000");
+        outputValue.setPreferredSize(new Dimension(21, 18));
         changeColor(outputValue);
         constraint.gridx = constraint.gridx + 1;
         this.add(outputValue, constraint);
         /**********Mute Button**********/
         muteButton = new JButton("Mute");
-        changeColor(muteButton);
+        muteButton.setBackground(BUTTON_COLOR);
+        muteButton.setForeground(FOREGROUND_COLOR);
         //muteButton.setPreferredSize(new Dimension(70,25));
         constraint.gridx = constraint.gridx + 1;
         constraint.weightx = 1;
@@ -323,7 +329,7 @@ class SensorRow extends JPanel {
                             muteState = false;
                             SwingUtilities.invokeLater(new Runnable() {
                                 public void run() {
-                                    muteButton.setBackground(BACKGROUND_COLOR);
+                                    muteButton.setBackground(BUTTON_COLOR);
                                 }
                             });
                         }
@@ -344,7 +350,8 @@ class SensorRow extends JPanel {
 
         /**********SoloButton**********/
         soloButton = new JButton("Solo");
-        changeColor(soloButton);
+        soloButton.setBackground(BUTTON_COLOR);
+        soloButton.setForeground(FOREGROUND_COLOR);
         constraint.gridx = constraint.gridx + 1;
         this.add(soloButton, constraint);
 
@@ -358,7 +365,7 @@ class SensorRow extends JPanel {
                             soloState = false;
                             SwingUtilities.invokeLater(new Runnable() {
                                 public void run() {
-                                    soloButton.setBackground(BACKGROUND_COLOR);
+                                    soloButton.setBackground(BUTTON_COLOR);
                                 }
                             });
                         } else {
@@ -378,7 +385,8 @@ class SensorRow extends JPanel {
 
         /**********Impulse Button**********/
         impulseButton = new JButton("Impulsion");
-        changeColor(impulseButton);
+        impulseButton.setBackground(BUTTON_COLOR);
+        impulseButton.setForeground(FOREGROUND_COLOR);
         constraint.gridx = constraint.gridx + 1;
         this.add(impulseButton, constraint);
 
@@ -400,7 +408,7 @@ class SensorRow extends JPanel {
                         }
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
-                                impulseButton.setBackground(BACKGROUND_COLOR);
+                                impulseButton.setBackground(BUTTON_COLOR);
                             }
                         });
 
@@ -412,6 +420,15 @@ class SensorRow extends JPanel {
 
 
     }
+
+    public SensorRow(String name, int arduChan, int midiPort){
+        this(name, arduChan, midiPort, 0, 127, 100);
+    }
+    public SensorRow(Sensor s){
+        this(s.getName(), s.getArduinoIn(), s.getMidiPort(), s.getMinRange(), s.getMaxRange(), s.getPreamplifier());
+    }
+
+
 
     /**
      * Adapt the color of a swing Component

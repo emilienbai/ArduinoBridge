@@ -28,7 +28,7 @@ public class Sensor {
 	/**
 	 * Receiver where the midi command will be sent 
 	 */
-	private Receiver midireceiver;
+	private Receiver midiReceiver;
 	/**
 	 * minimum midi value sent in messages
 	 */
@@ -68,15 +68,14 @@ public class Sensor {
 	 * @param name Name of the sensor
 	 * @param arduinoIn arduino analogInput number for this sensor
 	 * @param midiPort midi port to use	
-	 * @param midireceiver where to send the midi informations
+	 * @param midiReceiver where to send the midi informations
 	 */
 	public Sensor(String name, int arduinoIn, int midiPort,
-			Receiver midireceiver) {
-		super();
+			Receiver midiReceiver) {
 		this.name = name;
 		this.arduinoIn = arduinoIn;
 		this.midiPort = midiPort;
-		this.midireceiver = midireceiver;
+		this.midiReceiver = midiReceiver;
 		this.minRange = 0;
 		this.maxRange = 127;
 		this.preamplifier = 100;
@@ -85,6 +84,24 @@ public class Sensor {
 		this.isMutedAll = false;
 		this.isMutedBySolo = false;
 		this.outputValue = 0;
+	}
+
+	public Sensor(String name, int arduinoIn, int midiPort,
+				  Receiver midiReceiver, int minRange,
+				  int maxRange, int preamplifier){
+		this.name = name;
+		this.arduinoIn = arduinoIn;
+		this.midiPort = midiPort;
+		this.midiReceiver = midiReceiver;
+		this.minRange = minRange;
+		this.maxRange = maxRange;
+		this.preamplifier = preamplifier;
+		this.isMuted = false;
+		this.isSoloed = false;
+		this.isMutedAll = false;
+		this.isMutedBySolo = false;
+		this.outputValue = 0;
+
 	}
 	/**
 	 * This method send midi messages to the receiver
@@ -97,7 +114,7 @@ public class Sensor {
 			ShortMessage msg = new ShortMessage();
 			try {
 				msg.setMessage(ShortMessage.NOTE_ON, this.midiPort, velocity);
-				this.midireceiver.send(msg, -1);
+				this.midiReceiver.send(msg, -1);
 				this.outputValue = velocity;
 				System.out.println("Message sent");
 			} catch (InvalidMidiDataException e) {
@@ -130,7 +147,7 @@ public class Sensor {
 		ShortMessage msg = new ShortMessage();
 		try {
 			msg.setMessage(ShortMessage.NOTE_ON, this.midiPort, MAX_VELOCITY);
-			this.midireceiver.send(msg, -1);
+			this.midiReceiver.send(msg, -1);
 			System.out.println("Message sent");
 		} catch (InvalidMidiDataException e) {
 			e.printStackTrace();
@@ -144,7 +161,7 @@ public class Sensor {
 		}
 		try {
 			msg.setMessage(ShortMessage.NOTE_OFF, this.midiPort, MAX_VELOCITY);
-			this.midireceiver.send(msg, -1);
+			this.midiReceiver.send(msg, -1);
 			System.out.println("Message sent");
 		} catch (InvalidMidiDataException e) {
 			e.printStackTrace();
@@ -159,7 +176,7 @@ public class Sensor {
 		ShortMessage msg = new ShortMessage();
 		try {
 			msg.setMessage(ShortMessage.NOTE_OFF, this.midiPort, MAX_VELOCITY);
-			this.midireceiver.send(msg, -1);
+			this.midiReceiver.send(msg, -1);
 			System.out.println("Message sent, channel muted");
 		} catch (InvalidMidiDataException e) {
 			e.printStackTrace();
@@ -194,11 +211,11 @@ public class Sensor {
 	public void setMidiPort(int midiPort) {
 		this.midiPort = midiPort;
 	}
-	public Receiver getMidireceiver() {
-		return midireceiver;
+	public Receiver getmidiReceiver() {
+		return midiReceiver;
 	}
-	public void setMidireceiver(Receiver midireceiver) {
-		this.midireceiver = midireceiver;
+	public void setmidiReceiver(Receiver midiReceiver) {
+		this.midiReceiver = midiReceiver;
 	}
 	public int getMinRange() {
 		return minRange;
@@ -275,9 +292,11 @@ public class Sensor {
 	@Override
 	public String toString() {
 		return "Sensor{" +
-				"name='" + name + '\'' +
-				", arduinoIn=" + arduinoIn +
-				", midiPort=" + midiPort +
-				'}';
+				"name = '" + name + '\'' +
+				", arduinoIn = " + arduinoIn +
+				", midiPort = " + midiPort +
+				",  minRange =" + minRange +
+				", maxRange = " + maxRange +
+				", preamplifer = " + preamplifier+"}";
 	}
 }

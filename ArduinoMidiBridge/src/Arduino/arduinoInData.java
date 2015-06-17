@@ -36,7 +36,7 @@ public class arduinoInData implements SerialPortEventListener {
     private static final int TIME_OUT = 500;
     /** Default bits per second for COM port. */
     private static final int DATA_RATE = 115200;
-
+//TODO adapt to make com port selectable
     public void initialize() {
         // the next line is for Raspberry Pi and
         // gets us into the while loop and was suggested here was suggested http://www.raspberrypi.org/phpBB3/viewtopic.php?f=81&t=32186

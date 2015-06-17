@@ -3,6 +3,7 @@ package IHM;
 import Metier.SensorManagement;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -16,13 +17,17 @@ public class DeleteButton extends JButton {
     private JPanel from;
     private JFrame ancestorFrom;
 
+    private final Color BACKGROUND_COLOR = OperatingWindows.BACKGROUND_COLOR;
+    private final Color FOREGROUND_COLOR = OperatingWindows.FOREGROUND_COLOR;
+    private final Color BUTTON_COLOR = OperatingWindows.BUTTON_COLOR;
+
     public DeleteButton(SensorRow toDelete, JPanel from, JFrame ancestorFrom, JLabel sensorNumber ) {
         super("Supprimer");
         this.toDelete = toDelete;
         this.from = from;
         this.ancestorFrom = ancestorFrom;
-        this.setBackground(OperatingWindows.BACKGROUND_COLOR);
-        this.setForeground(OperatingWindows.FOREGROUND_COLOR);
+        this.setBackground(BUTTON_COLOR);
+        this.setForeground(FOREGROUND_COLOR);
 
 
         this.addActionListener(new ActionListener() {
@@ -41,7 +46,6 @@ public class DeleteButton extends JButton {
                                 OperatingWindows.removeFromSensorList(toDelete.getMidiPort());
                                 OperatingWindows.resetMidiCombo();
                                 OperatingWindows.removeFromDBList(DeleteButton.this);
-                                //TODO à tester dès que possible
                                 from.remove(toDelete);
                                 from.remove(DeleteButton.this);
                                 sensorNumber.setText(String.valueOf(nb));

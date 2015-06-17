@@ -233,7 +233,6 @@ public class SensorManagement {
      * @param saveFile where the save is effected
      * @return true if it worked
      */
-    //Todo adapt interface to save answer
     public static boolean saveSetup(File saveFile){
         try {
             BufferedWriter file = new BufferedWriter(new FileWriter(saveFile));
@@ -288,7 +287,7 @@ public class SensorManagement {
             return false;
         }
     }
-//TODO adapt GUI to load return
+
     /**
      * Load an existing setup from a xml formatted file
      * @param toLoad the xml file to load

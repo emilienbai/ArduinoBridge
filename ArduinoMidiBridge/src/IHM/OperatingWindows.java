@@ -1,19 +1,21 @@
 package IHM;
 
-import Metier.arduinoInData;
 import Metier.MidiManager;
 import Metier.SensorManagement;
+import Metier.arduinoInData;
 import Sensor.Sensor;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
-import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Vector;
 
 /**
  * Created by Emilien Bai (emilien.bai@insa-lyon.fr)on 06/2015.
@@ -99,16 +101,34 @@ public class OperatingWindows extends JFrame {
 
         openItem.addActionListener(e -> {
             JFileChooser openChooser = new JFileChooser();
+            openChooser.setAcceptAllFileFilterUsed(false);
+            openChooser.addChoosableFileFilter(new FileFilter() {
+                @Override
+                public boolean accept(File f) {
+                    return (f.getName().endsWith(SAVE_EXTENSION)||f.isDirectory());
+                }
+
+                @Override
+                public String getDescription() {
+                    return "Fichiers de sauvegarde";
+                }
+            });
             openChooser.setDialogTitle("Ouvrir un fichier");
 
             int userSelection = openChooser.showOpenDialog(OperatingWindows.this);
 
             if(userSelection == JFileChooser.APPROVE_OPTION){
                 saveFile = openChooser.getSelectedFile();
-                SensorManagement.loadSetup(saveFile);
-                saveItem.setEnabled(true);
-                OperatingWindows.this.loadSetup();
-                //TODO add the filters
+                if(SensorManagement.loadSetup(saveFile)){;
+                    saveItem.setEnabled(true);
+                    OperatingWindows.this.loadSetup();
+                }
+                else{
+                    JOptionPane.showMessageDialog(OperatingWindows.this,
+                            "<html><center>Erreur lors de l'ouverture du fichier</center></html>",
+                            "Erreur", JOptionPane.ERROR_MESSAGE);
+                    cleanAction();
+                }
             }
         });
 
@@ -124,7 +144,18 @@ public class OperatingWindows extends JFrame {
         saveAsItem.addActionListener(e -> {
             JFileChooser saveChooser = new JFileChooser();
             saveChooser.setDialogTitle("Sauvegarder cette configuration");
-            saveChooser.addChoosableFileFilter(new FileNameExtensionFilter("Fichiers de sauvegarde", ".xml"));
+            saveChooser.setAcceptAllFileFilterUsed(false);
+            saveChooser.addChoosableFileFilter(new FileFilter() {
+                @Override
+                public boolean accept(File f) {
+                    return (f.getName().endsWith(SAVE_EXTENSION)||f.isDirectory());
+                }
+
+                @Override
+                public String getDescription() {
+                    return "Fichiers de sauvegarde";
+                }
+            });
 
             int userSelection = saveChooser.showSaveDialog(OperatingWindows.this);
 
@@ -134,7 +165,12 @@ public class OperatingWindows extends JFrame {
                     saveFile = new File(saveFile+SAVE_EXTENSION);
                 }
                 saveItem.setEnabled(true);
-                SensorManagement.saveSetup(saveFile);
+                if(!SensorManagement.saveSetup(saveFile)){
+                    JOptionPane.showMessageDialog(OperatingWindows.this,
+                            "<html><center>Erreur lors de l'enregistrement du fichier</center></html>",
+                            "Erreur", JOptionPane.ERROR_MESSAGE);
+
+                }
             }
         });
 
@@ -164,14 +200,14 @@ public class OperatingWindows extends JFrame {
         }).start());
 
 
-        //Edition
+        /**Edition**/
         JMenu editMenu = new JMenu("Edition");
         menuBar.add(editMenu);
         editMenu.setBackground(BACKGROUND_COLOR);
         editMenu.setForeground(FOREGROUND_COLOR);
 
 
-        //MidiSetting Item
+        /**MidiSetting Item**/
         JMenuItem midiSettingItem = new JMenuItem("Paramètres midi");
         editMenu.add(midiSettingItem);
         midiSettingItem.setBackground(BACKGROUND_COLOR);
@@ -184,6 +220,7 @@ public class OperatingWindows extends JFrame {
         menuBar.add(helpMenu);
         helpMenu.setBackground(BACKGROUND_COLOR);
         helpMenu.setForeground(FOREGROUND_COLOR);
+        //TODO write documentation
 
 
         //getHelp Item
@@ -478,6 +515,7 @@ public class OperatingWindows extends JFrame {
     }
 
     private void cleanAction(){
+        SensorManagement.newSetup();
         sensorRowList.forEach(centerPanel::remove);
         deleteButtonList.forEach(centerPanel::remove);
         sensorNumberLb.setText("0");

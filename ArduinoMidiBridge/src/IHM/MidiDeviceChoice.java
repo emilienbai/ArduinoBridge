@@ -115,7 +115,6 @@ public class MidiDeviceChoice extends JFrame{
         topConstraint.gridx = topConstraint.gridx + 1;
         topConstraint.weightx = 0.5;
         topPanel.add(arduinoCheck, topConstraint);
-        //TODO add Action Listener
 
         arduinoCheck.addActionListener(e -> {
             final String[] errorMessage = {null};

@@ -44,8 +44,8 @@ public class OperatingWindows extends JFrame {
     /*********************************************************************/
     /******************************COLORS*********************************/
     /*********************************************************************/
-    public static final Color BACKGROUND_COLOR = new Color(40, 42, 44);
-    public static final Color BUTTON_COLOR = new Color(30, 32, 34);
+    public static final Color BACKGROUND_COLOR = new Color(21, 21, 35);
+    public static final Color BUTTON_COLOR = new Color(0, 0, 64);
     public static final Color FOREGROUND_COLOR = new Color(126, 145, 185);
     public static final Color MUTE_COLOR = new Color(174, 36, 33);
     public static final Color SOLO_COLOR = new Color(169, 162, 0);
@@ -97,21 +97,18 @@ public class OperatingWindows extends JFrame {
         openItem.setBackground(BACKGROUND_COLOR);
         openItem.setForeground(FOREGROUND_COLOR);
 
-        openItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JFileChooser openChooser = new JFileChooser();
-                openChooser.setDialogTitle("Ouvrir un fichier");
+        openItem.addActionListener(e -> {
+            JFileChooser openChooser = new JFileChooser();
+            openChooser.setDialogTitle("Ouvrir un fichier");
 
-                int userSelection = openChooser.showOpenDialog(OperatingWindows.this);
+            int userSelection = openChooser.showOpenDialog(OperatingWindows.this);
 
-                if(userSelection == JFileChooser.APPROVE_OPTION){
-                    saveFile = openChooser.getSelectedFile();
-                    SensorManagement.loadSetup(saveFile);
-                    saveItem.setEnabled(true);
-                    OperatingWindows.this.loadSetup(saveFile);
-
-                }
+            if(userSelection == JFileChooser.APPROVE_OPTION){
+                saveFile = openChooser.getSelectedFile();
+                SensorManagement.loadSetup(saveFile);
+                saveItem.setEnabled(true);
+                OperatingWindows.this.loadSetup();
+                //TODO add the filters
             }
         });
 
@@ -124,23 +121,20 @@ public class OperatingWindows extends JFrame {
         saveAsItem.setBackground(BACKGROUND_COLOR);
         saveAsItem.setForeground(FOREGROUND_COLOR);
 
-        saveAsItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JFileChooser saveChooser = new JFileChooser();
-                saveChooser.setDialogTitle("Sauvegarder cette configuration");
-                saveChooser.addChoosableFileFilter(new FileNameExtensionFilter("Fichiers de sauvegarde", ".xml"));
+        saveAsItem.addActionListener(e -> {
+            JFileChooser saveChooser = new JFileChooser();
+            saveChooser.setDialogTitle("Sauvegarder cette configuration");
+            saveChooser.addChoosableFileFilter(new FileNameExtensionFilter("Fichiers de sauvegarde", ".xml"));
 
-                int userSelection = saveChooser.showSaveDialog(OperatingWindows.this);
+            int userSelection = saveChooser.showSaveDialog(OperatingWindows.this);
 
-                if(userSelection == JFileChooser.APPROVE_OPTION){
-                    saveFile = saveChooser.getSelectedFile();
-                    if(!saveFile.getName().endsWith(SAVE_EXTENSION)){
-                        saveFile = new File(saveFile+SAVE_EXTENSION);
-                    }
-                    saveItem.setEnabled(true);
-                    SensorManagement.saveSetup(saveFile);
+            if(userSelection == JFileChooser.APPROVE_OPTION){
+                saveFile = saveChooser.getSelectedFile();
+                if(!saveFile.getName().endsWith(SAVE_EXTENSION)){
+                    saveFile = new File(saveFile+SAVE_EXTENSION);
                 }
+                saveItem.setEnabled(true);
+                SensorManagement.saveSetup(saveFile);
             }
         });
 
@@ -152,12 +146,7 @@ public class OperatingWindows extends JFrame {
         saveItem.setBackground(BACKGROUND_COLOR);
         saveItem.setForeground(FOREGROUND_COLOR);
 
-        saveItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                SensorManagement.saveSetup(saveFile);
-            }
-        });
+        saveItem.addActionListener(e -> SensorManagement.saveSetup(saveFile));
 
         /**************/
         /***QuitItem***/
@@ -187,6 +176,8 @@ public class OperatingWindows extends JFrame {
         editMenu.add(midiSettingItem);
         midiSettingItem.setBackground(BACKGROUND_COLOR);
         midiSettingItem.setForeground(FOREGROUND_COLOR);
+
+        midiSettingItem.addActionListener(e -> new MidiDeviceChoice(false));
 
         //Aide
         JMenu helpMenu = new JMenu("Aide");
@@ -275,8 +266,10 @@ public class OperatingWindows extends JFrame {
         /*****************Mute All*****************/
         isMutedAll = false;
         muteAllButton = new JButton(("Mute All"));
-        muteAllButton.setBackground(BACKGROUND_COLOR);
+        muteAllButton.setBackground(BUTTON_COLOR);
         muteAllButton.setForeground(FOREGROUND_COLOR);
+        muteAllButton.setBorder(ETCHED_BORDER);
+        muteAllButton.setPreferredSize(new Dimension(90, 25));
         bottomPanel.add(muteAllButton);
 
         muteAllButton.addActionListener(new ActionListener() {
@@ -291,7 +284,7 @@ public class OperatingWindows extends JFrame {
                     else{
                         SensorManagement.unMuteAll();
                         isMutedAll = false;
-                        SwingUtilities.invokeLater(() -> muteAllButton.setBackground(BACKGROUND_COLOR));
+                        SwingUtilities.invokeLater(() -> muteAllButton.setBackground(BUTTON_COLOR));
                     }
                 }).start();
             }
@@ -367,8 +360,10 @@ public class OperatingWindows extends JFrame {
 
         /*****************AddSensor****************/
         JButton addSensorButton = new JButton("Ajouter un capteur");
-        addSensorButton.setBackground(BACKGROUND_COLOR);
+        addSensorButton.setBackground(BUTTON_COLOR);
         addSensorButton.setForeground(FOREGROUND_COLOR);
+        addSensorButton.setBorder(ETCHED_BORDER);
+        addSensorButton.setPreferredSize(new Dimension(150, 25));
         bottomPanel.add(addSensorButton);
 
         addSensorButton.addActionListener(e -> new Thread(() -> {
@@ -416,12 +411,9 @@ public class OperatingWindows extends JFrame {
                     message = "<html><center>Veuillez sélectionner un canal arduino " +
                             "</center></html>";
                 }
-                else if (newMidiPort == -1){
+                else {
                     message = "<html><center>Veuillez sélectionner un port midi " +
                             "</center></html>";
-                }
-                else{
-                    message = "Ce que j'fais là moi, je sais pas...";
                 }
 
                 JOptionPane.showMessageDialog(OperatingWindows.this,
@@ -455,46 +447,32 @@ public class OperatingWindows extends JFrame {
 
     }
 
-    private void loadSetup(File toLoad){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        OperatingWindows.this.cleanAction();
-                    }
-                });
-                java.util.List<Sensor> sensorList = SensorManagement.getSensorList();
-                for (Sensor s : sensorList){
-                    SensorRow sr = new SensorRow(s);
-                    sensorRowList.add(sr);
-                    availableMidiPort.removeElement(s.getMidiPort());
-                    DeleteButton db = new DeleteButton(sr, centerPanel, OperatingWindows.this, sensorNumberLb);
-                    deleteButtonList.add(db);
-                    //constraints for the grid bag layout
-                    centerConstraint.gridy = centerConstraint.gridy + 1;
-                    centerConstraint.gridx = 0;
-                    centerConstraint.weightx = 1;
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            centerPanel.add(sr, centerConstraint);
-                            centerConstraint.gridx = 1;
-                            centerConstraint.weightx = 0.5;
-                            centerPanel.add(db, centerConstraint);
-                        }
-                    });
-                }
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        sensorNumberLb.setText(String.valueOf(sensorList.size()));
-                        repaint();
-                        pack();
-                    }
+    private void loadSetup(){
+        new Thread(() -> {
+            SwingUtilities.invokeLater(OperatingWindows.this::cleanAction);
+            java.util.List<Sensor> sensorList = SensorManagement.getSensorList();
+            for (Sensor s : sensorList){
+                SensorRow sr = new SensorRow(s);
+                sensorRowList.add(sr);
+                availableMidiPort.removeElement(s.getMidiPort());
+                DeleteButton db = new DeleteButton(sr, centerPanel, OperatingWindows.this, sensorNumberLb);
+                deleteButtonList.add(db);
+                //constraints for the grid bag layout
+                centerConstraint.gridy = centerConstraint.gridy + 1;
+                centerConstraint.gridx = 0;
+                centerConstraint.weightx = 1;
+                SwingUtilities.invokeLater(() -> {
+                    centerPanel.add(sr, centerConstraint);
+                    centerConstraint.gridx = 1;
+                    centerConstraint.weightx = 0.5;
+                    centerPanel.add(db, centerConstraint);
                 });
             }
+            SwingUtilities.invokeLater(() -> {
+                sensorNumberLb.setText(String.valueOf(sensorList.size()));
+                repaint();
+                pack();
+            });
         }).start();
 
     }

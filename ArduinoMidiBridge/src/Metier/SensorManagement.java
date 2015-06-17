@@ -20,8 +20,8 @@ import java.util.List;
  * Created by Emilien Bai (emilien.bai@insa-lyon.fr)on 06/2015.
  */
 public class SensorManagement {
-    private static List<Sensor> sensorList = new ArrayList<Sensor>();
-    private static List<Sensor> soloedSensors = new ArrayList<Sensor>();
+    private static List<Sensor> sensorList = new ArrayList<>();
+    private static List<Sensor> soloedSensors = new ArrayList<>();
 
     /**
      * Add a sensor to the active list
@@ -180,15 +180,13 @@ public class SensorManagement {
 
     /**
      * unsolo one midi channel
-     * @param midiPort
+     * @param midiPort the midi port to unSolo
      */
     public static void unSolo (int midiPort){
-        for (Sensor s : sensorList){
-            if(s.getMidiPort() == midiPort){
-                s.setIsSoloed(false);
-                soloedSensors.remove(s);
-            }
-        }
+        sensorList.stream().filter(s -> s.getMidiPort() == midiPort).forEach(s -> {
+            s.setIsSoloed(false);
+            soloedSensors.remove(s);
+        });
         if (soloedSensors.isEmpty()){
             for (Sensor s : sensorList){
                 s.setIsMutedBySolo(false);
@@ -200,17 +198,8 @@ public class SensorManagement {
      * In case the user wants to start a new session of the app
      */
     public static void newSetup(){
-        sensorList = new ArrayList<Sensor>();
-        soloedSensors = new ArrayList<Sensor>();
-    }
-
-    /**
-     * Display information for all the sensors
-     */
-    protected static void displaySensors(){
-        for (Sensor s : sensorList){
-            System.out.println(s);
-        }
+        sensorList = new ArrayList<>();
+        soloedSensors = new ArrayList<>();
     }
 
     /**
@@ -246,9 +235,8 @@ public class SensorManagement {
      */
     //Todo adapt interface to save answer
     public static boolean saveSetup(File saveFile){
-        BufferedWriter file = null;
         try {
-            file = new BufferedWriter(new FileWriter(saveFile));
+            BufferedWriter file = new BufferedWriter(new FileWriter(saveFile));
             file.write("<?xml version=\"1.0\"?>");
             file.newLine();
             file.write("<!DOCTYPE save [");
@@ -300,16 +288,14 @@ public class SensorManagement {
             return false;
         }
     }
-
+//TODO adapt GUI to load return
+    /**
+     * Load an existing setup from a xml formatted file
+     * @param toLoad the xml file to load
+     * @return the result of the loading
+     */
     public static boolean loadSetup(File toLoad){
         newSetup();
-        String name = null;
-        int arduinoIn;
-        int midiPort;
-        int minRange;
-        int maxRange;
-        int preamplifier;
-
         Document dom ;
         //get the factory
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -327,7 +313,7 @@ public class SensorManagement {
             //get a nodelist of elements
             NodeList nl = docEle.getElementsByTagName("sensor");
             System.out.println(nl.getLength());
-            if(nl != null && nl.getLength() > 0) {
+            if(nl.getLength() > 0) {
                 for(int i = 0 ; i < nl.getLength();i++) {
 
                     //get the sensor element
@@ -364,10 +350,8 @@ public class SensorManagement {
         int maxRange = getIntValue(sensEl, "maxRange");
         int preamplifier = getIntValue(sensEl, "preamplifier");
 
-        //Create a new sensor
-        Sensor s = new Sensor(name, arduinoIn, midiPort, MidiManager.getMidiReceiver(), minRange, maxRange, preamplifier);
-
-        return s;
+        /*Return the new sensor*/
+        return new Sensor(name, arduinoIn, midiPort, MidiManager.getMidiReceiver(), minRange, maxRange, preamplifier);
     }
 
     /**

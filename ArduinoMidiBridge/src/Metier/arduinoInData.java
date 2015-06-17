@@ -6,7 +6,6 @@ import gnu.io.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.TooManyListenersException;
 
@@ -34,8 +33,6 @@ public class arduinoInData implements SerialPortEventListener {
      * making the displayed results codepage independent
      */
     private BufferedReader input;
-    /** The output stream to the port */
-    private OutputStream output;
     /** Milliseconds to block while waiting for port open */
     private static final int TIME_OUT = 500;
     /** Default bits per second for COM port. */
@@ -94,7 +91,6 @@ public class arduinoInData implements SerialPortEventListener {
         // open the streams
         try {
             input = new BufferedReader(new InputStreamReader(serialPort.getInputStream()));
-            output = serialPort.getOutputStream();
         } catch (IOException e) {
             e.printStackTrace();
             return SERIAL_ERR;
@@ -132,12 +128,9 @@ public class arduinoInData implements SerialPortEventListener {
             try {
                 String inputLine=input.readLine();
                 System.out.println("lecture d'une ligne");
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        SensorManagement.sendMidiMessage(inputLine);
-                        OperatingWindows.refreshInterface(inputLine);
-                    }
+                new Thread(() -> {
+                    SensorManagement.sendMidiMessage(inputLine);
+                    OperatingWindows.refreshInterface(inputLine);
                 }).start();
                 System.out.println(inputLine);
             } catch (Exception e) {

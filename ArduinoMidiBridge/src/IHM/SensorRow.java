@@ -5,11 +5,7 @@ import Sensor.Sensor;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
@@ -30,7 +26,6 @@ class SensorRow extends JPanel {
     private int midiPort;
     private int minOutVal;
     private int maxOutVal;
-    private int preamplifierIntValue;
     private boolean muteState;
     private boolean soloState;
     private String name;
@@ -52,7 +47,6 @@ class SensorRow extends JPanel {
         this.name = name;
         this.minOutVal = minRange;
         this.maxOutVal = maxRange;
-        this.preamplifierIntValue = preamplifier;
         muteState = false;
         soloState = false;
         this.arduinoChannel = arduChan;
@@ -113,31 +107,20 @@ class SensorRow extends JPanel {
         this.add(preampLabel, constraint);
         /**********Preamplifier Slider**********/
         preamplifierSlider = new JSlider(SwingConstants.HORIZONTAL, 0, 300, 100);
-        preamplifierSlider.setValue(this.preamplifierIntValue);
+        preamplifierSlider.setValue(preamplifier);
         changeColor(preamplifierSlider);
         constraint.gridx = constraint.gridx + 1;
         this.add(preamplifierSlider, constraint);
 
-        preamplifierSlider.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                new Thread(new Runnable() {
-                    public void run() {
-                        int newValue = preamplifierSlider.getValue();
-                        SensorManagement.changePreamplifier(midiPort, newValue);
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                preamplifierValue.setText(String.valueOf(newValue));
-                            }
-                        });
-                    }
-                }).start();
-            }
-        });
+        preamplifierSlider.addChangeListener(e -> new Thread(() -> {
+            int newValue = preamplifierSlider.getValue();
+            SensorManagement.changePreamplifier(midiPort, newValue);
+            SwingUtilities.invokeLater(() -> preamplifierValue.setText(String.valueOf(newValue)));
+        }).start());
 
 
         /**********Preamplifier manual value**********/
-        preamplifierValue = new JTextField(String.valueOf(this.preamplifierIntValue));
+        preamplifierValue = new JTextField(String.valueOf(preamplifier));
         changeColor(preamplifierValue);
         preamplifierValue.setPreferredSize(new Dimension(30, 18));
         constraint.gridx = constraint.gridx + 1;
@@ -151,29 +134,25 @@ class SensorRow extends JPanel {
 
             @Override
             public void keyPressed(KeyEvent e) {
-                new Thread(new Runnable() {
-                    public void run() {
-                        int key = e.getKeyCode();
-                        if(key == KeyEvent.VK_ENTER) {
-                            int newValue = Integer.parseInt(preamplifierValue.getText());
-                            if(newValue>0){
-                                SensorManagement.changePreamplifier(midiPort, newValue);
-                            }
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
-                                    if(newValue<=preamplifierSlider.getMaximum()){
-                                        preamplifierSlider.setValue(newValue);
-                                    }
-                                    else if (newValue<=0){
-                                        preamplifierValue.setText(String.valueOf(preamplifierSlider.getValue()));
-                                    }
-                                    else
-                                    {
-                                        preamplifierSlider.setValue(preamplifierSlider.getMaximum());
-                                    }
-                                }
-                            });
+                new Thread(() -> {
+                    int key = e.getKeyCode();
+                    if(key == KeyEvent.VK_ENTER) {
+                        int newValue = Integer.parseInt(preamplifierValue.getText());
+                        if(newValue>0){
+                            SensorManagement.changePreamplifier(midiPort, newValue);
                         }
+                        SwingUtilities.invokeLater(() -> {
+                            if(newValue<=preamplifierSlider.getMaximum()){
+                                preamplifierSlider.setValue(newValue);
+                            }
+                            else if (newValue<=0){
+                                preamplifierValue.setText(String.valueOf(preamplifierSlider.getValue()));
+                            }
+                            else
+                            {
+                                preamplifierSlider.setValue(preamplifierSlider.getMaximum());
+                            }
+                        });
                     }
                 }).start();
             }
@@ -204,35 +183,25 @@ class SensorRow extends JPanel {
 
             @Override
             public void keyPressed(KeyEvent e) {
-                new Thread(new Runnable() {
-                    public void run() {
-                        int key = e.getKeyCode();
-                        if(key == KeyEvent.VK_ENTER) {
-                            int newValue = Integer.parseInt(minOutValue.getText());
-                            if(newValue>0 && newValue<=maxOutVal){
-                                SensorManagement.changeMinRange(midiPort, newValue);
-                                minOutVal = newValue;
-                            }
-                            else if(newValue<0){
-                                SensorManagement.changeMinRange(midiPort, 0);
-                                minOutVal = 0;
-                                SwingUtilities.invokeLater(new Runnable() {
-                                    public void run() {
-                                        minOutValue.setText("000");
-                                    }
-                                });
-                            }
-                            else{
-                                SensorManagement.changeMinRange(midiPort, maxOutVal);
-                                minOutVal = maxOutVal;
-                                SwingUtilities.invokeLater(new Runnable() {
-                                    public void run() {
-                                        minOutValue.setText(String.valueOf(maxOutVal));
-                                    }
-                                });
-                            }
-
+                new Thread(() -> {
+                    int key = e.getKeyCode();
+                    if(key == KeyEvent.VK_ENTER) {
+                        int newValue = Integer.parseInt(minOutValue.getText());
+                        if(newValue>0 && newValue<=maxOutVal){
+                            SensorManagement.changeMinRange(midiPort, newValue);
+                            minOutVal = newValue;
                         }
+                        else if(newValue<0){
+                            SensorManagement.changeMinRange(midiPort, 0);
+                            minOutVal = 0;
+                            SwingUtilities.invokeLater(() -> minOutValue.setText("000"));
+                        }
+                        else{
+                            SensorManagement.changeMinRange(midiPort, maxOutVal);
+                            minOutVal = maxOutVal;
+                            SwingUtilities.invokeLater(() -> minOutValue.setText(String.valueOf(maxOutVal)));
+                        }
+
                     }
                 }).start();
             }
@@ -263,35 +232,25 @@ class SensorRow extends JPanel {
 
             @Override
             public void keyPressed(KeyEvent e) {
-                new Thread(new Runnable() {
-                    public void run() {
-                        int key = e.getKeyCode();
-                        if(key == KeyEvent.VK_ENTER) {
-                            int newValue = Integer.parseInt(maxOutValue.getText());
-                            if(newValue<127 && newValue>=minOutVal){
-                                SensorManagement.changeMaxRange(midiPort, newValue);
-                                maxOutVal = newValue;
-                            }
-                            else if(newValue>127){
-                                SensorManagement.changeMinRange(midiPort, 127);
-                                minOutVal = 127;
-                                SwingUtilities.invokeLater(new Runnable() {
-                                    public void run() {
-                                        maxOutValue.setText("127");
-                                    }
-                                });
-                            }
-                            else{
-                                SensorManagement.changeMinRange(midiPort, minOutVal);
-                                maxOutVal = minOutVal;
-                                SwingUtilities.invokeLater(new Runnable() {
-                                    public void run() {
-                                        maxOutValue.setText(String.valueOf(minOutVal));
-                                    }
-                                });
-                            }
-
+                new Thread(() -> {
+                    int key = e.getKeyCode();
+                    if(key == KeyEvent.VK_ENTER) {
+                        int newValue = Integer.parseInt(maxOutValue.getText());
+                        if(newValue<127 && newValue>=minOutVal){
+                            SensorManagement.changeMaxRange(midiPort, newValue);
+                            maxOutVal = newValue;
                         }
+                        else if(newValue>127){
+                            SensorManagement.changeMinRange(midiPort, 127);
+                            minOutVal = 127;
+                            SwingUtilities.invokeLater(() -> maxOutValue.setText("127"));
+                        }
+                        else{
+                            SensorManagement.changeMinRange(midiPort, minOutVal);
+                            maxOutVal = minOutVal;
+                            SwingUtilities.invokeLater(() -> maxOutValue.setText(String.valueOf(minOutVal)));
+                        }
+
                     }
                 }).start();
             }
@@ -323,34 +282,19 @@ class SensorRow extends JPanel {
         constraint.weightx = 1;
         this.add(muteButton, constraint);
 
-        muteButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                new Thread(new Runnable() {
-                    public void run() {
-                        if (muteState){
-                            SensorManagement.unmute(midiPort);
-                            muteState = false;
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
-                                    muteButton.setBackground(BUTTON_COLOR);
-                                }
-                            });
-                        }
-                        else {
-                            SensorManagement.mute(midiPort);
-                            muteState = true;
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
-                                    muteButton.setBackground(MUTE_COLOR);
-                                }
-                            });
-                        }
-
-                    }
-                }).start();
+        muteButton.addActionListener(e -> new Thread(() -> {
+            if (muteState){
+                SensorManagement.unmute(midiPort);
+                muteState = false;
+                SwingUtilities.invokeLater(() -> muteButton.setBackground(BUTTON_COLOR));
             }
-        });
+            else {
+                SensorManagement.mute(midiPort);
+                muteState = true;
+                SwingUtilities.invokeLater(() -> muteButton.setBackground(MUTE_COLOR));
+            }
+
+        }).start());
 
         /**********SoloButton**********/
         soloButton = new JButton("Solo");
@@ -360,33 +304,18 @@ class SensorRow extends JPanel {
         constraint.gridx = constraint.gridx + 1;
         this.add(soloButton, constraint);
 
-        soloButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                new Thread(new Runnable() {
-                    public void run() {
-                        if (soloState) {
-                            SensorManagement.unSolo(midiPort);
-                            soloState = false;
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
-                                    soloButton.setBackground(BUTTON_COLOR);
-                                }
-                            });
-                        } else {
-                            SensorManagement.solo(midiPort);
-                            soloState = true;
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
-                                    soloButton.setBackground(SOLO_COLOR);
-                                }
-                            });
-                        }
-
-                    }
-                }).start();
+        soloButton.addActionListener(e -> new Thread(() -> {
+            if (soloState) {
+                SensorManagement.unSolo(midiPort);
+                soloState = false;
+                SwingUtilities.invokeLater(() -> soloButton.setBackground(BUTTON_COLOR));
+            } else {
+                SensorManagement.solo(midiPort);
+                soloState = true;
+                SwingUtilities.invokeLater(() -> soloButton.setBackground(SOLO_COLOR));
             }
-        });
+
+        }).start());
 
         /**********Impulse Button**********/
         impulseButton = new JButton("Impulsion");
@@ -396,32 +325,17 @@ class SensorRow extends JPanel {
         constraint.gridx = constraint.gridx + 1;
         this.add(impulseButton, constraint);
 
-        impulseButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                new Thread(new Runnable() {
-                    public void run() {
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                impulseButton.setBackground(IMPULSE_COLOR);
-                            }
-                        });
-                        SensorManagement.sendMidiImpulsion(midiPort);
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException e1) {
-                            e1.printStackTrace();
-                        }
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                impulseButton.setBackground(BUTTON_COLOR);
-                            }
-                        });
-
-                    }
-                }).start();
+        impulseButton.addActionListener(e -> new Thread(() -> {
+            SwingUtilities.invokeLater(() -> impulseButton.setBackground(IMPULSE_COLOR));
+            SensorManagement.sendMidiImpulsion(midiPort);
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e1) {
+                e1.printStackTrace();
             }
-        });
+            SwingUtilities.invokeLater(() -> impulseButton.setBackground(BUTTON_COLOR));
+
+        }).start());
 
 
 
@@ -463,12 +377,9 @@ class SensorRow extends JPanel {
      * @param data the value to set
      */
     public void setIncomingSignal(int data){
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                incomingSignal.setValue(data);
-                SensorRow.this.repaint();
-            }
+        SwingUtilities.invokeLater(() -> {
+            incomingSignal.setValue(data);
+            SensorRow.this.repaint();
         });
     }
 

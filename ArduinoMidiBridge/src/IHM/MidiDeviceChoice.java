@@ -8,11 +8,7 @@ import javax.sound.midi.MidiDevice;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Vector;
 
 import static java.lang.System.exit;
@@ -39,6 +35,10 @@ public class MidiDeviceChoice extends JFrame{
     private final Border LOWERED_BORDER = OperatingWindows.LOWERED_BORDER;
     private final Border ETCHED_BORDER = OperatingWindows.ETCHED_BORDER;
 
+    /**
+     * Constructor for the frame Midi Device Choice
+     * @param arduinoSet true if the arduino connection needs to be done
+     */
     public MidiDeviceChoice(boolean arduinoSet){
         super("Choix du périphérique midi");
         this.setPreferredSize(new Dimension(800, 600));
@@ -117,56 +117,43 @@ public class MidiDeviceChoice extends JFrame{
         topPanel.add(arduinoCheck, topConstraint);
         //TODO add Action Listener
 
-        arduinoCheck.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                final String[] errorMessage = {null};
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        arduinoInData aid = new arduinoInData();
-                        String port = (String) arduinoCom.getSelectedItem();
-                        System.out.println(port);
-                        switch (aid.initialize(port)) {
-                            case arduinoInData.NO_ERR:
-                                arduinoConnected = true;
-                                if (choosenDevice != null) {
-                                    okButton.setEnabled(true);
-                                }
-                                SwingUtilities.invokeLater(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        arduinoCom.setVisible(false);
-                                        arduinoCheck.setVisible(false);
-                                        arduinoLabel.setText("Connexion à l'arduino effectuée");
-                                    }
-                                });
+        arduinoCheck.addActionListener(e -> {
+            final String[] errorMessage = {null};
+            new Thread(() -> {
+                arduinoInData aid = new arduinoInData();
+                String port = (String) arduinoCom.getSelectedItem();
+                System.out.println(port);
+                switch (aid.initialize(port)) {
+                    case arduinoInData.NO_ERR:
+                        arduinoConnected = true;
+                        SwingUtilities.invokeLater(() -> {
+                            arduinoCom.setVisible(false);
+                            arduinoCheck.setVisible(false);
+                            arduinoLabel.setText("Connexion à l'arduino effectuée");
+                        });
 
-                                break;
-                            case arduinoInData.PORT_NOT_FOUND:
-                                errorMessage[0] = "<html><center>Impossible de trouver le port spécifié " +
-                                        "<br> Veuillez réessayer</center><html>";
-                                break;
-                            case arduinoInData.SERIAL_ERR:
-                                errorMessage[0] = "<html><center>Erreur de configuration du port série" +
-                                        "</center><html>";
-                                break;
-                            case arduinoInData.PORT_IN_USE:
-                                errorMessage[0] = "<html><center>Ce port est utilisé" +
-                                        "<br> Veuillez déconnecter les autres applications utilisant l'arduino</center><html>";
-                                break;
-                            case arduinoInData.TOO_MANY_LIST_ERR:
-                                errorMessage[0] = "<html><center>Trop d'EventListener sur ce port" +
-                                        "</center><html>";
-                                break;
-                        }
-                        if(errorMessage[0] !=null){
-                            JOptionPane.showMessageDialog(MidiDeviceChoice.this, errorMessage[0], "Erreur", JOptionPane.ERROR_MESSAGE);
-                        }
-                    }
-
-                }).start();
-            }
+                        break;
+                    case arduinoInData.PORT_NOT_FOUND:
+                        errorMessage[0] = "<html><center>Impossible de trouver le port spécifié " +
+                                "<br> Veuillez réessayer</center><html>";
+                        break;
+                    case arduinoInData.SERIAL_ERR:
+                        errorMessage[0] = "<html><center>Erreur de configuration du port série" +
+                                "</center><html>";
+                        break;
+                    case arduinoInData.PORT_IN_USE:
+                        errorMessage[0] = "<html><center>Ce port est utilisé" +
+                                "<br> Veuillez déconnecter les autres applications utilisant l'arduino</center><html>";
+                        break;
+                    case arduinoInData.TOO_MANY_LIST_ERR:
+                        errorMessage[0] = "<html><center>Trop d'EventListener sur ce port" +
+                                "</center><html>";
+                        break;
+                }
+                if(errorMessage[0] !=null){
+                    JOptionPane.showMessageDialog(MidiDeviceChoice.this, errorMessage[0], "Erreur", JOptionPane.ERROR_MESSAGE);
+                }
+            }).start();
         });
 
 
@@ -186,33 +173,14 @@ public class MidiDeviceChoice extends JFrame{
         mainConstraint.fill = GridBagConstraints.BOTH;
         mainPanel.add(scrollList, mainConstraint);
 
-        deviceList.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged (ListSelectionEvent e){
-                new Thread(new Runnable() {
-                    public void run() {
-                        choosenDevice = (MidiDevice.Info) deviceList.getSelectedValue();
-                        if (arduinoSet){
-                            SwingUtilities.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    okButton.setEnabled(true);
-                                }
-                            });
-                        }
-                        String description = choosenDevice.getDescription();
-                        String vendor = choosenDevice.getVendor();
-                        readyToClose = MidiManager.chooseMidiDevice(choosenDevice);
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                deviceDescription.setText("<html>Description : " + description + "<br>"
-                                                            + "Vendeur : " + vendor + "</html>");
-                            }
-                        });
-                    }
-                }).start();
-            }
-        }
+        deviceList.addListSelectionListener(e -> new Thread(() -> {
+            choosenDevice = (MidiDevice.Info) deviceList.getSelectedValue();
+            String description = choosenDevice.getDescription();
+            String vendor = choosenDevice.getVendor();
+            readyToClose = MidiManager.chooseMidiDevice(choosenDevice);
+            SwingUtilities.invokeLater(() -> deviceDescription.setText("<html>Description : " + description + "<br>"
+                                        + "Vendeur : " + vendor + "</html>"));
+        }).start()
 
         );
 
@@ -257,34 +225,23 @@ public class MidiDeviceChoice extends JFrame{
         bottomConstraint.weighty = 1;
         bottomPanel.add(reloadButton, bottomConstraint);
 
-        reloadButton.addActionListener(new ActionListener() {
-                                           @Override
-            public void actionPerformed (ActionEvent e){
-                new Thread(new Runnable() {
-                    public void run() {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            reloadProgress.setVisible(true);
-                            reloadButton.setVisible(false);
-                            quitButton.setVisible(false);
-                            okButton.setVisible(false);
-                        }
-                    });
-                    Vector<MidiDevice.Info> availableDevice = MidiManager.getAvailableMidiDevices();
-                    choosenDevice = null;
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            deviceList.setListData(availableDevice);
-                            reloadProgress.setVisible(false);
-                            reloadButton.setVisible(true);
-                            quitButton.setVisible(true);
-                            okButton.setVisible(true);
-                        }
-                    });
-                }
-                }).start();
-            }
-        }
+        reloadButton.addActionListener(e -> new Thread(() -> {
+        SwingUtilities.invokeLater(() -> {
+            reloadProgress.setVisible(true);
+            reloadButton.setVisible(false);
+            quitButton.setVisible(false);
+            okButton.setVisible(false);
+        });
+        Vector<MidiDevice.Info> availableDevice = MidiManager.getAvailableMidiDevices();
+        choosenDevice = null;
+        SwingUtilities.invokeLater(() -> {
+            deviceList.setListData(availableDevice);
+            reloadProgress.setVisible(false);
+            reloadButton.setVisible(true);
+            quitButton.setVisible(true);
+            okButton.setVisible(true);
+        });
+    }).start()
 
         );
 
@@ -303,7 +260,12 @@ public class MidiDeviceChoice extends JFrame{
         bottomPanel.add(reloadProgress, bottomConstraint);
 
         /**QuitButton**/
-        quitButton = new JButton("Quitter");
+        if(arduinoSet){
+            quitButton = new JButton("Quitter");
+        }
+        else{
+            quitButton = new JButton("Annuler");
+        }
         quitButton.setBackground(BUTTON_COLOR);
         quitButton.setForeground(FOREGROUND_COLOR);
         quitButton.setBorder(ETCHED_BORDER);
@@ -314,12 +276,14 @@ public class MidiDeviceChoice extends JFrame{
         bottomConstraint.weighty = 1;
         bottomPanel.add(quitButton, bottomConstraint);
 
-        quitButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+        quitButton.addActionListener(e -> {
+            if(arduinoSet){
                 MidiManager.exit();
                 arduinoInData.close();
                 exit(0);
+            }
+            else{
+                dispose();
             }
         });
 
@@ -328,60 +292,54 @@ public class MidiDeviceChoice extends JFrame{
         okButton.setBackground(BUTTON_COLOR);
         okButton.setForeground(FOREGROUND_COLOR);
         okButton.setBorder(ETCHED_BORDER);
-        okButton.setEnabled(false);
+
 
         bottomConstraint.gridx = 3;
         bottomPanel.add(okButton, bottomConstraint);
 
 
-        okButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (readyToClose) {
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            SensorManagement.changeReceiver();
-                        }
-                    }).start();
-                    dispose();
-                    OperatingWindows operatingWindows= new OperatingWindows();
-                } else {
-                    JOptionPane.showMessageDialog(MidiDeviceChoice.this,
-                            "<html><center>Impossible de se connecter au " +
-                                    "périphérique midi sélectionné<br> " +
-                                    "Veuillez réessayer</center></html>",
-                            " Avertissement ",
-                            JOptionPane.WARNING_MESSAGE);
+        okButton.addActionListener(e -> {
+            if (readyToClose && arduinoConnected) {
+                new Thread(() -> {
+                    SensorManagement.changeReceiver();
+                }).start();
+                dispose();
+                if(arduinoSet) {
+                    new OperatingWindows();
                 }
+            } else if (!readyToClose) {
+                JOptionPane.showMessageDialog(MidiDeviceChoice.this,
+                        "<html><center>Impossible de se connecter au " +
+                                "périphérique midi sélectionné<br> " +
+                                "Veuillez réessayer</center></html>",
+                        " Avertissement ",
+                        JOptionPane.WARNING_MESSAGE);
+            }
+            else{
+                JOptionPane.showMessageDialog(MidiDeviceChoice.this,
+                        "<html><center>Communication arduino non établie" +
+                                "</center></html>",
+                        " Avertissement ",
+                        JOptionPane.WARNING_MESSAGE);
             }
         });
 
         //Filling the List
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        reloadProgress.setVisible(true);
-                        reloadButton.setVisible(false);
-                        quitButton.setVisible(false);
-                        okButton.setVisible(false);
-                    }
-                });
-                Vector<MidiDevice.Info> availableDevice = MidiManager.getAvailableMidiDevices();
-                deviceList.setListData(availableDevice);
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        reloadProgress.setVisible(false);
-                        reloadButton.setVisible(true);
-                        quitButton.setVisible(true);
-                        okButton.setVisible(true);
-                    }
-                });
-            }
+        new Thread(() -> {
+            SwingUtilities.invokeLater(() -> {
+                reloadProgress.setVisible(true);
+                reloadButton.setVisible(false);
+                quitButton.setVisible(false);
+                okButton.setVisible(false);
+            });
+            Vector<MidiDevice.Info> availableDevice = MidiManager.getAvailableMidiDevices();
+            deviceList.setListData(availableDevice);
+            SwingUtilities.invokeLater(() -> {
+                reloadProgress.setVisible(false);
+                reloadButton.setVisible(true);
+                quitButton.setVisible(true);
+                okButton.setVisible(true);
+            });
         }).start();
 
 

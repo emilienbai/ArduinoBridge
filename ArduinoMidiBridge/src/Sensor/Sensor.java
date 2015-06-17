@@ -105,7 +105,7 @@ public class Sensor {
 	}
 	/**
 	 * This method send midi messages to the receiver
-	 * @param dataFromSensor
+	 * @param dataFromSensor the input value of the sensor
 	 */
 	public void sendMidiMessage(int dataFromSensor){
 		if(!isMuted && !isMutedBySolo && !isMutedAll){
@@ -194,26 +194,15 @@ public class Sensor {
 	public String getName() {
 		return name;
 	}
-	public void setName(String name) {
-		this.name = name;
-	}
+
 	public int getArduinoIn() {
 		return arduinoIn;
 	}
-	public void setArduinoIn(int arduinoIn) {
-		if (arduinoIn >=0 && arduinoIn <= 15){
-			this.arduinoIn = arduinoIn;
-		}
-	}
+
 	public int getMidiPort() {
 		return midiPort;
 	}
-	public void setMidiPort(int midiPort) {
-		this.midiPort = midiPort;
-	}
-	public Receiver getmidiReceiver() {
-		return midiReceiver;
-	}
+
 	public void setmidiReceiver(Receiver midiReceiver) {
 		this.midiReceiver = midiReceiver;
 	}
@@ -267,10 +256,6 @@ public class Sensor {
 
 	public boolean isMuted() {
 		return isMuted;
-	}
-
-	public void setIsMuted(boolean isMuted) {
-		this.isMuted = isMuted;
 	}
 
 	public boolean isMutedAll() {

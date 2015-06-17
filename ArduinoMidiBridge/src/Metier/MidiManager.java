@@ -7,7 +7,7 @@ import javax.sound.midi.Receiver;
 import java.util.Vector;
 
 /**
- * Created by Emilien Bai (emilien.bai@insa-lyon.fr) on 06/2015.
+ * Created by Emilien Bai (emilien.bai@insa-lyon.fr)on 06/2015.
  */
 public class MidiManager {
     private static MidiDevice choosenDevice = null;
@@ -20,15 +20,15 @@ public class MidiManager {
      */
     public static Vector<MidiDevice.Info> getAvailableMidiDevices(){
         MidiDevice.Info[] info = MidiSystem.getMidiDeviceInfo();
-        Vector<MidiDevice.Info> toReturn = new Vector<MidiDevice.Info>();
+        Vector<MidiDevice.Info> toReturn = new Vector<>();
         //we check which of the devices are available to send midi message
-        for(int i = 0; i<info.length; i++){
+        for (MidiDevice.Info anInfo : info) {
             MidiDevice d = null;
             try {
-                d = MidiSystem.getMidiDevice(info[i]);
+                d = MidiSystem.getMidiDevice(anInfo);
                 d.open();
                 d.getReceiver();
-                toReturn.add(info[i]);
+                toReturn.add(anInfo);
             } catch (MidiUnavailableException e) {
                 e.printStackTrace();
             }

@@ -56,7 +56,7 @@ public class arduinoInData implements SerialPortEventListener {
         while (portEnum.hasMoreElements()) {
             CommPortIdentifier currPortId = (CommPortIdentifier) portEnum.nextElement();
             for (String portName : PORT_NAMES) {
-                String[] newPortName = portName.split(" - ");
+                String[] newPortName = portName.split(" - | ");
                 if (currPortId.getName().startsWith(newPortName[0])) {
                     portId = currPortId;
                     break;

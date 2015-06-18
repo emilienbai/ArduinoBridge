@@ -1,0 +1,159 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"  
+  "http://www.w3.org/TR/html4/loose.dtd">  
+<html xml:lang="fr" > 
+<head><title>Arduino Midi Bridge V-0.1</title> 
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"> 
+<meta name="generator" content="TeX4ht (http://www.cse.ohio-state.edu/~gurari/TeX4ht/)"> 
+<meta name="originator" content="TeX4ht (http://www.cse.ohio-state.edu/~gurari/TeX4ht/)"> 
+<!-- html --> 
+<meta name="src" content="DocArduinoBridge.tex"> 
+<meta name="date" content="2015-06-18 14:22:00"> 
+<link rel="stylesheet" type="text/css" href="DocArduinoBridge.css"> 
+</head><body 
+>
+   <div class="maketitle">
+                                                                                          
+                                                                                          
+                                                                                          
+                                                                                          
+
+<h2 class="titleHead">Arduino Midi Bridge V-0.1</h2>
+       <div class="author" ><span 
+class="ec-lmr-12x-x-120">Emilien Bai</span>
+<br /><span 
+class="ec-lmr-12x-x-120">emilien.bai@insa-lyon.fr</span></div><br />
+<div class="date" ><span 
+class="ec-lmr-12x-x-120">Juin 2015</span></div>
+   </div>
+   <h3 class="likesectionHead"><a 
+ id="x1-1000"></a>Arduino<span 
+class="ec-lmr-8x-x-97">®;</span></h3>
+<!--l. 43--><p class="noindent" >Ce programme a été conçu pour fonctionner avec un Arduino<span 
+class="ec-lmr-8x-x-97">®;</span> Mega2560. Cependant, le code
+arduino (disponible <a 
+href="https://mega.co.nz/#!alhlXQ7S!oTRZF6AKRWbnMFF0-QSGHtHOGhWa6hKk4VGG3Pstid0" >ici</a> est facilement modifiable et adaptable à la configuration souhaitée. Le
+nombre de capteur se règle grace à la constante appelée <span 
+class="ec-lmtt-12">sensorNumber</span>. Les entrées
+analogiques séléctionnées seront automatiquement les x premières entrées analogiques
+de l&#8217;Arduino<span 
+class="ec-lmr-8x-x-97">®;</span>.Une valeur de "debounce" est aussi paramétrée<span class="frenchb-nbsp">&nbsp;</span>: il s&#8217;agit de la variable
+<span 
+class="ec-lmtt-12">cycles</span>. Elle permet de ne pas surcharger en message le port série de l&#8217;arduino. Plus le
+capteur est instable (transducteur piezo, viel interrupteur, ...) plus cette valeur devra
+être élevée. Une valeur seuil de signal (<span 
+class="ec-lmtt-12">threshold</span>) est aussi spéficiée afin de filter les
+signaux parasites qui pourraient être reçus sur les entrées. Elle doit impérativement rester
+comprise entre 0 ou rien n&#8217;est filtré, 1023 ou aucun signal ne passe. Enfin, si l&#8217;Arduino<span 
+class="ec-lmr-8x-x-97">®;</span>
+est programmé traiter plus de capteurs que ce qu&#8217;il y en a réellement branché, il est
+conseillé de relier les entrées non utilisées à la Terre (GND) pour empécher tout message
+parasite.
+<!--l. 45--><p class="noindent" >
+   <h3 class="likesectionHead"><a 
+ id="x1-2000"></a>Midi</h3>
+<!--l. 46--><p class="noindent" >Pour fonctionner, ce programme a besoin d&#8217;utiliser un port midi virtuel. C&#8217;est par là que
+transiteront les messages entre le programme et l&#8217;application pilotable en midi.
+<!--l. 48--><p class="noindent" >
+   <h4 class="likesubsectionHead"><a 
+ id="x1-3000"></a>Pour Linux</h4>
+                                                                                          
+                                                                                          
+<!--l. 49--><p class="noindent" >Pour créer des ports midi virtuels sur linux, il suffit d&#8217;éxécuter la commande suivante dans un
+terminal<span class="frenchb-nbsp">&nbsp;</span>: <span 
+class="ec-lmtt-12">sudo modprobe snd-virmidi snd_index=1</span>. Vous pouvez vérifier la création de ces
+ports grâce à la commande <span 
+class="ec-lmtt-12">cat /proc/asound/cards</span>. Vous devriez normalement voir apparaitre
+une ligne <span 
+class="ec-lmtt-12">VirMIDI - Virtual MIDI card 1</span>. À partir de la, le programme sera capable de détecter
+ces ports midi virtuels et de s&#8217;y connecter.
+<!--l. 51--><p class="noindent" >
+   <h4 class="likesubsectionHead"><a 
+ id="x1-4000"></a>Pour Mac OSX</h4>
+<!--l. 52--><p class="noindent" >Sous Mac OSX, il est possible de créer des ports virtuels midi à partir du menu "configuration
+audio et MIDI". Ces ports sont ensuite détéctés et peuvent être utilisés par le logiciel.
+<!--l. 54--><p class="noindent" >
+   <h4 class="likesubsectionHead"><a 
+ id="x1-5000"></a>Pour Windows</h4>
+<!--l. 55--><p class="noindent" >Le logiciel LoopMIDI téléchargeable gratuitement sur internet permet de créer les ports virtuels
+midi necessaire au fonctionnement de ce logiciel sous Windows.
+<!--l. 57--><p class="noindent" >
+   <h3 class="likesectionHead"><a 
+ id="x1-6000"></a>Fonctionnement</h3>
+<!--l. 58--><p class="noindent" >
+   <h4 class="likesubsectionHead"><a 
+ id="x1-7000"></a>Initialisation</h4>
+<!--l. 59--><p class="noindent" >À l&#8217;ouverture de ce programme, il est demandé de configurer la connexion à l&#8217;Arduino<span 
+class="ec-lmr-8x-x-97">®;</span> en
+selectionnant le port de communication utilisé. Les choix par défaut sont normalement valable pour
+Windows ainsi que linux. Pour Mac OS, il faut impérativement compléter l&#8217;adresse du port<span class="frenchb-nbsp">&nbsp;</span>: le port
+série à utiliser, est celui utilisé par l&#8217;ArduinoIDE. Il est aussi possible de trouver l&#8217;Arduino<span 
+class="ec-lmr-8x-x-97">®;</span>
+grâce à la commande <span 
+class="ec-lmtt-12">ls /dev/tty.usbserial-*</span>. Le port série ne peut pas être utilisé
+par 2 programmes simultanément, c&#8217;est pourquoi il est obligatoire de quitter tous les
+programmes utilisant le port série pour pouvoir utiliser ArduinoMidiBridge<span class="frenchb-nbsp">&nbsp;</span>: il n&#8217;est par
+conséquent pas possible d&#8217;ouvrir 2 sessions simultanées d&#8217;ArduinoMidiBrigde avec un seul
+Arduino<span 
+class="ec-lmr-8x-x-97">®;</span>.
+<!--l. 61--><p class="indent" >   Il faut aussi sélectionner le périphérique midi virtuel à utiliser parmis la liste des périphériques
+utilisables.
+<!--l. 63--><p class="noindent" >
+   <h4 class="likesubsectionHead"><a 
+ id="x1-8000"></a>Usage courant</h4>
+<!--l. 64--><p class="noindent" >L&#8217;usage du logiciel est très simple<span class="frenchb-nbsp">&nbsp;</span>: dans le panneau du bas, on nomme un capteur, on choisi le
+canal arduino correspondant et le port MIDI auquel on veut le connecter. Une fois que toute ces
+                                                                                          
+                                                                                          
+informations sont complétées, on peut ajouter ce capteur aux capteurs actifs.Chaque capteur
+possède plusieurs attribut et réglages qui leur sont propre<span class="frenchb-nbsp">&nbsp;</span>:
+<!--l. 65--><p class="noindent" ><span class="likeparagraphHead"><a 
+ id="x1-9000"></a>In<span class="frenchb-nbsp">&nbsp;</span>: </span>
+   Il s&#8217;agit d&#8217;un pseudo vu mètre représentant le niveau d&#8217;entrée du canal arduino correspondant.
+Il permet de vérifier que l&#8217;on reçoit bien du signal de nos capteurs ainsi qu&#8217;avoir une idée de son
+intensité.
+<!--l. 66--><p class="noindent" ><span class="likeparagraphHead"><a 
+ id="x1-10000"></a>Préamplification<span class="frenchb-nbsp">&nbsp;</span>: </span>
+   Plus qu&#8217;un réel préampli, il s&#8217;agit plutôt d&#8217;un rapport de multiplication du signal. Il est réglable
+grâce au slider ou en entrant la valeur manuellement. Pour être accéptée, la saisie doit être validée
+en appuyant sur la touche Entrée.
+<!--l. 67--><p class="noindent" ><span class="likeparagraphHead"><a 
+ id="x1-11000"></a>Min<span class="frenchb-nbsp">&nbsp;</span>: </span>
+   Il s&#8217;agit de la valeur minimale du message midi envoyé. La saisie doit être validé avec la touche
+Entrée.
+<!--l. 68--><p class="noindent" ><span class="likeparagraphHead"><a 
+ id="x1-12000"></a>Max<span class="frenchb-nbsp">&nbsp;</span>: </span>
+   Il s&#8217;agit de la valeur maximale du message midi envoyé. La saisie doit être validé avec la touche
+Entrée.
+<!--l. 69--><p class="noindent" ><span class="likeparagraphHead"><a 
+ id="x1-13000"></a>Out<span class="frenchb-nbsp">&nbsp;</span>: </span>
+   Il s&#8217;agit du niveau de sortie de la derniere note MIDI envoyée. Elle se place sur une echelle de 1
+à 127.
+<!--l. 70--><p class="noindent" ><span class="likeparagraphHead"><a 
+ id="x1-14000"></a>Bouton Mute<span class="frenchb-nbsp">&nbsp;</span>: </span>
+   Cliquer sur ce bouton permet de muter la piste correspondante, c&#8217;est à dire que cela permet de
+ne plus envoyer de message avec cette piste de façon temporaire.
+<!--l. 71--><p class="noindent" ><span class="likeparagraphHead"><a 
+ id="x1-15000"></a>Bouton Solo<span class="frenchb-nbsp">&nbsp;</span>: </span>
+   Cliquer sur le bouton solo d&#8217;une piste permet de l&#8217;isoler des autres et de ne plus emmettre des
+notes que par les pistes solo. Cependant, une piste solo peut ne pas emmettre de note si le bouton
+Mute All est activé. Si la piste est "muté", le solo surpasse le mute.
+<!--l. 72--><p class="noindent" ><span class="likeparagraphHead"><a 
+ id="x1-16000"></a>Bouton Impulsion<span class="frenchb-nbsp">&nbsp;</span>: </span>
+   Ce bouton emmet une note midi à l&#8217;intensité maximale pendant une demi seconde.
+Il permet de "mapper" une piste à un effet. Il surpasse les conditions de Mute ou de
+Solo.
+<!--l. 73--><p class="noindent" ><span class="likeparagraphHead"><a 
+ id="x1-17000"></a>Bouton Supprimer<span class="frenchb-nbsp">&nbsp;</span>: </span>
+   Ce bouton permet de supprimer la piste sélectionnée.
+                                                                                          
+                                                                                          
+<!--l. 74--><p class="noindent" ><span class="likeparagraphHead"><a 
+ id="x1-18000"></a>Bouton Mute All<span class="frenchb-nbsp">&nbsp;</span>: </span>
+   Ce bouton a pour effet de muter toutes les pistes actives du logiciel. Il peut être utile pour
+mapper les capteurs sans recevoir des messages analogiques perturbateurs.
+    
+</body></html> 
+
+                                                                                          
+
+

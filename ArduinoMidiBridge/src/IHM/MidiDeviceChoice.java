@@ -46,6 +46,7 @@ public class MidiDeviceChoice extends JFrame{
         setVisible(true);
         pack();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setIconImage(new ImageIcon("logo.png").getImage());
         this.setLocationRelativeTo(null);
 
         arduinoConnected = !arduinoSet;

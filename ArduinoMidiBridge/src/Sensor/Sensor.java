@@ -108,7 +108,7 @@ public class Sensor {
 	 * @param dataFromSensor the input value of the sensor
 	 */
 	public void sendMidiMessage(int dataFromSensor){
-		if(!isMuted && !isMutedBySolo && !isMutedAll){
+		if((!isMuted && !isMutedBySolo && !isMutedAll)||(isSoloed&&!isMutedAll)){
 			int velocity; //velocity of the message to send;
 			velocity = calculate(dataFromSensor);
 			ShortMessage msg = new ShortMessage();
@@ -116,7 +116,6 @@ public class Sensor {
 				msg.setMessage(ShortMessage.NOTE_ON, this.midiPort, velocity);
 				this.midiReceiver.send(msg, -1);
 				this.outputValue = velocity;
-				System.out.println("Message sent");
 			} catch (InvalidMidiDataException e) {
 				e.printStackTrace();
 				System.err.println("Error sending message from " + this.name);

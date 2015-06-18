@@ -220,7 +220,7 @@ public class OperatingWindows extends JFrame {
         menuBar.add(helpMenu);
         helpMenu.setBackground(BACKGROUND_COLOR);
         helpMenu.setForeground(FOREGROUND_COLOR);
-        //TODO write documentation
+
 
 
         //getHelp Item
@@ -228,6 +228,13 @@ public class OperatingWindows extends JFrame {
         helpMenu.add(getHelpItem);
         getHelpItem.setBackground(BACKGROUND_COLOR);
         getHelpItem.setForeground(FOREGROUND_COLOR);
+
+        getHelpItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new HelpWindow();
+            }
+        });
 
     }
 
@@ -240,6 +247,25 @@ public class OperatingWindows extends JFrame {
 
     public OperatingWindows(){
         super("ArduinoBrigde");
+        this.setIconImage(new ImageIcon("logo.png").getImage());
+        pack();
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        this.setLocationRelativeTo(null);
+        this.setExtendedState(MAXIMIZED_BOTH);
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                super.windowClosing(e);
+                MidiManager.exit();
+                arduinoInData.close();
+                dispose();
+                System.exit(0);
+            }
+        });
+        this.setMenuBar();
+        this.setJMenuBar(menuBar);
+
+        setVisible(true);
         GridBagLayout mainLayout = new GridBagLayout();
         GridBagConstraints mainConstraint = new GridBagConstraints();
         JPanel mainPanel = new JPanel(mainLayout);
@@ -360,7 +386,7 @@ public class OperatingWindows extends JFrame {
         });
 
         /*****************ArduChLabel***************/
-        JLabel newChan = new JLabel("Arduino Chanel : ");
+        JLabel newChan = new JLabel("Canal Arduino : ");
         newChan.setBackground(BACKGROUND_COLOR);
         newChan.setForeground(FOREGROUND_COLOR);
         bottomPanel.add(newChan);
@@ -392,8 +418,8 @@ public class OperatingWindows extends JFrame {
         bottomPanel.add(availableMidiCombo);
 
         availableMidiCombo.addActionListener(e -> new Thread(() -> {
-                    newMidiPort = (int) availableMidiCombo.getSelectedItem();
-                }).start());
+            newMidiPort = (int) availableMidiCombo.getSelectedItem();
+        }).start());
 
         /*****************AddSensor****************/
         JButton addSensorButton = new JButton("Ajouter un capteur");
@@ -402,7 +428,6 @@ public class OperatingWindows extends JFrame {
         addSensorButton.setBorder(ETCHED_BORDER);
         addSensorButton.setPreferredSize(new Dimension(150, 25));
         bottomPanel.add(addSensorButton);
-
         addSensorButton.addActionListener(e -> new Thread(() -> {
 
             if (newName != null && newArduChan != -1 && newMidiPort != -1) {
@@ -421,7 +446,7 @@ public class OperatingWindows extends JFrame {
                 newName = null;
                 newArduChan = -1;
                 newMidiPort = -1;
-                resetMidiCombo();
+
 
                 SwingUtilities.invokeLater(() -> {
                     centerPanel.add(sensorRow, centerConstraint);
@@ -433,6 +458,7 @@ public class OperatingWindows extends JFrame {
                     sensorNumberLb.setText(String.valueOf(++nb));
                     availableMidiCombo.setSelectedIndex(0);
                     arduinoPort.setSelectedIndex(0);
+                    resetMidiCombo();
                     repaint();
                     pack();
                 });
@@ -460,27 +486,7 @@ public class OperatingWindows extends JFrame {
             }
         }).start());
 
-
-
         setContentPane(mainPanel);
-        pack();
-        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        this.setLocationRelativeTo(null);
-        this.setExtendedState(MAXIMIZED_BOTH);
-        this.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                super.windowClosing(e);
-                MidiManager.exit();
-                arduinoInData.close();
-                dispose();
-                System.exit(0);
-            }
-        });
-        this.setMenuBar();
-        this.setJMenuBar(menuBar);
-
-        setVisible(true);
 
     }
 
@@ -515,7 +521,6 @@ public class OperatingWindows extends JFrame {
     }
 
     private void cleanAction(){
-        SensorManagement.newSetup();
         sensorRowList.forEach(centerPanel::remove);
         deleteButtonList.forEach(centerPanel::remove);
         sensorNumberLb.setText("0");

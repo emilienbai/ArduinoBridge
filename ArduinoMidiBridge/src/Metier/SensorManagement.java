@@ -54,12 +54,13 @@ public class SensorManagement {
      */
     public static void sendMidiMessage(String instructions){
         String[] splitted = instructions.split("-");
+        int sensorNumber;
         //every instruction is separated by a -
-        for (int i = 0; i<splitted.length; i+=2 ){
-            int sensorNumber = Integer.parseInt(splitted[i]);
+        if(splitted.length == 2){
+            sensorNumber = Integer.parseInt(splitted[0]);
             for(Sensor s : sensorList){
                 if (s.getArduinoIn()==sensorNumber){
-                    s.sendMidiMessage(Integer.parseInt(splitted[i+1]));
+                    s.sendMidiMessage(Integer.parseInt(splitted[1]));
                 }
             }
         }
@@ -311,7 +312,6 @@ public class SensorManagement {
 
             //get a nodelist of elements
             NodeList nl = docEle.getElementsByTagName("sensor");
-            System.out.println(nl.getLength());
             if(nl.getLength() > 0) {
                 for(int i = 0 ; i < nl.getLength();i++) {
 

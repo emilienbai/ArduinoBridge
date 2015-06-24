@@ -5,6 +5,7 @@ package IHM;
  */
 public class Main {
     public static void main(String[] args){
-        new MidiDeviceChoice(true);
+        MidiDeviceChoice m = new MidiDeviceChoice(true);
+        m.setVisible(true);
     }
 }

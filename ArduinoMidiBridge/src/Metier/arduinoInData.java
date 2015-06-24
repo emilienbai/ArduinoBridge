@@ -6,6 +6,7 @@ import gnu.io.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.TooManyListenersException;
 
@@ -13,30 +14,173 @@ import java.util.TooManyListenersException;
  * Created by Emilien Bai (emilien.bai@insa-lyon.fr)on 06/2015.
  */
 public class arduinoInData implements SerialPortEventListener {
-    private static SerialPort serialPort;
     /** The port we're normally going to use. */
     public static final String PORT_NAMES[] = {
-            "/dev/tty.usbserial-* - Mac OS X - remplacer l'étoile par le vrai numéro", // Mac OS X
-            "/dev/ttyACM0 - Raspberry Pi & Linux", // Raspberry Pi
-            "/dev/ttyUSB0 - Linux", // Linux
-            "COM3 - Windows", // Windows
+            "/dev/tty.usbmodem * - Mac OS X - Uno et Mega 2560", // Mac OS X
+            "/dev/tty.usbserial * - Mac OS X - anciennes cartes",
+            "/dev/ttyACM * - Raspberry Pi & Linux", // Raspberry Pi
+            "/dev/ttyUSB * - Linux", // Linux
+            "COM * - Windows", // Windows
     };
-
     public static final int NO_ERR = 0;
     public static final int PORT_NOT_FOUND = 1;
     public static final int PORT_IN_USE = 2;
     public static final int SERIAL_ERR = 3;
     public static final int TOO_MANY_LIST_ERR = 4;
     /**
+     * Milliseconds to block while waiting for port open
+     */
+    private static final int TIME_OUT = 4000;
+    /**
+     * Default bits per second for COM port.
+     */
+    private static final int DATA_RATE = 230400;
+    private static SerialPort serialPort;
+    /**
+     * Log from the arduino
+     **/
+    private static String arduiLog = null;
+    /**
+     * The output stream to the port
+     */
+    private static OutputStream output;
+    /**
      * A BufferedReader which will be fed by a InputStreamReader
      * converting the bytes into characters
      * making the displayed results codepage independent
      */
     private BufferedReader input;
-    /** Milliseconds to block while waiting for port open */
-    private static final int TIME_OUT = 500;
-    /** Default bits per second for COM port. */
-    private static final int DATA_RATE = 115200;
+
+    /**
+     * This should be called when you stop using the port.
+     * This will prevent port locking on platforms like Linux.
+     */
+    public static synchronized void close() {
+        if (serialPort != null) {
+            serialPort.removeEventListener();
+            serialPort.close();
+        }
+    }
+
+    /**
+     * set the noise gate for an input on the arduino
+     *
+     * @param sensorNumber the sensor to change
+     * @param newValue     the new value of the gate
+     * @return true if it worked
+     */
+    protected synchronized static boolean setNoiseGate(int sensorNumber, int newValue) {
+        String s = "nthr " + newValue + " " + sensorNumber + "\n";
+        return sendAsciiString(s);
+    }
+
+    /**
+     * set the noise gate for all the input on the arduino
+     *
+     * @param newValue the new noise gate
+     * @return true if it worked
+     */
+    protected static boolean setNoiseGateAll(int newValue) {
+        String s = "nthr " + newValue + "\n";
+        return sendAsciiString(s);
+
+    }
+
+    /**
+     * set the number of debounce cycles for a sensor
+     *
+     * @param sensorNumber the sensor to change
+     * @param newValue     the new number of debounce cycles
+     * @return true if it worked
+     */
+    protected static boolean setDebounceTime(int sensorNumber, int newValue) {
+        String s = "tthr " + newValue + " " + sensorNumber + "\n";
+        return sendAsciiString(s);
+    }
+
+    /**
+     * set the number of debounce cycle for all the sensors
+     *
+     * @param newValue new numer of debounce cycle
+     * @return true if it worked
+     */
+    protected static boolean setDebounceTimeAll(int newValue) {
+        String s = "tthr " + newValue + "\n";
+        return sendAsciiString(s);
+    }
+
+    /**
+     * Launch the calibration of a sensor
+     *
+     * @param sensorNumber the sensor to calibrate
+     * @return true if it worked
+     */
+    protected static boolean calibrateSensor(int sensorNumber) {
+        String s = "cal " + sensorNumber + "\n";
+        return sendAsciiString(s);
+    }
+
+    /**
+     * Launch the calibration of all sensors
+     *
+     * @return true if it worked
+     */
+    protected static boolean calibrateAllSensor() {
+        String s = "cal\n";
+        return sendAsciiString(s);
+    }
+
+    /**
+     * set the number of sensor used by the arduino
+     *
+     * @param newNumber
+     * @return
+     */
+    protected static boolean setSensorNumber(int newNumber) {
+        String s = "setnb " + newNumber + "\n";
+        return sendAsciiString(s);
+    }
+
+    /**
+     * Send a command String on the arduino serial port
+     *
+     * @param toSend the string to send
+     * @return true if it worked
+     */
+    private synchronized static boolean sendAsciiString(String toSend) {
+        try {
+            output.write(toSend.getBytes("ASCII"));
+            Thread.sleep(200);
+            output.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        arduinoInData aid = new arduinoInData();
+        aid.initialize("/dev/ttyACM0");
+        Thread.sleep(2000);
+        setNoiseGate(0, 550);
+        Thread.sleep(3000);
+        setNoiseGateAll(300);
+        Thread.sleep(3000);
+        setDebounceTime(0, 50);
+        Thread.sleep(3000);
+        setDebounceTimeAll(300);
+        Thread.sleep(3000);
+        setSensorNumber(5);
+        Thread.sleep(3000);
+        calibrateSensor(0);
+        Thread.sleep(3000);
+        calibrateAllSensor();
+        Thread.sleep(10000);
+        arduinoInData.close();
+    }
 
     /**
      * Initialize the connection with the arduino using specified port
@@ -46,7 +190,7 @@ public class arduinoInData implements SerialPortEventListener {
     public int initialize(String port) {
         // the next line is for Raspberry Pi and
         // gets us into the while loop and was suggested here was suggested http://www.raspberrypi.org/phpBB3/viewtopic.php?f=81&t=32186
-        String[] truePort = port.split(" - ");
+        String[] truePort = port.split(" - | ");
         System.setProperty("gnu.io.rxtx.SerialPorts", truePort[0]);
 
         CommPortIdentifier portId = null;
@@ -91,6 +235,7 @@ public class arduinoInData implements SerialPortEventListener {
         // open the streams
         try {
             input = new BufferedReader(new InputStreamReader(serialPort.getInputStream()));
+            output = serialPort.getOutputStream();
         } catch (IOException e) {
             e.printStackTrace();
             return SERIAL_ERR;
@@ -101,7 +246,6 @@ public class arduinoInData implements SerialPortEventListener {
         try {
             serialPort.addEventListener(this);
             serialPort.notifyOnDataAvailable(true);
-            System.out.println("ajout de l'envent listener");
         } catch (TooManyListenersException e) {
             e.printStackTrace();
             return TOO_MANY_LIST_ERR;
@@ -110,38 +254,29 @@ public class arduinoInData implements SerialPortEventListener {
     }
 
     /**
-     * This should be called when you stop using the port.
-     * This will prevent port locking on platforms like Linux.
-     */
-    public static synchronized void close() {
-        if (serialPort != null) {
-            serialPort.removeEventListener();
-            serialPort.close();
-        }
-    }
-
-    /**
      * Handle an event on the serial port. Read the data and print it.
      */
     public synchronized void serialEvent(SerialPortEvent oEvent) {
         if (oEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
             try {
-                String inputLine=input.readLine();
-                System.out.println("lecture d'une ligne");
-                new Thread(() -> {
-                    SensorManagement.sendMidiMessage(inputLine);
-                    OperatingWindows.refreshInterface(inputLine);
-                }).start();
+                String inputLine = input.readLine();
+                if (inputLine.startsWith("-")) {
+                    /*TODO check that it goes ok - verify if every command worked
+                    copy message from the arduino goes faster
+                     */
+                    arduiLog += inputLine + "\n";
+                } else {
+                    new Thread(() -> {
+                        SensorManagement.sendMidiMessage(inputLine);
+                        OperatingWindows.refreshInterface(inputLine);
+                    }).start();
+                }
                 System.out.println(inputLine);
+
             } catch (Exception e) {
                 System.err.println(e.toString());
             }
         }
         // Ignore all the other eventTypes, but you should consider the other ones.
-    }
-
-    public static void main (String[] args){
-        arduinoInData aid = new arduinoInData();
-        aid.initialize("/dev/ttyACM0");
     }
 }

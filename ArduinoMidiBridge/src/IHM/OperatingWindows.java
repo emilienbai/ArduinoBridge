@@ -21,30 +21,6 @@ import java.util.Vector;
  * Created by Emilien Bai (emilien.bai@insa-lyon.fr)on 06/2015.
  */
 public class OperatingWindows extends JFrame {
-    private JButton muteAllButton;
-    private static JPanel centerPanel;
-    private static JMenuBar menuBar;
-
-
-    private static Vector<Integer> availableMidiPort = new Vector<>();
-    private static boolean isMutedAll;
-    private static java.util.List<SensorRow> sensorRowList = new ArrayList<>();
-    private static java.util.List<DeleteButton> deleteButtonList = new ArrayList<>();
-    private JTextField newSensorName;
-    private JComboBox arduinoPort;
-    private static JComboBox availableMidiCombo;
-    private String newName = null;
-    private int newArduChan = -1;
-    private int newMidiPort = -1;
-    private GridBagConstraints centerConstraint;
-    private File saveFile = null;
-    private JLabel sensorNumberLb;
-
-
-    private static final String SAVE_EXTENSION = ".xml";
-
-    /*********************************************************************/
-    /******************************COLORS*********************************/
     /*********************************************************************/
     public static final Color BACKGROUND_COLOR = new Color(21, 21, 35);
     public static final Color BUTTON_COLOR = new Color(0, 0, 64);
@@ -53,202 +29,43 @@ public class OperatingWindows extends JFrame {
     public static final Color SOLO_COLOR = new Color(169, 162, 0);
     public static final Color IMPULSE_COLOR = new Color(45, 121, 36);
     public static final Color NAME_COLOR = new Color(221, 101, 4);
-
-    /************/
-    /**BORDERS***/
     /************/
     public static final Border RAISED_BORDER = BorderFactory.createBevelBorder(BevelBorder.RAISED);
     public static final Border LOWERED_BORDER = BorderFactory.createBevelBorder(BevelBorder.LOWERED);
     public static final Border ETCHED_BORDER = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+    private static final String SAVE_EXTENSION = ".xml";
+    private static final int DEFAULT_THRESHOLD = 100;
+    private static final int DEFAULT_DEBOUNCE = 200;
+    private static JPanel centerPanel;
+    private static JMenuBar menuBar;
+    private static Vector<Integer> availableMidiPort = new Vector<>();
+    private static boolean isMutedAll;
+    private static java.util.List<SensorRow> sensorRowList = new ArrayList<>();
+    private static java.util.List<DeleteButton> deleteButtonList = new ArrayList<>();
+    private static JComboBox availableMidiCombo;
+    private static JPanel topPanel;
 
-    private void setMenuBar(){
-        menuBar = new JMenuBar();
-        menuBar.setBackground(BACKGROUND_COLOR);
+    /*********************************************************************/
+    /******************************COLORS*********************************/
+    private static GridBagConstraints topConstraint;
+    private JButton muteAllButton;
+    private JTextField newSensorName;
+    private JComboBox arduinoPort;
+    private String newName = null;
+    private int newArduChan = -1;
+    private int newMidiPort = -1;
 
-        JMenuItem saveItem = new JMenuItem("Enregistrer");
-        saveItem.setEnabled(false);
+    /************/
+    /**BORDERS***/
+    private GridBagConstraints centerConstraint;
+    private File saveFile = null;
+    private JLabel sensorNumberLb;
 
-        /**Fichier**/
-        JMenu fileMenu = new JMenu("Fichier");
-        menuBar.add(fileMenu);
-        fileMenu.setBackground(BACKGROUND_COLOR);
-        fileMenu.setForeground(FOREGROUND_COLOR);
-
-        /***********/
-        /**newItem**/
-        /***********/
-        JMenuItem newItem = new JMenuItem("Nouveau");
-        fileMenu.add(newItem);
-        newItem.setBackground(BACKGROUND_COLOR);
-        newItem.setForeground(FOREGROUND_COLOR);
-
-        newItem.addActionListener(e -> new Thread(() -> {
-            SensorManagement.newSetup();
-            saveFile = null;
-            SwingUtilities.invokeLater(() -> {
-                cleanAction();
-                saveItem.setEnabled(false);
-            });
-        }).start());
-
-        /************/
-        /**openItem**/
-        /************/
-        JMenuItem openItem = new JMenuItem("Ouvrir");
-        fileMenu.add(openItem);
-        openItem.setBackground(BACKGROUND_COLOR);
-        openItem.setForeground(FOREGROUND_COLOR);
-
-        openItem.addActionListener(e -> {
-            JFileChooser openChooser = new JFileChooser();
-            openChooser.setAcceptAllFileFilterUsed(false);
-            openChooser.addChoosableFileFilter(new FileFilter() {
-                @Override
-                public boolean accept(File f) {
-                    return (f.getName().endsWith(SAVE_EXTENSION)||f.isDirectory());
-                }
-
-                @Override
-                public String getDescription() {
-                    return "Fichiers de sauvegarde";
-                }
-            });
-            openChooser.setDialogTitle("Ouvrir un fichier");
-
-            int userSelection = openChooser.showOpenDialog(OperatingWindows.this);
-
-            if(userSelection == JFileChooser.APPROVE_OPTION){
-                saveFile = openChooser.getSelectedFile();
-                if(SensorManagement.loadSetup(saveFile)){;
-                    saveItem.setEnabled(true);
-                    OperatingWindows.this.loadSetup();
-                }
-                else{
-                    JOptionPane.showMessageDialog(OperatingWindows.this,
-                            "<html><center>Erreur lors de l'ouverture du fichier</center></html>",
-                            "Erreur", JOptionPane.ERROR_MESSAGE);
-                    cleanAction();
-                }
-            }
-        });
-
-
-        /**************/
-        /**SaveAsItem**/
-        /**************/
-        JMenuItem saveAsItem = new JMenuItem("Enregistrer sous");
-        fileMenu.add(saveAsItem);
-        saveAsItem.setBackground(BACKGROUND_COLOR);
-        saveAsItem.setForeground(FOREGROUND_COLOR);
-
-        saveAsItem.addActionListener(e -> {
-            JFileChooser saveChooser = new JFileChooser();
-            saveChooser.setDialogTitle("Sauvegarder cette configuration");
-            saveChooser.setAcceptAllFileFilterUsed(false);
-            saveChooser.addChoosableFileFilter(new FileFilter() {
-                @Override
-                public boolean accept(File f) {
-                    return (f.getName().endsWith(SAVE_EXTENSION)||f.isDirectory());
-                }
-
-                @Override
-                public String getDescription() {
-                    return "Fichiers de sauvegarde";
-                }
-            });
-
-            int userSelection = saveChooser.showSaveDialog(OperatingWindows.this);
-
-            if(userSelection == JFileChooser.APPROVE_OPTION){
-                saveFile = saveChooser.getSelectedFile();
-                if(!saveFile.getName().endsWith(SAVE_EXTENSION)){
-                    saveFile = new File(saveFile+SAVE_EXTENSION);
-                }
-                saveItem.setEnabled(true);
-                if(!SensorManagement.saveSetup(saveFile)){
-                    JOptionPane.showMessageDialog(OperatingWindows.this,
-                            "<html><center>Erreur lors de l'enregistrement du fichier</center></html>",
-                            "Erreur", JOptionPane.ERROR_MESSAGE);
-
-                }
-            }
-        });
-
-        /************/
-        /**SaveItem**/
-        /************/
-        /*Declaration on Top*/
-        fileMenu.add(saveItem);
-        saveItem.setBackground(BACKGROUND_COLOR);
-        saveItem.setForeground(FOREGROUND_COLOR);
-
-        saveItem.addActionListener(e -> SensorManagement.saveSetup(saveFile));
-
-        /**************/
-        /***QuitItem***/
-        /**************/
-        JMenuItem quitItem = new JMenuItem("Quitter");
-        fileMenu.add(quitItem);
-        quitItem.setBackground(BACKGROUND_COLOR);
-        quitItem.setForeground(FOREGROUND_COLOR);
-
-        quitItem.addActionListener(e -> new Thread(() -> {
-            MidiManager.exit();
-            arduinoInData.close();
-            dispose();
-            System.exit(0);
-        }).start());
-
-
-        /**Edition**/
-        JMenu editMenu = new JMenu("Edition");
-        menuBar.add(editMenu);
-        editMenu.setBackground(BACKGROUND_COLOR);
-        editMenu.setForeground(FOREGROUND_COLOR);
-
-
-        /**MidiSetting Item**/
-        JMenuItem midiSettingItem = new JMenuItem("Paramètres midi");
-        editMenu.add(midiSettingItem);
-        midiSettingItem.setBackground(BACKGROUND_COLOR);
-        midiSettingItem.setForeground(FOREGROUND_COLOR);
-
-        midiSettingItem.addActionListener(e -> new MidiDeviceChoice(false));
-
-        //Aide
-        JMenu helpMenu = new JMenu("Aide");
-        menuBar.add(helpMenu);
-        helpMenu.setBackground(BACKGROUND_COLOR);
-        helpMenu.setForeground(FOREGROUND_COLOR);
-
-
-
-        //getHelp Item
-        JMenuItem getHelpItem = new JMenuItem("Obtenir de l'aide");
-        helpMenu.add(getHelpItem);
-        getHelpItem.setBackground(BACKGROUND_COLOR);
-        getHelpItem.setForeground(FOREGROUND_COLOR);
-
-        getHelpItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                new HelpWindow();
-            }
-        });
-
-    }
-
-    private void initMidiPort(){
-        for(int i = 0; i<128; i++){
-            availableMidiPort.add(i);
-        }
-    }
-
-
-    public OperatingWindows(){
+    public OperatingWindows() {
         super("ArduinoBrigde");
-        this.setIconImage(new ImageIcon("logo.png").getImage());
         pack();
+        setPreferredSize(new Dimension(800, 400));
+        setMinimumSize(new Dimension(200, 100));
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         this.setLocationRelativeTo(null);
         this.setExtendedState(MAXIMIZED_BOTH);
@@ -271,6 +88,263 @@ public class OperatingWindows extends JFrame {
         JPanel mainPanel = new JPanel(mainLayout);
         mainPanel.setBackground(BACKGROUND_COLOR);
 
+        /******************************************/
+        /****************Top Panel*****************/
+        /******************************************/
+        mainConstraint.fill = GridBagConstraints.BOTH;
+        mainConstraint.weighty = 1;
+        mainConstraint.weightx = 1;
+        mainConstraint.gridy = mainConstraint.gridy + 1;
+        mainConstraint.gridx = 0;
+
+        GridBagLayout topLayout = new GridBagLayout();
+        topConstraint = new GridBagConstraints();
+        topConstraint.fill = GridBagConstraints.HORIZONTAL;
+
+        topPanel = new JPanel(topLayout);
+        topPanel.setBackground(BACKGROUND_COLOR);
+        topPanel.setBorder(LOWERED_BORDER);
+        topPanel.add(new JSeparator(JSeparator.VERTICAL));
+        mainPanel.add(topPanel, mainConstraint);
+
+
+        /***********Selected sensor Vu Meter*******/
+        VuMeter selectedSensorVuMeter = new VuMeter(SwingConstants.VERTICAL, 0, 1024);
+        selectedSensorVuMeter.setPreferredSize(new Dimension(15, 120));
+        topConstraint.gridx = 0;
+        topConstraint.weighty = 1;
+        topConstraint.weightx = 0;
+
+        addVerticalSeparation(10);
+        ++topConstraint.gridx;
+        topConstraint.gridheight = 3;
+        topPanel.add(selectedSensorVuMeter, topConstraint);
+
+
+        addVerticalSeparation(10);
+        /********1st Column Sensor Choice**********/
+        JLabel sensorNumber = new JLabel("<html><center>Numéro de<br>Capteur</html></center>");
+        sensorNumber.setBackground(BACKGROUND_COLOR);
+        sensorNumber.setForeground(FOREGROUND_COLOR);
+        sensorNumber.setHorizontalAlignment(JLabel.CENTER);
+        topConstraint.gridx = topConstraint.gridx + 1;
+        topConstraint.gridy = 0;
+        topConstraint.gridheight = 1;
+        topConstraint.weightx = 1;
+        topPanel.add(sensorNumber, topConstraint);
+
+        /*******1st Column SensorCombo***********/
+        JComboBox sensorCombo = new JComboBox();
+        for (int i = 0; i < 16; i++) {
+            sensorCombo.addItem(i);
+        }
+        sensorCombo.setBackground(BACKGROUND_COLOR);
+        sensorCombo.setForeground(FOREGROUND_COLOR);
+        topConstraint.gridy = 1;
+        topConstraint.weightx = 0;
+        topPanel.add(sensorCombo, topConstraint);
+
+        //TODO add action listener to know which one is the selected sensor and change the infos
+
+        /*******1st Column active Label********/
+        JLabel sensorStatus = new JLabel("Actif");
+        sensorStatus.setBackground(BACKGROUND_COLOR);
+        sensorStatus.setForeground(IMPULSE_COLOR);
+        sensorStatus.setHorizontalAlignment(JLabel.CENTER);
+        topConstraint.gridy = 2;
+        topPanel.add(sensorStatus, topConstraint);
+
+
+        addVerticalSeparation(5);
+        /********2nd Column Debounce Label*********/
+        JLabel debounceOneLabel = new JLabel("<html><center>Debounce<br>(ms)</center></html>");
+        debounceOneLabel.setHorizontalAlignment(JLabel.CENTER);
+        debounceOneLabel.setBackground(BACKGROUND_COLOR);
+        debounceOneLabel.setForeground(FOREGROUND_COLOR);
+        topConstraint.gridx = topConstraint.gridx + 1;
+        topConstraint.gridy = 0;
+        topConstraint.weightx = 1;
+        topPanel.add(debounceOneLabel, topConstraint);
+
+        /*******2nd Column, DebounceTextArea*******/
+        JTextArea debounceOneText = new JTextArea(String.valueOf(DEFAULT_DEBOUNCE));
+        debounceOneText.setBackground(BACKGROUND_COLOR);
+        debounceOneText.setForeground(FOREGROUND_COLOR);
+        debounceOneText.setBorder(LOWERED_BORDER);
+        topConstraint.gridy = 1;
+        topConstraint.weightx = 0;
+        topPanel.add(debounceOneText, topConstraint);
+
+        /*******2nd Column, DebounceOneOK**********/
+        JButton debounceOneOK = new JButton("OK");
+        debounceOneOK.setBackground(BUTTON_COLOR);
+        debounceOneOK.setForeground(FOREGROUND_COLOR);
+        debounceOneOK.setBorder(RAISED_BORDER);
+        debounceOneOK.setPreferredSize(new Dimension(30, 30));
+        topConstraint.gridy = 2;
+        topPanel.add(debounceOneOK, topConstraint);
+        //TODO add an actionlistener
+
+        addVerticalSeparation(5);
+        /*******3rd Column, ThresholdOneLb*********/
+        JLabel thresholdOneLb = new JLabel("Seuil");
+        thresholdOneLb.setBackground(BACKGROUND_COLOR);
+        thresholdOneLb.setForeground(FOREGROUND_COLOR);
+        thresholdOneLb.setHorizontalAlignment(JLabel.CENTER);
+        topConstraint.gridx = topConstraint.gridx + 1;
+        topConstraint.gridy = 0;
+        topConstraint.weightx = 1;
+        topPanel.add(thresholdOneLb, topConstraint);
+
+        /*******3rd Column, thresholdOneTextArea***/
+        JTextArea thresholdOneTextArea = new JTextArea(String.valueOf(DEFAULT_THRESHOLD));
+        thresholdOneTextArea.setBackground(BACKGROUND_COLOR);
+        thresholdOneTextArea.setForeground(FOREGROUND_COLOR);
+        thresholdOneTextArea.setBorder(LOWERED_BORDER);
+        topConstraint.gridy = 1;
+        topConstraint.weightx = 0;
+        topPanel.add(thresholdOneTextArea, topConstraint);
+
+        /******3rd Column, ThresholdOneOk**********/
+        JButton thresholdOneOK = new JButton("OK");
+        thresholdOneOK.setBackground(BUTTON_COLOR);
+        thresholdOneOK.setForeground(FOREGROUND_COLOR);
+        thresholdOneOK.setBorder(RAISED_BORDER);
+        thresholdOneOK.setPreferredSize(new Dimension(30, 30));
+        topConstraint.gridy = 2;
+        topPanel.add(thresholdOneOK, topConstraint);
+
+        addVerticalSeparation(5);
+        /*******4th Column, CalibrateOne***********/
+        JButton calibrateOne = new JButton("Calibrer");
+        calibrateOne.setBackground(BUTTON_COLOR);
+        calibrateOne.setForeground(FOREGROUND_COLOR);
+        calibrateOne.setBorder(RAISED_BORDER);
+        calibrateOne.setPreferredSize(new Dimension(30, 30));
+        topConstraint.gridx = topConstraint.gridx + 1;
+        topConstraint.gridy = 1;
+        topConstraint.weightx = 1;
+        topPanel.add(calibrateOne, topConstraint);
+
+        //TODO Add ActionListener
+
+        topConstraint.weightx = 0;
+        addVerticalSeparation(5);
+        /*******5th Column, Separator**************/
+        addVerticalSeparation(5);
+        JSeparator sep = new JSeparator(SwingConstants.VERTICAL);
+        sep.setPreferredSize(new Dimension(1, 80));
+        topPanel.add(sep, topConstraint);
+        addVerticalSeparation(5);
+        topConstraint.weightx = 1;
+
+        /*******6th Column, DebounceAllLabel*******/
+        JLabel debounceAllLb = new JLabel("<html><center>Debounce<br>général (ms)</center></html>");
+        debounceAllLb.setBackground(BACKGROUND_COLOR);
+        debounceAllLb.setForeground(FOREGROUND_COLOR);
+        debounceAllLb.setHorizontalAlignment(SwingConstants.CENTER);
+        topConstraint.gridy = 0;
+        ++topConstraint.gridx;
+        topPanel.add(debounceAllLb, topConstraint);
+
+        /******6th Column, DebounceAllTextArea*****/
+        JTextArea debounceAllTextArea = new JTextArea(String.valueOf(DEFAULT_DEBOUNCE));
+        debounceAllTextArea.setBackground(BACKGROUND_COLOR);
+        debounceAllTextArea.setForeground(FOREGROUND_COLOR);
+        debounceAllTextArea.setBorder(LOWERED_BORDER);
+        topConstraint.gridy = 1;
+        topConstraint.weightx = 0;
+        topPanel.add(debounceAllTextArea, topConstraint);
+
+        /******6th Column, DebounceAllOK***********/
+        JButton debounceAllOK = new JButton("OK");
+        debounceAllOK.setBackground(BUTTON_COLOR);
+        debounceAllOK.setForeground(FOREGROUND_COLOR);
+        debounceAllOK.setBorder(RAISED_BORDER);
+        debounceAllOK.setPreferredSize(new Dimension(30, 30));
+        topConstraint.gridy = 2;
+        topPanel.add(debounceAllOK, topConstraint);
+
+        //TODO action Listener
+
+        addVerticalSeparation(5);
+        /******7th Column, thresholdAllLb**********/
+        JLabel thresholdAllLb = new JLabel("<html><center>Seuil<br>général</center></html>");
+        thresholdAllLb.setBackground(BACKGROUND_COLOR);
+        thresholdAllLb.setForeground(FOREGROUND_COLOR);
+        thresholdAllLb.setHorizontalAlignment(SwingConstants.CENTER);
+        topConstraint.weightx = 1;
+        ++topConstraint.gridx;
+        topConstraint.gridy = 0;
+        topPanel.add(thresholdAllLb, topConstraint);
+
+        /******7th Column, thresholdAllTextArea****/
+        JTextArea thresholdAllTextArea = new JTextArea(String.valueOf(DEFAULT_THRESHOLD));
+        thresholdAllTextArea.setBackground(BACKGROUND_COLOR);
+        thresholdAllTextArea.setForeground(FOREGROUND_COLOR);
+        thresholdAllTextArea.setBorder(LOWERED_BORDER);
+        topConstraint.gridy = 1;
+        topConstraint.weightx = 0;
+        topPanel.add(thresholdAllTextArea, topConstraint);
+
+        /*****7th Column, thresholdAllOK***********/
+        JButton thresholdAllOK = new JButton("OK");
+        thresholdAllOK.setBackground(BUTTON_COLOR);
+        thresholdAllOK.setForeground(FOREGROUND_COLOR);
+        thresholdAllOK.setBorder(RAISED_BORDER);
+        thresholdAllOK.setPreferredSize(new Dimension(30, 30));
+        topConstraint.gridy = 2;
+        topPanel.add(thresholdAllOK, topConstraint);
+
+        //TODO ActionListener
+
+        addVerticalSeparation(5);
+        /*******8th Column SensorNumberLb*********/
+        JLabel sensorNumberLabel = new JLabel("Nombre de Capteurs");
+        sensorNumberLabel.setBackground(BACKGROUND_COLOR);
+        sensorNumberLabel.setForeground(FOREGROUND_COLOR);
+        sensorNumberLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        ++topConstraint.gridx;
+        topConstraint.gridy = 0;
+        topConstraint.weightx = 1;
+        topPanel.add(sensorNumberLabel, topConstraint);
+
+        /*******8th Column SensorNumberCb**********/
+        JComboBox sensorNumberCb = new JComboBox();
+        for (int i = 1; i <= 16; i++) {
+            sensorNumberCb.addItem(i);
+        }
+        sensorNumberCb.setBackground(BACKGROUND_COLOR);
+        sensorNumberCb.setForeground(FOREGROUND_COLOR);
+        topConstraint.gridy = 1;
+        topConstraint.weightx = 0;
+        topPanel.add(sensorNumberCb, topConstraint);
+        //TODO addActionListener
+
+        /******8th Column, CalibrateAllButton******/
+        JButton calibrateAllButton = new JButton("Calibrer tout");
+        calibrateAllButton.setBackground(BUTTON_COLOR);
+        calibrateAllButton.setForeground(FOREGROUND_COLOR);
+        calibrateAllButton.setBorder(RAISED_BORDER);
+        calibrateAllButton.setPreferredSize(new Dimension(30, 30));
+        topConstraint.gridy = 2;
+        topPanel.add(calibrateAllButton, topConstraint);
+        //TODO addActionListener
+
+        addVerticalSeparation(5);
+        /********9th Column, LogArea***************/
+        JTextArea logsArea = new JTextArea(10, 20);
+        logsArea.setBackground(Color.BLACK);
+        logsArea.setForeground(Color.WHITE);
+        //logsArea.setEditable(false);
+        JScrollPane scrollLogs = new JScrollPane(logsArea);
+        topConstraint.weightx = 1;
+        topConstraint.weighty = 1;
+        topConstraint.gridy = 0;
+        ++topConstraint.gridx;
+        topConstraint.gridheight = 3;
+        topConstraint.gridwidth = 3;
+        topPanel.add(scrollLogs, topConstraint);
 
         /******************************************/
         /**************Center Panel****************/
@@ -278,7 +352,7 @@ public class OperatingWindows extends JFrame {
         mainConstraint.fill = GridBagConstraints.BOTH;
         mainConstraint.weighty = 50;
         mainConstraint.weightx = 1;
-        mainConstraint.gridy = 0;
+        mainConstraint.gridy = mainConstraint.gridy + 1;
         mainConstraint.gridx = 0;
 
 
@@ -299,6 +373,7 @@ public class OperatingWindows extends JFrame {
         centerConstraint.gridx = 0;
         centerConstraint.gridy = 0;
         centerConstraint.weightx = 1;
+        centerConstraint.weighty = 1;
         centerConstraint.anchor = GridBagConstraints.NORTHWEST;
         JLabel activeSensors = new JLabel("Capteurs actifs : ");
         activeSensors.setBackground(BACKGROUND_COLOR);
@@ -309,7 +384,7 @@ public class OperatingWindows extends JFrame {
 
         /*********Sensor Number Label*******/
         centerConstraint.anchor = GridBagConstraints.NORTHEAST;
-        centerConstraint.gridx=1;
+        centerConstraint.gridx = 1;
         sensorNumberLb = new JLabel("0");
         sensorNumberLb.setBackground(BACKGROUND_COLOR);
         sensorNumberLb.setForeground(FOREGROUND_COLOR);
@@ -319,7 +394,7 @@ public class OperatingWindows extends JFrame {
         /**************Bottom Panel****************/
         /******************************************/
         mainConstraint.weighty = 1;
-        mainConstraint.gridy = 1;
+        mainConstraint.gridy = mainConstraint.gridy + 1;
         mainConstraint.fill = GridBagConstraints.HORIZONTAL;
         mainConstraint.anchor = GridBagConstraints.LAST_LINE_END;
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
@@ -339,12 +414,11 @@ public class OperatingWindows extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 new Thread(() -> {
-                    if(!isMutedAll){
+                    if (!isMutedAll) {
                         SensorManagement.muteAll();
                         isMutedAll = true;
                         SwingUtilities.invokeLater(() -> muteAllButton.setBackground(MUTE_COLOR));
-                    }
-                    else{
+                    } else {
                         SensorManagement.unMuteAll();
                         isMutedAll = false;
                         SwingUtilities.invokeLater(() -> muteAllButton.setBackground(BUTTON_COLOR));
@@ -393,7 +467,7 @@ public class OperatingWindows extends JFrame {
 
         /*****************ArduinoCh*****************/
         arduinoPort = new JComboBox();
-        for (int i = 0; i<16 ; i++){
+        for (int i = 0; i < 16; i++) {
             arduinoPort.addItem(i);
         }
         arduinoPort.setBackground(BACKGROUND_COLOR);
@@ -463,18 +537,15 @@ public class OperatingWindows extends JFrame {
                     pack();
                 });
 
-            }
-            else {
+            } else {
                 String message;
                 if (newName == null) {
                     message = "<html><center>Veuillez entrer un nom pour ce capteur " +
                             "</center></html>";
-                }
-                else if (newArduChan == -1){
+                } else if (newArduChan == -1) {
                     message = "<html><center>Veuillez sélectionner un canal arduino " +
                             "</center></html>";
-                }
-                else {
+                } else {
                     message = "<html><center>Veuillez sélectionner un port midi " +
                             "</center></html>";
                 }
@@ -490,11 +561,243 @@ public class OperatingWindows extends JFrame {
 
     }
 
-    private void loadSetup(){
+    public static void resetMidiCombo() {
+        availableMidiPort.sort(new sortVectors());
+    }
+
+    public static void main(String[] args) {
+        JFrame frame = new OperatingWindows();
+        frame.pack();
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+    }
+
+    public static void removeFromSensorList(int midiPort) {
+
+        availableMidiPort.add(midiPort);    //on le remet dans les dispos
+        for (SensorRow s : sensorRowList) {
+            if (s.getMidiPort() == midiPort) {
+                sensorRowList.remove(s);
+                break;
+            }
+        }
+
+    }
+
+    private static void addVerticalSeparation(int width) {
+        topConstraint.gridx = topConstraint.gridx + 1;
+        topConstraint.gridheight = 3;
+        topPanel.add(Box.createHorizontalStrut(width), topConstraint);
+        topConstraint.gridheight = 1;
+    }
+
+    public static void removeFromDBList(DeleteButton db) {
+        deleteButtonList.remove(db);
+    }
+
+    public static void refreshInterface(String dataIn) {
+        String[] splitted = dataIn.split("-");
+        //every instruction is separated by a -
+        for (int i = 0; i < splitted.length; i += 2) {
+            try {
+                int sensorNumber = Integer.parseInt(splitted[i]);
+                for (SensorRow s : sensorRowList) {
+                    if (s.getArduinoChannel() == sensorNumber) {
+                        int input = Integer.parseInt(splitted[i + 1]);
+                        s.setIncomingSignal(input); //Setting the in value
+                        int output = SensorManagement.getOutputValue(s.getMidiPort());
+                        s.setOutputValue(output);
+                    }
+                }
+            } catch (NumberFormatException e) {
+                //e.printStackTrace();
+            }
+
+        }
+    }
+
+    private void setMenuBar() {
+        menuBar = new JMenuBar();
+        menuBar.setBackground(BACKGROUND_COLOR);
+
+        JMenuItem saveItem = new JMenuItem("Enregistrer");
+        saveItem.setEnabled(false);
+
+        /**Fichier**/
+        JMenu fileMenu = new JMenu("Fichier");
+        menuBar.add(fileMenu);
+        fileMenu.setBackground(BACKGROUND_COLOR);
+        fileMenu.setForeground(FOREGROUND_COLOR);
+
+        /***********/
+        /**newItem**/
+        /***********/
+        JMenuItem newItem = new JMenuItem("Nouveau");
+        fileMenu.add(newItem);
+        newItem.setBackground(BACKGROUND_COLOR);
+        newItem.setForeground(FOREGROUND_COLOR);
+
+        newItem.addActionListener(e -> new Thread(() -> {
+            SensorManagement.newSetup();
+            saveFile = null;
+            SwingUtilities.invokeLater(() -> {
+                cleanAction();
+                saveItem.setEnabled(false);
+            });
+        }).start());
+
+        /************/
+        /**openItem**/
+        /************/
+        JMenuItem openItem = new JMenuItem("Ouvrir");
+        fileMenu.add(openItem);
+        openItem.setBackground(BACKGROUND_COLOR);
+        openItem.setForeground(FOREGROUND_COLOR);
+
+        openItem.addActionListener(e -> {
+            JFileChooser openChooser = new JFileChooser();
+            openChooser.setAcceptAllFileFilterUsed(false);
+            openChooser.addChoosableFileFilter(new FileFilter() {
+                @Override
+                public boolean accept(File f) {
+                    return (f.getName().endsWith(SAVE_EXTENSION) || f.isDirectory());
+                }
+
+                @Override
+                public String getDescription() {
+                    return "Fichiers de sauvegarde";
+                }
+            });
+            openChooser.setDialogTitle("Ouvrir un fichier");
+
+            int userSelection = openChooser.showOpenDialog(OperatingWindows.this);
+
+            if (userSelection == JFileChooser.APPROVE_OPTION) {
+                saveFile = openChooser.getSelectedFile();
+                if (SensorManagement.loadSetup(saveFile)) {
+                    ;
+                    saveItem.setEnabled(true);
+                    OperatingWindows.this.loadSetup();
+                } else {
+                    JOptionPane.showMessageDialog(OperatingWindows.this,
+                            "<html><center>Erreur lors de l'ouverture du fichier</center></html>",
+                            "Erreur", JOptionPane.ERROR_MESSAGE);
+                    cleanAction();
+                }
+            }
+        });
+
+
+        /**************/
+        /**SaveAsItem**/
+        /**************/
+        JMenuItem saveAsItem = new JMenuItem("Enregistrer sous");
+        fileMenu.add(saveAsItem);
+        saveAsItem.setBackground(BACKGROUND_COLOR);
+        saveAsItem.setForeground(FOREGROUND_COLOR);
+
+        saveAsItem.addActionListener(e -> {
+            JFileChooser saveChooser = new JFileChooser();
+            saveChooser.setDialogTitle("Sauvegarder cette configuration");
+            saveChooser.setAcceptAllFileFilterUsed(false);
+            saveChooser.addChoosableFileFilter(new FileFilter() {
+                @Override
+                public boolean accept(File f) {
+                    return (f.getName().endsWith(SAVE_EXTENSION) || f.isDirectory());
+                }
+
+                @Override
+                public String getDescription() {
+                    return "Fichiers de sauvegarde";
+                }
+            });
+
+            int userSelection = saveChooser.showSaveDialog(OperatingWindows.this);
+
+            if (userSelection == JFileChooser.APPROVE_OPTION) {
+                saveFile = saveChooser.getSelectedFile();
+                if (!saveFile.getName().endsWith(SAVE_EXTENSION)) {
+                    saveFile = new File(saveFile + SAVE_EXTENSION);
+                }
+                saveItem.setEnabled(true);
+                if (!SensorManagement.saveSetup(saveFile)) {
+                    JOptionPane.showMessageDialog(OperatingWindows.this,
+                            "<html><center>Erreur lors de l'enregistrement du fichier</center></html>",
+                            "Erreur", JOptionPane.ERROR_MESSAGE);
+
+                }
+            }
+        });
+
+        /************/
+        /**SaveItem**/
+        /************/
+        /*Declaration on Top*/
+        fileMenu.add(saveItem);
+        saveItem.setBackground(BACKGROUND_COLOR);
+        saveItem.setForeground(FOREGROUND_COLOR);
+
+        saveItem.addActionListener(e -> SensorManagement.saveSetup(saveFile));
+
+        /**************/
+        /***QuitItem***/
+        /**************/
+        JMenuItem quitItem = new JMenuItem("Quitter");
+        fileMenu.add(quitItem);
+        quitItem.setBackground(BACKGROUND_COLOR);
+        quitItem.setForeground(FOREGROUND_COLOR);
+
+        quitItem.addActionListener(e -> new Thread(() -> {
+            MidiManager.exit();
+            arduinoInData.close();
+            dispose();
+            System.exit(0);
+        }).start());
+
+
+        /**Edition**/
+        JMenu editMenu = new JMenu("Edition");
+        menuBar.add(editMenu);
+        editMenu.setBackground(BACKGROUND_COLOR);
+        editMenu.setForeground(FOREGROUND_COLOR);
+
+
+        /**MidiSetting Item**/
+        JMenuItem midiSettingItem = new JMenuItem("Paramètres midi");
+        editMenu.add(midiSettingItem);
+        midiSettingItem.setBackground(BACKGROUND_COLOR);
+        midiSettingItem.setForeground(FOREGROUND_COLOR);
+
+        midiSettingItem.addActionListener(e -> new MidiDeviceChoice(false));
+
+        //Aide
+        JMenu helpMenu = new JMenu("Aide");
+        menuBar.add(helpMenu);
+        helpMenu.setBackground(BACKGROUND_COLOR);
+        helpMenu.setForeground(FOREGROUND_COLOR);
+
+
+        //getHelp Item
+        JMenuItem getHelpItem = new JMenuItem("Obtenir de l'aide");
+        helpMenu.add(getHelpItem);
+        getHelpItem.setBackground(BACKGROUND_COLOR);
+        getHelpItem.setForeground(FOREGROUND_COLOR);
+
+        getHelpItem.addActionListener(e -> new HelpWindow());
+
+    }
+
+    private void initMidiPort() {
+        for (int i = 0; i < 128; i++) {
+            availableMidiPort.add(i);
+        }
+    }
+
+    private void loadSetup() {
         new Thread(() -> {
             SwingUtilities.invokeLater(OperatingWindows.this::cleanAction);
             java.util.List<Sensor> sensorList = SensorManagement.getSensorList();
-            for (Sensor s : sensorList){
+            for (Sensor s : sensorList) {
                 SensorRow sr = new SensorRow(s);
                 sensorRowList.add(sr);
                 availableMidiPort.removeElement(s.getMidiPort());
@@ -520,7 +823,7 @@ public class OperatingWindows extends JFrame {
 
     }
 
-    private void cleanAction(){
+    private void cleanAction() {
         sensorRowList.forEach(centerPanel::remove);
         deleteButtonList.forEach(centerPanel::remove);
         sensorNumberLb.setText("0");
@@ -529,50 +832,8 @@ public class OperatingWindows extends JFrame {
         availableMidiCombo.setSelectedIndex(0);
         sensorRowList.clear();
         deleteButtonList.clear();
-        centerConstraint.gridy = 0;
+        centerConstraint.gridy = 1;
         repaint();
-    }
-    public static void resetMidiCombo() {
-        availableMidiPort.sort(new sortVectors());
-    }
-
-    public static void main (String[] args){
-        JFrame frame = new OperatingWindows();
-        frame.pack();
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.setVisible(true);
-    }
-
-    public static void removeFromSensorList(int midiPort){
-
-        availableMidiPort.add(midiPort);    //on le remet dans les dispos
-        for(SensorRow s : sensorRowList){
-            if (s.getMidiPort() == midiPort){
-                sensorRowList.remove(s);
-                break;
-            }
-        }
-
-    }
-
-    public static void removeFromDBList(DeleteButton db){
-        deleteButtonList.remove(db);
-    }
-
-    public static void refreshInterface(String dataIn){
-        String[] splitted = dataIn.split("-");
-        //every instruction is separated by a -
-        for (int i = 0; i<splitted.length; i+=2 ) {
-            int sensorNumber = Integer.parseInt(splitted[i]);
-            for (SensorRow s : sensorRowList) {
-                if (s.getArduinoChannel() == sensorNumber) {
-                    int input = Integer.parseInt(splitted[i + 1]);
-                    s.setIncomingSignal(input); //Setting the in value
-                    int output = SensorManagement.getOutputValue(s.getMidiPort());
-                    s.setOutputValue(output);
-                }
-            }
-        }
     }
 
 }

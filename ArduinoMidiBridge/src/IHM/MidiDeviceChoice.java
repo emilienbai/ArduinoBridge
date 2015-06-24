@@ -17,6 +17,12 @@ import static java.lang.System.exit;
  * Created by Emilien Bai (emilien.bai@insa-lyon.fr)on 06/2015.
  */
 public class MidiDeviceChoice extends JFrame{
+    private final Color BACKGROUND_COLOR = OperatingWindows.BACKGROUND_COLOR;
+    private final Color BUTTON_COLOR = OperatingWindows.BUTTON_COLOR;
+    private final Color FOREGROUND_COLOR = OperatingWindows.FOREGROUND_COLOR;
+    private final Border RAISED_BORDER = OperatingWindows.RAISED_BORDER;
+    private final Border LOWERED_BORDER = OperatingWindows.LOWERED_BORDER;
+    private final Border ETCHED_BORDER = OperatingWindows.ETCHED_BORDER;
     private JButton okButton;
     private JButton reloadButton;
     private JButton quitButton;
@@ -27,14 +33,6 @@ public class MidiDeviceChoice extends JFrame{
     private boolean readyToClose = false;
     private boolean arduinoConnected;
 
-    private final Color BACKGROUND_COLOR = OperatingWindows.BACKGROUND_COLOR;
-    private final Color BUTTON_COLOR = OperatingWindows.BUTTON_COLOR;
-    private final Color FOREGROUND_COLOR = OperatingWindows.FOREGROUND_COLOR;
-
-    private final Border RAISED_BORDER = OperatingWindows.RAISED_BORDER;
-    private final Border LOWERED_BORDER = OperatingWindows.LOWERED_BORDER;
-    private final Border ETCHED_BORDER = OperatingWindows.ETCHED_BORDER;
-
     /**
      * Constructor for the frame Midi Device Choice
      * @param arduinoSet true if the arduino connection needs to be done
@@ -43,6 +41,7 @@ public class MidiDeviceChoice extends JFrame{
         super("Choix du périphérique midi");
         this.setPreferredSize(new Dimension(800, 600));
         this.setResizable(false);
+        this.setUndecorated(true);
         setVisible(true);
         pack();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

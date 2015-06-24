@@ -56,7 +56,7 @@ public class SensorManagement {
         String[] splitted = instructions.split("-");
         int sensorNumber;
         //every instruction is separated by a -
-        if(splitted.length == 2){
+        if ((splitted.length % 2) == 0) {
             sensorNumber = Integer.parseInt(splitted[0]);
             for(Sensor s : sensorList){
                 if (s.getArduinoIn()==sensorNumber){

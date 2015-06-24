@@ -153,7 +153,7 @@ public class Sensor {
 			System.err.println("Error sending impulsion from " + this.name);
 		}
 		try {
-			Thread.sleep(500);
+			Thread.sleep(2000);
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 			System.err.println("Programme interrompu pendant l'envoie d'une impulsion");

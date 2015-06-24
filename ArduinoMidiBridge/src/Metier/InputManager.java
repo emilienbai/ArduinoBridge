@@ -67,6 +67,14 @@ public class InputManager {
         return arduinoInVector.get(chanNumber);
     }
 
+    protected static Vector<ArduinoChan> getArduinoInVector() {
+        return arduinoInVector;
+    }
+
+    public static void loadSetup(Vector<ArduinoChan> a) {
+        arduinoInVector = a;
+    }
+
 
     public static void main(String[] args) {
         InputManager.init();
@@ -84,6 +92,7 @@ public class InputManager {
         InputManager.listInput();
 
     }
-
-
 }
+
+
+

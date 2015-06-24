@@ -1,16 +1,7 @@
 package Metier;
 
 import Sensor.Sensor;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -229,155 +220,16 @@ public class SensorManagement {
         return sensorList;
     }
 
-    /**
-     * Save the actuatl setup in xml format in the specified file
-     * @param saveFile where the save is effected
-     * @return true if it worked
-     */
-    public static boolean saveSetup(File saveFile){
-        try {
-            BufferedWriter file = new BufferedWriter(new FileWriter(saveFile));
-            file.write("<?xml version=\"1.0\"?>");
-            file.newLine();
-            file.write("<!DOCTYPE save [");
-            file.newLine();
-            file.write("<!ELEMENT save (sensor+)>");
-            file.newLine();
-            file.write("<!ATTLIST save sensorNumber CDATA \"0\">");
-            file.newLine();
-            file.write("<!ELEMENT sensor (name, arduinoIn, midiPort, minRange, maxRange, preamplifier)>");
-            file.write("<!ELEMENT name (#PCDATA)>");
-            file.newLine();
-            file.write("<!ELEMENT arduinoIn (#PCDATA)>");
-            file.newLine();
-            file.write("<!ELEMENT midiPort (#PCDATA)>");
-            file.newLine();
-            file.write("<!ELEMENT minRange (#PCDATA)>");
-            file.newLine();
-            file.write("<!ELEMENT maxRange (#PCDATA)>");
-            file.newLine();
-            file.write("<!ELEMENT preamplifier (#PCDATA)>");
-            file.newLine();
-            file.write("]>");
-            file.newLine();
-            file.write("<save sensorNumber = \""+sensorList.size()+"\">");
-            file.newLine();
-            for (Sensor s : sensorList){
-                file.write("    <sensor>");
-                file.newLine();
-                file.write("        <name>" + s.getName() + "</name>");
-                file.newLine();
-                file.write("        <arduinoIn>" + s.getArduinoIn() + "</arduinoIn>");
-                file.newLine();
-                file.write("        <midiPort>" + s.getMidiPort() + "</midiPort>");
-                file.newLine();
-                file.write("        <minRange>" + s.getMinRange() + "</minRange>");
-                file.newLine();
-                file.write("        <maxRange>" + s.getMaxRange() + "</maxRange>");
-                file.newLine();
-                file.write("        <preamplifier>" + s.getPreamplifier() + "</preamplifier>");
-                file.newLine();
-                file.write("    </sensor>");
-                file.newLine();
-            }
-            file.write("</save>");
-            file.close();
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
 
     /**
-     * Load an existing setup from a xml formatted file
-     * @param toLoad the xml file to load
-     * @return the result of the loading
+     * Load an existing List of Sensors
+     * @param newsensorList, the sensor list to load
      */
-    public static boolean loadSetup(File toLoad){
+    public static void loadSetup(List<Sensor> newsensorList) {
         newSetup();
-        Document dom ;
-        //get the factory
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-
-        try{
-            //Using factory get an instance of document builder
-            DocumentBuilder db = dbf.newDocumentBuilder();
-
-            //parse using builder to get DOM representation of the XML file
-            dom = db.parse(toLoad);
-
-            //get the root element
-            Element docEle = dom.getDocumentElement();
-
-            //get a nodelist of elements
-            NodeList nl = docEle.getElementsByTagName("sensor");
-            if(nl.getLength() > 0) {
-                for(int i = 0 ; i < nl.getLength();i++) {
-
-                    //get the sensor element
-                    Element el = (Element)nl.item(i);
-
-                    //get the Employee object
-                    Sensor s = getSensor(el);
-
-                    //add it to list
-                    sensorList.add(s);
-                }
-            }
-            return true;
-        }
-        catch (Exception e){
-            return false;
-        }
+        sensorList = newsensorList;
 
     }
 
-    /**
-     * Create sensor from a xml element
-     * @param sensEl the xml element to analyse
-     * @return the matching sensor
-     */
-    private static Sensor getSensor(Element sensEl) {
-
-        //for each <sensor> element get text or int values of
-        //name, arduinoIn, midiPort, minRange, maxRange, preamplifier
-        String name = getTextValue(sensEl,"name");
-        int arduinoIn = getIntValue(sensEl,"arduinoIn");
-        int midiPort = getIntValue(sensEl,"midiPort");
-        int minRange = getIntValue(sensEl, "minRange");
-        int maxRange = getIntValue(sensEl, "maxRange");
-        int preamplifier = getIntValue(sensEl, "preamplifier");
-
-        /*Return the new sensor*/
-        return new Sensor(name, arduinoIn, midiPort, MidiManager.getMidiReceiver(), minRange, maxRange, preamplifier);
-    }
-
-    /**
-     * I take a xml element and the tag name, look for the tag and get
-     * the text content
-     * i.e for <employee><name>John</name></employee> xml snippet if
-     * the Element points to employee node and tagName is 'name' I will return John
-     */
-    private static String getTextValue(Element ele, String tagName) {
-        String textVal = null;
-        NodeList nl = ele.getElementsByTagName(tagName);
-        if(nl != null && nl.getLength() > 0) {
-            Element el = (Element)nl.item(0);
-            textVal = el.getFirstChild().getNodeValue();
-        }
-
-        return textVal;
-    }
-
-
-
-    /**
-     * Calls getTextValue and returns a int value
-     */
-    private static int getIntValue(Element ele, String tagName) {
-        //in production application you would catch the exception
-        return Integer.parseInt(getTextValue(ele,tagName));
-    }
 
 }

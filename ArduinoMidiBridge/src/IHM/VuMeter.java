@@ -16,6 +16,18 @@ public class VuMeter extends JProgressBar{
         super(orient, min, max);
     }
 
+    public static void main(String[] args) {
+        JFrame frame = new JFrame();
+        JPanel jp = new JPanel();
+        VuMeter vm = new VuMeter(HORIZONTAL, 0, 1024);
+        jp.add(vm);
+        frame.add(jp);
+        frame.pack();
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+
+        vm.setValue(1000);
+    }
 
     public void setValue(int value, int factor){
         super.setValue(value);
@@ -28,39 +40,11 @@ public class VuMeter extends JProgressBar{
         else {
             this.setForeground(ALERT_COLOR);
         }
-        /*TODO faire en sorte que ça redescende tout seul*/
-        /*if(value>0.2*this.getMaximum()) {
-            try {
-                Thread.sleep(100);
-                int newValue = (int) (value*Math.pow(0.7, factor));
-                this.setValue(newValue);
-                repaint();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        else if (value!=0){
-            this.setValue(0);
-            repaint();
-        }*/
     }
 
     @Override
     public void setValue(int value){
         setValue(value, 1);
-    }
-
-    public static void main (String [] args ){
-        JFrame frame = new JFrame();
-        JPanel jp = new JPanel();
-        VuMeter vm = new VuMeter(HORIZONTAL, 0, 1024);
-        jp.add(vm);
-        frame.add(jp);
-        frame.pack();
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.setVisible(true);
-
-        vm.setValue(1000);
     }
 }
 

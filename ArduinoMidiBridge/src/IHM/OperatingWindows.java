@@ -1,6 +1,7 @@
 package IHM;
 
 import Metier.*;
+import Sensor.ArduinoChan;
 import Sensor.Sensor;
 
 import javax.swing.*;
@@ -318,12 +319,7 @@ public class OperatingWindows extends JFrame {
             try {
                 int newDebounce = Integer.parseInt(debounceAllTextArea.getText());
                 Services.setDebounceAll(newDebounce);
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        debounceOneText.setText(String.valueOf(newDebounce));
-                    }
-                });
+                SwingUtilities.invokeLater(() -> debounceOneText.setText(String.valueOf(newDebounce)));
             } catch (NumberFormatException e1) {
                 numberFormatWarning();
             }
@@ -362,12 +358,7 @@ public class OperatingWindows extends JFrame {
             try {
                 int newThreshold = Integer.parseInt(thresholdAllTextArea.getText());
                 Services.setThresholdAll(newThreshold);
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        thresholdOneTextArea.setText(String.valueOf(newThreshold));
-                    }
-                });
+                SwingUtilities.invokeLater(() -> thresholdOneTextArea.setText(String.valueOf(newThreshold)));
             } catch (NumberFormatException e1) {
                 numberFormatWarning();
             }
@@ -410,9 +401,7 @@ public class OperatingWindows extends JFrame {
         topConstraint.gridy = 2;
         topPanel.add(calibrateAllButton, topConstraint);
 
-        calibrateAllButton.addActionListener(e -> new Thread(() -> {
-            Services.calibrateAll();
-        }).start());
+        calibrateAllButton.addActionListener(e -> new Thread(Services::calibrateAll).start());
 
         addVerticalSeparation(5);
         /********9th Column, LogArea***************/
@@ -707,9 +696,7 @@ public class OperatingWindows extends JFrame {
     }
 
     public static void refreshLogs(String logs) {
-        SwingUtilities.invokeLater(() -> {
-            logsArea.setText(logs);
-        });
+        SwingUtilities.invokeLater(() -> logsArea.setText(logs));
 
     }
 
@@ -775,7 +762,7 @@ public class OperatingWindows extends JFrame {
 
             if (userSelection == JFileChooser.APPROVE_OPTION) {
                 saveFile = openChooser.getSelectedFile();
-                if (SensorManagement.loadSetup(saveFile)) {
+                if (Services.loadSetup(saveFile)) {
                     saveItem.setEnabled(true);
                     OperatingWindows.this.loadSetup();
                 } else {
@@ -820,7 +807,7 @@ public class OperatingWindows extends JFrame {
                     saveFile = new File(saveFile + SAVE_EXTENSION);
                 }
                 saveItem.setEnabled(true);
-                if (!SensorManagement.saveSetup(saveFile)) {
+                if (!Services.saveSetup(saveFile)) {
                     JOptionPane.showMessageDialog(OperatingWindows.this,
                             "<html><center>Erreur lors de l'enregistrement du fichier</center></html>",
                             "Erreur", JOptionPane.ERROR_MESSAGE);
@@ -837,7 +824,7 @@ public class OperatingWindows extends JFrame {
         saveItem.setBackground(BACKGROUND_COLOR);
         saveItem.setForeground(FOREGROUND_COLOR);
 
-        saveItem.addActionListener(e -> SensorManagement.saveSetup(saveFile));
+        saveItem.addActionListener(e -> Services.saveSetup(saveFile));
 
         /**************/
         /***QuitItem***/
@@ -897,6 +884,7 @@ public class OperatingWindows extends JFrame {
         new Thread(() -> {
             SwingUtilities.invokeLater(OperatingWindows.this::cleanAction);
             java.util.List<Sensor> sensorList = SensorManagement.getSensorList();
+            Vector<ArduinoChan> arduinoChanVector = Services.getArduinoChanVector();
             for (Sensor s : sensorList) {
                 SensorRow sr = new SensorRow(s);
                 sensorRowList.add(sr);
@@ -914,7 +902,13 @@ public class OperatingWindows extends JFrame {
                     centerPanel.add(db, centerConstraint);
                 });
             }
+            String debounce = String.valueOf(arduinoChanVector.get(selectedSensor).getDebounce());
+            String threshold = String.valueOf(arduinoChanVector.get(selectedSensor).getThreshold());
+
+
             SwingUtilities.invokeLater(() -> {
+                debounceOneText.setText(debounce);
+                thresholdOneTextArea.setText(threshold);
                 sensorNumberLb.setText(String.valueOf(sensorList.size()));
                 repaint();
                 pack();

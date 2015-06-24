@@ -7,7 +7,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.TooManyListenersException;
 
 /**
@@ -39,7 +41,7 @@ public class arduinoInData implements SerialPortEventListener {
     /**
      * Log from the arduino
      **/
-    private static String arduiLog = null;
+    private static String arduiLog = "Logs :\n";
     /**
      * The output stream to the port
      */
@@ -163,23 +165,54 @@ public class arduinoInData implements SerialPortEventListener {
 
     public static void main(String[] args) throws InterruptedException {
         arduinoInData aid = new arduinoInData();
-        aid.initialize("/dev/ttyACM0");
-        Thread.sleep(2000);
-        setNoiseGate(0, 550);
-        Thread.sleep(3000);
-        setNoiseGateAll(300);
-        Thread.sleep(3000);
-        setDebounceTime(0, 50);
-        Thread.sleep(3000);
-        setDebounceTimeAll(300);
-        Thread.sleep(3000);
-        setSensorNumber(5);
-        Thread.sleep(3000);
-        calibrateSensor(0);
-        Thread.sleep(3000);
-        calibrateAllSensor();
-        Thread.sleep(10000);
-        arduinoInData.close();
+        List<String> test = aid.getAvailablePorts();
+        for (String s : test) {
+            System.out.println(s);
+        }
+        listPorts();
+        //aid.initialize("/dev/ttyACM0");
+
+    }
+
+    static void listPorts() {
+        java.util.Enumeration<CommPortIdentifier> portEnum = CommPortIdentifier.getPortIdentifiers();
+        while (portEnum.hasMoreElements()) {
+            CommPortIdentifier portIdentifier = portEnum.nextElement();
+            System.out.println(portIdentifier.getName() + " - " + getPortTypeName(portIdentifier.getPortType()));
+        }
+    }
+
+    static String getPortTypeName(int portType) {
+        switch (portType) {
+            case CommPortIdentifier.PORT_I2C:
+                return "I2C";
+            case CommPortIdentifier.PORT_PARALLEL:
+                return "Parallel";
+            case CommPortIdentifier.PORT_RAW:
+                return "Raw";
+            case CommPortIdentifier.PORT_RS485:
+                return "RS485";
+            case CommPortIdentifier.PORT_SERIAL:
+                return "Serial";
+            default:
+                return "unknown type";
+        }
+    }
+
+    public List<String> getAvailablePorts() {
+
+        List<String> list = new ArrayList<String>();
+
+        Enumeration portList = CommPortIdentifier.getPortIdentifiers();
+
+        while (portList.hasMoreElements()) {
+            CommPortIdentifier portId = (CommPortIdentifier) portList.nextElement();
+            if (portId.getPortType() == CommPortIdentifier.PORT_SERIAL) {
+                list.add(portId.getName());
+            }
+        }
+
+        return list;
     }
 
     /**
@@ -261,10 +294,8 @@ public class arduinoInData implements SerialPortEventListener {
             try {
                 String inputLine = input.readLine();
                 if (inputLine.startsWith("-")) {
-                    /*TODO check that it goes ok - verify if every command worked
-                    copy message from the arduino goes faster
-                     */
                     arduiLog += inputLine + "\n";
+                    OperatingWindows.refreshLogs(arduiLog);
                 } else {
                     new Thread(() -> {
                         SensorManagement.sendMidiMessage(inputLine);

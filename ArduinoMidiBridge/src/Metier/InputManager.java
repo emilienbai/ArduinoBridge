@@ -14,7 +14,7 @@ public class InputManager {
     private static Vector<ArduinoChan> arduinoInVector = new Vector(16);
     private static int activeNumber;
 
-    protected static void init() {
+    public static void init() {
 
         for (int i = 0; i < MAX_INPUT; i++) {
             ArduinoChan a = new ArduinoChan(i);
@@ -61,6 +61,10 @@ public class InputManager {
         for (ArduinoChan a : arduinoInVector) {
             System.out.println(a);
         }
+    }
+
+    protected static ArduinoChan getArduinoChan(int chanNumber) {
+        return arduinoInVector.get(chanNumber);
     }
 
 

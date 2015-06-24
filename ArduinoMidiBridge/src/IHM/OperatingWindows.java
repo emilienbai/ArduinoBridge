@@ -1,8 +1,6 @@
 package IHM;
 
-import Metier.MidiManager;
-import Metier.SensorManagement;
-import Metier.arduinoInData;
+import Metier.*;
 import Sensor.Sensor;
 
 import javax.swing.*;
@@ -22,6 +20,8 @@ import java.util.Vector;
  */
 public class OperatingWindows extends JFrame {
     /*********************************************************************/
+    /******************************COLORS*********************************/
+    /*********************************************************************/
     public static final Color BACKGROUND_COLOR = new Color(21, 21, 35);
     public static final Color BUTTON_COLOR = new Color(0, 0, 64);
     public static final Color FOREGROUND_COLOR = new Color(126, 145, 185);
@@ -33,9 +33,12 @@ public class OperatingWindows extends JFrame {
     public static final Border RAISED_BORDER = BorderFactory.createBevelBorder(BevelBorder.RAISED);
     public static final Border LOWERED_BORDER = BorderFactory.createBevelBorder(BevelBorder.LOWERED);
     public static final Border ETCHED_BORDER = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
+    /***********/
     private static final String SAVE_EXTENSION = ".xml";
     private static final int DEFAULT_THRESHOLD = 100;
     private static final int DEFAULT_DEBOUNCE = 200;
+
+    /***********/
     private static JPanel centerPanel;
     private static JMenuBar menuBar;
     private static Vector<Integer> availableMidiPort = new Vector<>();
@@ -44,10 +47,14 @@ public class OperatingWindows extends JFrame {
     private static java.util.List<DeleteButton> deleteButtonList = new ArrayList<>();
     private static JComboBox availableMidiCombo;
     private static JPanel topPanel;
-
-    /*********************************************************************/
-    /******************************COLORS*********************************/
+    private static VuMeter selectedSensorVuMeter;
     private static GridBagConstraints topConstraint;
+    private static JTextArea logsArea;
+    private static int selectedSensor = 0;
+    private static boolean built = false; //is the window built?
+    private JTextArea debounceOneText;
+    private JTextArea thresholdOneTextArea;
+    private JLabel sensorStatus;
     private JButton muteAllButton;
     private JTextField newSensorName;
     private JComboBox arduinoPort;
@@ -88,6 +95,7 @@ public class OperatingWindows extends JFrame {
         JPanel mainPanel = new JPanel(mainLayout);
         mainPanel.setBackground(BACKGROUND_COLOR);
 
+
         /******************************************/
         /****************Top Panel*****************/
         /******************************************/
@@ -109,7 +117,7 @@ public class OperatingWindows extends JFrame {
 
 
         /***********Selected sensor Vu Meter*******/
-        VuMeter selectedSensorVuMeter = new VuMeter(SwingConstants.VERTICAL, 0, 1024);
+        selectedSensorVuMeter = new VuMeter(SwingConstants.VERTICAL, 0, 1024);
         selectedSensorVuMeter.setPreferredSize(new Dimension(15, 120));
         topConstraint.gridx = 0;
         topConstraint.weighty = 1;
@@ -144,10 +152,31 @@ public class OperatingWindows extends JFrame {
         topConstraint.weightx = 0;
         topPanel.add(sensorCombo, topConstraint);
 
-        //TODO add action listener to know which one is the selected sensor and change the infos
+        sensorCombo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new Thread(() -> {
+                    selectedSensor = (int) sensorCombo.getSelectedItem();
+                    String[] channelInfo = Services.getChannelInfo(selectedSensor);
+                    SwingUtilities.invokeLater(() -> {
+                        debounceOneText.setText(channelInfo[0]);
+                        thresholdOneTextArea.setText(channelInfo[1]);
+                        if (channelInfo[2].equals("true")) {
+                            sensorStatus.setText("Actif");
+                            sensorStatus.setForeground(IMPULSE_COLOR);
+                        } else {
+                            sensorStatus.setText("Inactif");
+                            sensorStatus.setForeground(MUTE_COLOR);
+                        }
+                    });
+
+                }).start();
+
+            }
+        });
 
         /*******1st Column active Label********/
-        JLabel sensorStatus = new JLabel("Actif");
+        sensorStatus = new JLabel("Actif");
         sensorStatus.setBackground(BACKGROUND_COLOR);
         sensorStatus.setForeground(IMPULSE_COLOR);
         sensorStatus.setHorizontalAlignment(JLabel.CENTER);
@@ -157,7 +186,7 @@ public class OperatingWindows extends JFrame {
 
         addVerticalSeparation(5);
         /********2nd Column Debounce Label*********/
-        JLabel debounceOneLabel = new JLabel("<html><center>Debounce<br>(ms)</center></html>");
+        JLabel debounceOneLabel = new JLabel("<html><center>Stabilisation<br>(ms)</center></html>");
         debounceOneLabel.setHorizontalAlignment(JLabel.CENTER);
         debounceOneLabel.setBackground(BACKGROUND_COLOR);
         debounceOneLabel.setForeground(FOREGROUND_COLOR);
@@ -167,7 +196,7 @@ public class OperatingWindows extends JFrame {
         topPanel.add(debounceOneLabel, topConstraint);
 
         /*******2nd Column, DebounceTextArea*******/
-        JTextArea debounceOneText = new JTextArea(String.valueOf(DEFAULT_DEBOUNCE));
+        debounceOneText = new JTextArea(String.valueOf(DEFAULT_DEBOUNCE));
         debounceOneText.setBackground(BACKGROUND_COLOR);
         debounceOneText.setForeground(FOREGROUND_COLOR);
         debounceOneText.setBorder(LOWERED_BORDER);
@@ -183,7 +212,15 @@ public class OperatingWindows extends JFrame {
         debounceOneOK.setPreferredSize(new Dimension(30, 30));
         topConstraint.gridy = 2;
         topPanel.add(debounceOneOK, topConstraint);
-        //TODO add an actionlistener
+
+        debounceOneOK.addActionListener(e -> new Thread(() -> {
+            try {
+                int newDebounce = Integer.parseInt(debounceOneText.getText());
+                Services.setDebounceOne(selectedSensor, newDebounce);
+            } catch (NumberFormatException e1) {
+                numberFormatWarning();
+            }
+        }).start());
 
         addVerticalSeparation(5);
         /*******3rd Column, ThresholdOneLb*********/
@@ -197,7 +234,7 @@ public class OperatingWindows extends JFrame {
         topPanel.add(thresholdOneLb, topConstraint);
 
         /*******3rd Column, thresholdOneTextArea***/
-        JTextArea thresholdOneTextArea = new JTextArea(String.valueOf(DEFAULT_THRESHOLD));
+        thresholdOneTextArea = new JTextArea(String.valueOf(DEFAULT_THRESHOLD));
         thresholdOneTextArea.setBackground(BACKGROUND_COLOR);
         thresholdOneTextArea.setForeground(FOREGROUND_COLOR);
         thresholdOneTextArea.setBorder(LOWERED_BORDER);
@@ -214,6 +251,16 @@ public class OperatingWindows extends JFrame {
         topConstraint.gridy = 2;
         topPanel.add(thresholdOneOK, topConstraint);
 
+        thresholdOneOK.addActionListener(e -> new Thread(() -> {
+            try {
+                int newThreshold = Integer.parseInt(thresholdOneTextArea.getText());
+                Services.setThresholdOne(selectedSensor, newThreshold);
+            } catch (NumberFormatException e1) {
+                numberFormatWarning();
+            }
+        }).start());
+
+
         addVerticalSeparation(5);
         /*******4th Column, CalibrateOne***********/
         JButton calibrateOne = new JButton("Calibrer");
@@ -226,7 +273,9 @@ public class OperatingWindows extends JFrame {
         topConstraint.weightx = 1;
         topPanel.add(calibrateOne, topConstraint);
 
-        //TODO Add ActionListener
+        calibrateOne.addActionListener(e -> new Thread(() -> {
+            Services.calibrate(selectedSensor);
+        }).start());
 
         topConstraint.weightx = 0;
         addVerticalSeparation(5);
@@ -239,7 +288,7 @@ public class OperatingWindows extends JFrame {
         topConstraint.weightx = 1;
 
         /*******6th Column, DebounceAllLabel*******/
-        JLabel debounceAllLb = new JLabel("<html><center>Debounce<br>général (ms)</center></html>");
+        JLabel debounceAllLb = new JLabel("<html><center>Stabilisation<br>général (ms)</center></html>");
         debounceAllLb.setBackground(BACKGROUND_COLOR);
         debounceAllLb.setForeground(FOREGROUND_COLOR);
         debounceAllLb.setHorizontalAlignment(SwingConstants.CENTER);
@@ -265,7 +314,20 @@ public class OperatingWindows extends JFrame {
         topConstraint.gridy = 2;
         topPanel.add(debounceAllOK, topConstraint);
 
-        //TODO action Listener
+        debounceAllOK.addActionListener(e -> new Thread(() -> {
+            try {
+                int newDebounce = Integer.parseInt(debounceAllTextArea.getText());
+                Services.setDebounceAll(newDebounce);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        debounceOneText.setText(String.valueOf(newDebounce));
+                    }
+                });
+            } catch (NumberFormatException e1) {
+                numberFormatWarning();
+            }
+        }).start());
 
         addVerticalSeparation(5);
         /******7th Column, thresholdAllLb**********/
@@ -296,7 +358,20 @@ public class OperatingWindows extends JFrame {
         topConstraint.gridy = 2;
         topPanel.add(thresholdAllOK, topConstraint);
 
-        //TODO ActionListener
+        thresholdAllOK.addActionListener(e -> new Thread(() -> {
+            try {
+                int newThreshold = Integer.parseInt(thresholdAllTextArea.getText());
+                Services.setThresholdAll(newThreshold);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        thresholdOneTextArea.setText(String.valueOf(newThreshold));
+                    }
+                });
+            } catch (NumberFormatException e1) {
+                numberFormatWarning();
+            }
+        }).start());
 
         addVerticalSeparation(5);
         /*******8th Column SensorNumberLb*********/
@@ -316,10 +391,15 @@ public class OperatingWindows extends JFrame {
         }
         sensorNumberCb.setBackground(BACKGROUND_COLOR);
         sensorNumberCb.setForeground(FOREGROUND_COLOR);
+        sensorNumberCb.setSelectedIndex(sensorNumberCb.getItemCount() - 1);
         topConstraint.gridy = 1;
         topConstraint.weightx = 0;
         topPanel.add(sensorNumberCb, topConstraint);
-        //TODO addActionListener
+
+        sensorNumberCb.addActionListener(e -> new Thread(() -> {
+            int newNumber = (int) sensorNumberCb.getSelectedItem();
+            Services.setSensorNumber(newNumber);
+        }).start());
 
         /******8th Column, CalibrateAllButton******/
         JButton calibrateAllButton = new JButton("Calibrer tout");
@@ -329,11 +409,14 @@ public class OperatingWindows extends JFrame {
         calibrateAllButton.setPreferredSize(new Dimension(30, 30));
         topConstraint.gridy = 2;
         topPanel.add(calibrateAllButton, topConstraint);
-        //TODO addActionListener
+
+        calibrateAllButton.addActionListener(e -> new Thread(() -> {
+            Services.calibrateAll();
+        }).start());
 
         addVerticalSeparation(5);
         /********9th Column, LogArea***************/
-        JTextArea logsArea = new JTextArea(10, 20);
+        logsArea = new JTextArea(10, 20);
         logsArea.setBackground(Color.BLACK);
         logsArea.setForeground(Color.WHITE);
         //logsArea.setEditable(false);
@@ -558,6 +641,8 @@ public class OperatingWindows extends JFrame {
         }).start());
 
         setContentPane(mainPanel);
+        InputManager.init();
+        built = true;
 
     }
 
@@ -596,24 +681,40 @@ public class OperatingWindows extends JFrame {
     }
 
     public static void refreshInterface(String dataIn) {
-        String[] splitted = dataIn.split("-");
-        //every instruction is separated by a -
-        for (int i = 0; i < splitted.length; i += 2) {
-            try {
-                int sensorNumber = Integer.parseInt(splitted[i]);
-                for (SensorRow s : sensorRowList) {
-                    if (s.getArduinoChannel() == sensorNumber) {
-                        int input = Integer.parseInt(splitted[i + 1]);
-                        s.setIncomingSignal(input); //Setting the in value
-                        int output = SensorManagement.getOutputValue(s.getMidiPort());
-                        s.setOutputValue(output);
+        if (built) {
+            String[] splitted = dataIn.split("-");
+            //every instruction is separated by a -
+            for (int i = 0; i < splitted.length; i += 2) {
+                try {
+                    int sensorNumber = Integer.parseInt(splitted[i]);
+                    if (sensorNumber == selectedSensor) {
+                        selectedSensorVuMeter.setValue(Integer.parseInt(splitted[i + 1]));
                     }
+                    for (SensorRow s : sensorRowList) {
+                        if (s.getArduinoChannel() == sensorNumber) {
+                            int input = Integer.parseInt(splitted[i + 1]);
+                            s.setIncomingSignal(input); //Setting the in value
+                            int output = SensorManagement.getOutputValue(s.getMidiPort());
+                            s.setOutputValue(output);
+                        }
+                    }
+                } catch (NumberFormatException e) {
+                    //e.printStackTrace();
                 }
-            } catch (NumberFormatException e) {
-                //e.printStackTrace();
-            }
 
+            }
         }
+    }
+
+    public static void refreshLogs(String logs) {
+        SwingUtilities.invokeLater(() -> {
+            logsArea.setText(logs);
+        });
+
+    }
+
+    private void numberFormatWarning() {
+        JOptionPane.showMessageDialog(OperatingWindows.this, "Veuillez entrer un nombre", "Avertissement", JOptionPane.WARNING_MESSAGE);
     }
 
     private void setMenuBar() {
@@ -675,7 +776,6 @@ public class OperatingWindows extends JFrame {
             if (userSelection == JFileChooser.APPROVE_OPTION) {
                 saveFile = openChooser.getSelectedFile();
                 if (SensorManagement.loadSetup(saveFile)) {
-                    ;
                     saveItem.setEnabled(true);
                     OperatingWindows.this.loadSetup();
                 } else {

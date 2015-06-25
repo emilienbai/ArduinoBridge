@@ -589,7 +589,7 @@ public class OperatingWindows extends JFrame {
                 //constraints for the grid bag layout
                 centerConstraint.gridy = centerConstraint.gridy + 1;
                 centerConstraint.gridx = 0;
-                centerConstraint.weightx = 1;
+                centerConstraint.weightx = 2;
                 newName = null;
                 newArduChan = -1;
                 newMidiPort = -1;
@@ -598,7 +598,7 @@ public class OperatingWindows extends JFrame {
                 SwingUtilities.invokeLater(() -> {
                     centerPanel.add(sensorRow, centerConstraint);
                     centerConstraint.gridx = 1;
-                    centerConstraint.weightx = 0.5;
+                    centerConstraint.weightx = 0;
                     centerPanel.add(db, centerConstraint);
                     newSensorName.setText("");
                     int nb = Integer.parseInt(sensorNumberLb.getText());
@@ -899,7 +899,7 @@ public class OperatingWindows extends JFrame {
                 SwingUtilities.invokeLater(() -> {
                     centerPanel.add(sr, centerConstraint);
                     centerConstraint.gridx = 1;
-                    centerConstraint.weightx = 0.5;
+                    centerConstraint.weightx = 0;
                     centerPanel.add(db, centerConstraint);
                 });
             }

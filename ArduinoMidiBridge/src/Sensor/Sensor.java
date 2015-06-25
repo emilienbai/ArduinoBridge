@@ -222,7 +222,7 @@ public class Sensor {
 		return maxRange;
 	}
 	public void setMaxRange(int maxRange) {
-		if (maxRange >=0 && maxRange <=127 && maxRange>=this.maxRange){
+		if (maxRange >= 0 && maxRange <= 127 && maxRange >= this.minRange) {
 		this.maxRange = maxRange;
 		}
 		else {

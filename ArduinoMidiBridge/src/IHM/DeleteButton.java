@@ -21,8 +21,9 @@ public class DeleteButton extends JButton {
         this.setBackground(BUTTON_COLOR);
         Color FOREGROUND_COLOR = OperatingWindows.FOREGROUND_COLOR;
         this.setForeground(FOREGROUND_COLOR);
-        Border ETCHED_BORDER = OperatingWindows.ETCHED_BORDER;
-        this.setBorder(ETCHED_BORDER);
+        Border RAISED_BORDER = OperatingWindows.RAISED_BORDER;
+        this.setBorder(RAISED_BORDER);
+        this.setPreferredSize(new Dimension(70, 37));
 
 
         this.addActionListener(e -> new Thread(new Runnable() {

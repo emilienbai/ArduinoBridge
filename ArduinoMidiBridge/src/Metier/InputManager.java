@@ -30,6 +30,7 @@ public class InputManager {
                 a.setEnable(false);
                 arduinoInVector.set(i, a);
             }
+            activeNumber = newNumber;
         }
     }
 
@@ -73,6 +74,22 @@ public class InputManager {
 
     public static void loadSetup(Vector<ArduinoChan> a) {
         arduinoInVector = a;
+        int number;
+        int debounce;
+        int threshold;
+        int activeCounter = 0;
+        for (ArduinoChan ac : arduinoInVector) {
+            number = ac.getNumber();
+            debounce = ac.getDebounce();
+            threshold = ac.getThreshold();
+            if (ac.isEnable()) {
+                activeCounter++;
+            }
+            setDebounceOne(number, debounce);
+            setThresholdOne(number, threshold);
+
+        }
+        chooseChanNb(activeCounter);
     }
 
 
@@ -91,6 +108,10 @@ public class InputManager {
         InputManager.setThresholdAll(150);
         InputManager.listInput();
 
+    }
+
+    public static int getActiveNumber() {
+        return activeNumber;
     }
 }
 

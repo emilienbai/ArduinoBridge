@@ -59,6 +59,7 @@ public class OperatingWindows extends JFrame {
     private JButton muteAllButton;
     private JTextField newSensorName;
     private JComboBox arduinoPort;
+    private JComboBox sensorNumberCb;
     private String newName = null;
     private int newArduChan = -1;
     private int newMidiPort = -1;
@@ -376,7 +377,7 @@ public class OperatingWindows extends JFrame {
         topPanel.add(sensorNumberLabel, topConstraint);
 
         /*******8th Column SensorNumberCb**********/
-        JComboBox sensorNumberCb = new JComboBox();
+        sensorNumberCb = new JComboBox();
         for (int i = 1; i <= 16; i++) {
             sensorNumberCb.addItem(i);
         }
@@ -904,12 +905,14 @@ public class OperatingWindows extends JFrame {
             }
             String debounce = String.valueOf(arduinoChanVector.get(selectedSensor).getDebounce());
             String threshold = String.valueOf(arduinoChanVector.get(selectedSensor).getThreshold());
+            int activeNumber = Services.getActiveNumber();
 
 
             SwingUtilities.invokeLater(() -> {
                 debounceOneText.setText(debounce);
                 thresholdOneTextArea.setText(threshold);
                 sensorNumberLb.setText(String.valueOf(sensorList.size()));
+                sensorNumberCb.setSelectedIndex(activeNumber - 1);
                 repaint();
                 pack();
             });

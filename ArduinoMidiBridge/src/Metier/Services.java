@@ -64,6 +64,10 @@ public class Services {
         return toReturn;
     }
 
+    public static int getActiveNumber() {
+        return InputManager.getActiveNumber();
+    }
+
     public static boolean saveSetup(File saveFile) {
         List<Sensor> sensorList = SensorManagement.getSensorList();
         Vector<ArduinoChan> arduinoInVector = InputManager.getArduinoInVector();
@@ -90,13 +94,15 @@ public class Services {
             file.newLine();
             file.write("<!ELEMENT preamplifier (#PCDATA)>");
             file.newLine();
-            file.write("<!ELEMENT input (number, debounce, threshold)>");
+            file.write("<!ELEMENT input (number, debounce, threshold, enable)>");
             file.newLine();
             file.write("<!ELEMENT number (#PCDATA)>");
             file.newLine();
             file.write("<!ELEMENT debounce (#PCDATA)>");
             file.newLine();
             file.write("<!ELEMENT threshold (#PCDATA)>");
+            file.newLine();
+            file.write("<!ELEMENT enable (#PCDATA)>");
             file.newLine();
             file.write("]>");
             file.newLine();
@@ -129,6 +135,7 @@ public class Services {
                 file.newLine();
                 file.write("        <threshold>" + a.getThreshold() + "</threshold>");
                 file.newLine();
+                file.write("        <enable>" + a.isEnable() + "</enable>");
                 file.write("    </input>");
                 file.newLine();
             }
@@ -222,7 +229,13 @@ public class Services {
         int number = getIntValue(ardEl, "number");
         int debounce = getIntValue(ardEl, "debounce");
         int threshold = getIntValue(ardEl, "threshold");
-        return new ArduinoChan(number, debounce, threshold);
+        String enable = getTextValue(ardEl, "enable");
+        if (enable.equals("true")) {
+            return new ArduinoChan(number, debounce, threshold, true);
+        } else {
+            return new ArduinoChan(number, debounce, threshold, false);
+        }
+
     }
 
     /**

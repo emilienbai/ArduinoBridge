@@ -18,11 +18,11 @@ public class ArduinoChan {
         this.enable = true;
     }
 
-    public ArduinoChan(int number, int debounce, int threshold) {
+    public ArduinoChan(int number, int debounce, int threshold, boolean enable) {
         this.number = number;
         this.debounce = debounce;
         this.threshold = threshold;
-        this.enable = true;
+        this.enable = enable;
     }
 
     public int getNumber() {

@@ -88,6 +88,7 @@ public class OperatingWindows extends JFrame {
                 System.exit(0);
             }
         });
+        this.setIconImage(new ImageIcon("logo.png").getImage());
         this.setMenuBar();
         this.setJMenuBar(menuBar);
 

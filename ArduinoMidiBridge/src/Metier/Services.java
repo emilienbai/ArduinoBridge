@@ -2,6 +2,7 @@ package Metier;
 
 import Sensor.ArduinoChan;
 import Sensor.Sensor;
+import com.jgoodies.common.base.SystemUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -66,6 +67,24 @@ public class Services {
 
     public static int getActiveNumber() {
         return InputManager.getActiveNumber();
+    }
+
+    public static String[] findSerial() {
+        String[] availableSerial;
+        if (SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_LINUX) {
+            Metier.Filter f = new Metier.Filter();
+            File[] fileTab = f.finder("/dev");
+            availableSerial = new String[fileTab.length];
+            int i = 0;
+            for (File file : fileTab) {
+                availableSerial[i] = file.getAbsolutePath();
+                i++;
+            }
+        } else {
+            availableSerial = new String[1];
+            availableSerial[0] = "COMX";
+        }
+        return availableSerial;
     }
 
     public static boolean saveSetup(File saveFile) {

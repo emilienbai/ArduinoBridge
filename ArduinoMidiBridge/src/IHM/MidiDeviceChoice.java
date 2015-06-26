@@ -2,6 +2,7 @@ package IHM;
 
 import Metier.MidiManager;
 import Metier.SensorManagement;
+import Metier.Services;
 import Metier.arduinoInData;
 
 import javax.sound.midi.MidiDevice;
@@ -97,7 +98,7 @@ public class MidiDeviceChoice extends JFrame{
         /*******************/
         /***ComPort Combo***/
         /*******************/
-        JComboBox arduinoCom = new JComboBox(arduinoInData.PORT_NAMES);
+        JComboBox arduinoCom = new JComboBox(Services.findSerial());
         arduinoCom.setEditable(true);
         arduinoCom.setBackground(BACKGROUND_COLOR);
         arduinoCom.setForeground(FOREGROUND_COLOR);

@@ -1,13 +1,14 @@
 package IHM;
 
+import Metier.ArduinoInData;
 import Metier.MidiManager;
 import Metier.SensorManagement;
 import Metier.Services;
-import Metier.arduinoInData;
 
 import javax.sound.midi.MidiDevice;
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.util.Vector;
@@ -106,13 +107,18 @@ public class MidiDeviceChoice extends JFrame{
         topConstraint.weightx =1;
         topPanel.add(arduinoCom, topConstraint);
 
+
+        ++topConstraint.gridx;
+        topConstraint.weightx = 0;
+        topPanel.add(Box.createHorizontalStrut(10), topConstraint);
+        topConstraint.weightx = 1;
         /******************/
         /***check Button***/
         /******************/
         JButton arduinoCheck = new JButton("Valider");
         arduinoCheck.setBackground(BUTTON_COLOR);
         arduinoCheck.setForeground(FOREGROUND_COLOR);
-        arduinoCheck.setBorder(ETCHED_BORDER);
+        arduinoCheck.setBorder(RAISED_BORDER);
         topConstraint.gridx = topConstraint.gridx + 1;
         topConstraint.weightx = 0.5;
         topPanel.add(arduinoCheck, topConstraint);
@@ -120,11 +126,11 @@ public class MidiDeviceChoice extends JFrame{
         arduinoCheck.addActionListener(e -> {
             final String[] errorMessage = {null};
             new Thread(() -> {
-                arduinoInData aid = new arduinoInData();
+                ArduinoInData aid = new ArduinoInData();
                 String port = (String) arduinoCom.getSelectedItem();
                 System.out.println(port);
                 switch (aid.initialize(port)) {
-                    case arduinoInData.NO_ERR:
+                    case ArduinoInData.NO_ERR:
                         arduinoConnected = true;
                         SwingUtilities.invokeLater(() -> {
                             arduinoCom.setVisible(false);
@@ -133,19 +139,19 @@ public class MidiDeviceChoice extends JFrame{
                         });
 
                         break;
-                    case arduinoInData.PORT_NOT_FOUND:
+                    case ArduinoInData.PORT_NOT_FOUND:
                         errorMessage[0] = "<html><center>Impossible de trouver le port spécifié " +
                                 "<br> Veuillez réessayer</center><html>";
                         break;
-                    case arduinoInData.SERIAL_ERR:
+                    case ArduinoInData.SERIAL_ERR:
                         errorMessage[0] = "<html><center>Erreur de configuration du port série" +
                                 "</center><html>";
                         break;
-                    case arduinoInData.PORT_IN_USE:
+                    case ArduinoInData.PORT_IN_USE:
                         errorMessage[0] = "<html><center>Ce port est utilisé" +
                                 "<br> Veuillez déconnecter les autres applications utilisant l'arduino</center><html>";
                         break;
-                    case arduinoInData.TOO_MANY_LIST_ERR:
+                    case ArduinoInData.TOO_MANY_LIST_ERR:
                         errorMessage[0] = "<html><center>Trop d'EventListener sur ce port" +
                                 "</center><html>";
                         break;
@@ -155,6 +161,11 @@ public class MidiDeviceChoice extends JFrame{
                 }
             }).start();
         });
+
+        ++topConstraint.gridx;
+        topConstraint.weightx = 0;
+        topPanel.add(Box.createHorizontalStrut(10), topConstraint);
+        topConstraint.weightx = 1;
 
 
 
@@ -206,6 +217,7 @@ public class MidiDeviceChoice extends JFrame{
         JPanel bottomPanel = new JPanel(new GridBagLayout());
         bottomPanel.setBackground(BACKGROUND_COLOR);
         bottomPanel.setForeground(FOREGROUND_COLOR);
+        bottomPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
         mainConstraint.gridy = 3;
         mainPanel.add(bottomPanel, mainConstraint);
 
@@ -217,7 +229,7 @@ public class MidiDeviceChoice extends JFrame{
         reloadButton = new JButton("Recharger");
         reloadButton.setBackground(BUTTON_COLOR);
         reloadButton.setForeground(FOREGROUND_COLOR);
-        reloadButton.setBorder(ETCHED_BORDER);
+        reloadButton.setBorder(RAISED_BORDER);
 
         bottomConstraint.gridy = 0;
         bottomConstraint.gridx = 0;
@@ -254,12 +266,16 @@ public class MidiDeviceChoice extends JFrame{
         reloadProgress.setVisible(false);
 
         bottomConstraint.fill = GridBagConstraints.BOTH;
-        bottomConstraint.gridx = 1;
+        bottomConstraint.gridx = 3;
         bottomConstraint.weighty = 1;
         bottomConstraint.weightx = 1;
+        bottomConstraint.gridwidth = 5;
         bottomPanel.add(reloadProgress, bottomConstraint);
 
-        //TODO separe button
+
+        bottomConstraint.gridx = 2;
+        bottomConstraint.gridwidth = 1;
+        bottomPanel.add(Box.createHorizontalStrut(5), bottomConstraint);
         /**QuitButton**/
         if(arduinoSet){
             quitButton = new JButton("Quitter");
@@ -269,10 +285,10 @@ public class MidiDeviceChoice extends JFrame{
         }
         quitButton.setBackground(BUTTON_COLOR);
         quitButton.setForeground(FOREGROUND_COLOR);
-        quitButton.setBorder(ETCHED_BORDER);
+        quitButton.setBorder(RAISED_BORDER);
 
         bottomConstraint.fill = GridBagConstraints.BOTH;
-        bottomConstraint.gridx = 2;
+        ++bottomConstraint.gridx;
         bottomConstraint.weightx = 1;
         bottomConstraint.weighty = 1;
         bottomPanel.add(quitButton, bottomConstraint);
@@ -280,7 +296,7 @@ public class MidiDeviceChoice extends JFrame{
         quitButton.addActionListener(e -> {
             if(arduinoSet){
                 MidiManager.exit();
-                arduinoInData.close();
+                ArduinoInData.close();
                 exit(0);
             }
             else{
@@ -288,14 +304,16 @@ public class MidiDeviceChoice extends JFrame{
             }
         });
 
+        ++bottomConstraint.gridx;
+        bottomPanel.add(Box.createHorizontalStrut(5), bottomConstraint);
         /**OKButton**/
         okButton = new JButton("OK");
         okButton.setBackground(BUTTON_COLOR);
         okButton.setForeground(FOREGROUND_COLOR);
-        okButton.setBorder(ETCHED_BORDER);
+        okButton.setBorder(RAISED_BORDER);
 
 
-        bottomConstraint.gridx = 3;
+        ++bottomConstraint.gridx;
         bottomPanel.add(okButton, bottomConstraint);
 
 

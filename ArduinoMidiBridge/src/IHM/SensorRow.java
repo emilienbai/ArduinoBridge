@@ -22,6 +22,7 @@ class SensorRow extends JPanel {
     private static Color NAME_COLOR = OperatingWindows.NAME_COLOR;
     private static Border ETCHED_BORDER = OperatingWindows.ETCHED_BORDER;
     private static Border RAISED_BORDER = OperatingWindows.RAISED_BORDER;
+    private static Border LOWERED_BORDER = OperatingWindows.LOWERED_BORDER;
 
 
     private static GridBagConstraints constraint;
@@ -69,8 +70,6 @@ class SensorRow extends JPanel {
         nameLabel.setForeground(NAME_COLOR);
         constraint.gridx = 0;
         constraint.gridy = 0;
-        //constraint.anchor= GridBagConstraints.LINE_START;
-        //constraint.gridwidth = GridBagConstraints.REMAINDER;
         constraint.fill = GridBagConstraints.HORIZONTAL;
         constraint.weightx = 1;
         constraint.weighty = 0;
@@ -78,10 +77,14 @@ class SensorRow extends JPanel {
         constraint.ipadx = 5;
         this.add(nameLabel, constraint);
 
-        JLabel shorcutLabel = new JLabel("Raccourci clavier : (" + shortcut + ")");
-        shorcutLabel.setForeground(FOREGROUND_COLOR);
+        JLabel shortcutLabel = new JLabel("Clavier : (" + shortcut + ")");
+        shortcutLabel.setForeground(FOREGROUND_COLOR);
+        shortcutLabel.setMaximumSize(new Dimension(145, 50));
+        shortcutLabel.setMinimumSize(new Dimension(80, 10));
+        shortcutLabel.setPreferredSize(new Dimension(110, 20));
+
         constraint.gridy = 1;
-        this.add(shorcutLabel, constraint);
+        this.add(shortcutLabel, constraint);
 
         addVerticalSeparation(5);
         /*********Arduino input Chanel*******/
@@ -324,17 +327,23 @@ class SensorRow extends JPanel {
             if (muteState){
                 SensorManagement.unmute(midiPort);
                 muteState = false;
-                SwingUtilities.invokeLater(() -> muteButton.setBackground(BUTTON_COLOR));
+                SwingUtilities.invokeLater(() -> {
+                    muteButton.setBackground(BUTTON_COLOR);
+                    muteButton.setBorder(RAISED_BORDER);
+                });
             }
             else {
                 SensorManagement.mute(midiPort);
                 muteState = true;
-                SwingUtilities.invokeLater(() -> muteButton.setBackground(MUTE_COLOR));
+                SwingUtilities.invokeLater(() -> {
+                    muteButton.setBackground(MUTE_COLOR);
+                    muteButton.setBorder(LOWERED_BORDER);
+                });
             }
 
         }).start());
 
-        addVerticalSeparation(5);
+        addVerticalSeparation(5);//TODO boutons enfoncés quand cliqués
         /**********SoloButton**********/
         soloButton = new JButton("Solo");
         soloButton.setBackground(BUTTON_COLOR);
@@ -348,11 +357,17 @@ class SensorRow extends JPanel {
             if (soloState) {
                 SensorManagement.unSolo(midiPort);
                 soloState = false;
-                SwingUtilities.invokeLater(() -> soloButton.setBackground(BUTTON_COLOR));
+                SwingUtilities.invokeLater(() -> {
+                    soloButton.setBackground(BUTTON_COLOR);
+                    soloButton.setBorder(RAISED_BORDER);
+                });
             } else {
                 SensorManagement.solo(midiPort);
                 soloState = true;
-                SwingUtilities.invokeLater(() -> soloButton.setBackground(SOLO_COLOR));
+                SwingUtilities.invokeLater(() -> {
+                    soloButton.setBackground(SOLO_COLOR);
+                    soloButton.setBorder(LOWERED_BORDER);
+                });
             }
 
         }).start());

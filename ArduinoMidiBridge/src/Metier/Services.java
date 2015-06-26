@@ -24,36 +24,40 @@ public class Services {
 
 
     public static void setDebounceOne(int sensorNumber, int debounceValue) {
-        arduinoInData.setDebounceTime(sensorNumber, debounceValue);
+        ArduinoInData.setDebounceTime(sensorNumber, debounceValue);
         InputManager.setDebounceOne(sensorNumber, debounceValue);
     }
 
     public static void setDebounceAll(int debounceValue) {
-        arduinoInData.setDebounceTimeAll(debounceValue);
+        ArduinoInData.setDebounceTimeAll(debounceValue);
         InputManager.setDebounceAll(debounceValue);
     }
 
     public static void setThresholdOne(int sensorNumber, int thresholdValue) {
-        arduinoInData.setNoiseGate(sensorNumber, thresholdValue);
+        ArduinoInData.setNoiseGate(sensorNumber, thresholdValue);
         InputManager.setThresholdOne(sensorNumber, thresholdValue);
     }
 
     public static void setThresholdAll(int thresholdValue) {
-        arduinoInData.setNoiseGateAll(thresholdValue);
+        ArduinoInData.setNoiseGateAll(thresholdValue);
         InputManager.setThresholdAll(thresholdValue);
     }
 
     public static void setSensorNumber(int newNumber) {
-        arduinoInData.setSensorNumber(newNumber);
+        ArduinoInData.setSensorNumber(newNumber);
         InputManager.chooseChanNb(newNumber);
     }
 
     public static void calibrate(int sensorNumber) {
-        arduinoInData.calibrateSensor(sensorNumber);
+        ArduinoInData.calibrateSensor(sensorNumber);
     }
 
     public static void calibrateAll() {
-        arduinoInData.calibrateAllSensor();
+        ArduinoInData.calibrateAllSensor();
+    }
+
+    public static void setCalibrationTime(int newCalibrationTime) {
+        ArduinoInData.setCalibrationTime(newCalibrationTime);
     }
 
     public static String[] getChannelInfo(int channelNumber) {

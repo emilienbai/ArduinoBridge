@@ -29,10 +29,6 @@ public class ArduinoChan {
         return number;
     }
 
-    public void setNumber(int number) {
-        this.number = number;
-    }
-
     public int getDebounce() {
         return debounce;
     }

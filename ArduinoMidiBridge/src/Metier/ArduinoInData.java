@@ -15,8 +15,10 @@ import java.util.TooManyListenersException;
 /**
  * Created by Emilien Bai (emilien.bai@insa-lyon.fr)on 06/2015.
  */
-public class arduinoInData implements SerialPortEventListener {
-    /** The port we're normally going to use. */
+public class ArduinoInData implements SerialPortEventListener {
+    /**
+     * The port we're normally going to use.
+     */
     public static final String PORT_NAMES[] = {
             "/dev/tty.usbmodem * - Mac OS X - Uno et Mega 2560", // Mac OS X
             "/dev/tty.usbserial * - Mac OS X - anciennes cartes",
@@ -143,6 +145,13 @@ public class arduinoInData implements SerialPortEventListener {
         return sendAsciiString(s);
     }
 
+
+    protected static boolean setCalibrationTime(int newCalibrationTime) {
+        String s = "caltm " + newCalibrationTime + "\n";
+        return sendAsciiString(s);
+    }
+
+
     /**
      * Send a command String on the arduino serial port
      *
@@ -164,7 +173,7 @@ public class arduinoInData implements SerialPortEventListener {
     }
 
     public static void main(String[] args) throws InterruptedException {
-        arduinoInData aid = new arduinoInData();
+        ArduinoInData aid = new ArduinoInData();
         List<String> test = aid.getAvailablePorts();
         for (String s : test) {
             System.out.println(s);
@@ -217,6 +226,7 @@ public class arduinoInData implements SerialPortEventListener {
 
     /**
      * Initialize the connection with the arduino using specified port
+     *
      * @param port the port to use (example /dev/ttyACM0 )
      * @return code of good connection or error.
      */
@@ -245,7 +255,7 @@ public class arduinoInData implements SerialPortEventListener {
             return PORT_NOT_FOUND;
         }
 
-            // open serial port, and use class name for the appName.
+        // open serial port, and use class name for the appName.
         try {
             serialPort = (SerialPort) portId.open(this.getClass().getName(),
                     TIME_OUT);
@@ -275,7 +285,7 @@ public class arduinoInData implements SerialPortEventListener {
         }
 
 
-            // add event listeners
+        // add event listeners
         try {
             serialPort.addEventListener(this);
             serialPort.notifyOnDataAvailable(true);

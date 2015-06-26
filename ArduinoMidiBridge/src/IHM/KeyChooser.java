@@ -27,7 +27,8 @@ public class KeyChooser extends JFrame {
         this.setPreferredSize(new Dimension(400, 70));
         this.add(mainPanel);
 
-        JLabel message = new JLabel("Appuyez sur la touche que vous souhaitez attribuer à cette piste");
+        JLabel message = new JLabel("Raccourci clavier pour cette piste ?");
+        message.setHorizontalAlignment(SwingConstants.CENTER);
         message.setForeground(OperatingWindows.FOREGROUND_COLOR);
         message.setHorizontalAlignment(SwingConstants.CENTER);
 

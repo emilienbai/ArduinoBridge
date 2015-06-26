@@ -30,6 +30,7 @@ public class OperatingWindows extends JFrame {
     public static final Color SOLO_COLOR = new Color(169, 162, 0);
     public static final Color IMPULSE_COLOR = new Color(45, 121, 36);
     public static final Color NAME_COLOR = new Color(221, 101, 4);
+    public static final Color DISABLED_COLOR = new Color(137, 21, 51);
     /************/
     public static final Border RAISED_BORDER = BorderFactory.createBevelBorder(BevelBorder.RAISED);
     public static final Border LOWERED_BORDER = BorderFactory.createBevelBorder(BevelBorder.LOWERED);
@@ -53,6 +54,7 @@ public class OperatingWindows extends JFrame {
     private static JTextArea logsArea;
     private static int selectedSensor = 0;
     private static boolean built = false; //is the window built?
+    private static boolean shortcutEnable = true;
     private JTextArea debounceOneText;
     private JTextArea thresholdOneTextArea;
     private JLabel sensorStatus;
@@ -83,7 +85,7 @@ public class OperatingWindows extends JFrame {
             public void windowClosing(WindowEvent e) {
                 super.windowClosing(e);
                 MidiManager.exit();
-                arduinoInData.close();
+                ArduinoInData.close();
                 dispose();
                 System.exit(0);
             }
@@ -122,6 +124,7 @@ public class OperatingWindows extends JFrame {
         /***********Selected sensor Vu Meter*******/
         selectedSensorVuMeter = new VuMeter(SwingConstants.VERTICAL, 0, 1024);
         selectedSensorVuMeter.setPreferredSize(new Dimension(15, 120));
+        selectedSensorVuMeter.setBackground(BACKGROUND_COLOR);
         topConstraint.gridx = 0;
         topConstraint.weighty = 1;
         topConstraint.weightx = 0;
@@ -406,7 +409,45 @@ public class OperatingWindows extends JFrame {
         calibrateAllButton.addActionListener(e -> new Thread(Services::calibrateAll).start());
 
         addVerticalSeparation(5);
-        /********9th Column, LogArea***************/
+        /*******9th Column CalTime Label************/
+        JLabel calibrationTimeLabel = new JLabel("<html><center>Temps de<br>Calibration (s)</center></html>");
+        calibrationTimeLabel.setBackground(BACKGROUND_COLOR);
+        calibrationTimeLabel.setForeground(FOREGROUND_COLOR);
+        calibrationTimeLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        topConstraint.weightx = 1;
+        ++topConstraint.gridx;
+        topConstraint.gridy = 0;
+        topPanel.add(calibrationTimeLabel, topConstraint);
+
+        /*****9th Column, calTimeTextArea**********/
+        JTextArea calibrationTimeTextArea = new JTextArea("1");
+        calibrationTimeTextArea.setBackground(BACKGROUND_COLOR);
+        calibrationTimeTextArea.setForeground(FOREGROUND_COLOR);
+        calibrationTimeTextArea.setBorder(LOWERED_BORDER);
+        topConstraint.gridy = 1;
+        topPanel.add(calibrationTimeTextArea, topConstraint);
+
+
+        /*****9th Column, calTimeValidation*********/
+        JButton calTimeOK = new JButton("OK");
+        calTimeOK.setBackground(BUTTON_COLOR);
+        calTimeOK.setForeground(FOREGROUND_COLOR);
+        calTimeOK.setBorder(RAISED_BORDER);
+        calTimeOK.setPreferredSize(new Dimension(30, 30));
+        topConstraint.gridy = 2;
+        topPanel.add(calTimeOK, topConstraint);
+
+        calTimeOK.addActionListener(e -> new Thread(() -> {
+            try {
+                int newTime = Integer.parseInt(calibrationTimeTextArea.getText());
+                Services.setCalibrationTime(newTime);
+            } catch (NumberFormatException e1) {
+                e1.printStackTrace();
+            }
+        }).start());
+
+        addVerticalSeparation(5);
+        /********10th Column, LogArea***************/
         logsArea = new JTextArea(10, 20);
         logsArea.setBackground(Color.BLACK);
         logsArea.setForeground(Color.WHITE);
@@ -475,13 +516,47 @@ public class OperatingWindows extends JFrame {
         bottomPanel.setBackground(BACKGROUND_COLOR);
         mainPanel.add(bottomPanel, mainConstraint);
 
+
+        /*****************Disable Shortcut*********/
+        JButton disableShortcut = new JButton("<html><center>Désactiver les<br>raccourcis clavier</center></html>");
+        disableShortcut.setBackground(BUTTON_COLOR);
+        disableShortcut.setForeground(FOREGROUND_COLOR);
+        disableShortcut.setBorder(RAISED_BORDER);
+        disableShortcut.setPreferredSize(new Dimension(160, 40));
+        bottomPanel.add(disableShortcut);
+
+        disableShortcut.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (shortcutEnable) {
+                    shortcutEnable = false;
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            disableShortcut.setBorder(LOWERED_BORDER);
+                            disableShortcut.setBackground(DISABLED_COLOR);
+                        }
+                    });
+                } else {
+                    shortcutEnable = true;
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            disableShortcut.setBorder((RAISED_BORDER));
+                            disableShortcut.setBackground(BUTTON_COLOR);
+                        }
+                    });
+                }
+            }
+        });
+
         /*****************Mute All*****************/
         isMutedAll = false;
         muteAllButton = new JButton(("Mute All"));
         muteAllButton.setBackground(BUTTON_COLOR);
         muteAllButton.setForeground(FOREGROUND_COLOR);
         muteAllButton.setBorder(RAISED_BORDER);
-        muteAllButton.setPreferredSize(new Dimension(90, 25));
+        muteAllButton.setPreferredSize(new Dimension(90, 40));
         bottomPanel.add(muteAllButton);
 
         muteAllButton.addActionListener(new ActionListener() {
@@ -574,7 +649,7 @@ public class OperatingWindows extends JFrame {
         addSensorButton.setBackground(BUTTON_COLOR);
         addSensorButton.setForeground(FOREGROUND_COLOR);
         addSensorButton.setBorder(RAISED_BORDER);
-        addSensorButton.setPreferredSize(new Dimension(150, 25));
+        addSensorButton.setPreferredSize(new Dimension(150, 40));
         bottomPanel.add(addSensorButton);
         addSensorButton.addActionListener(e -> new Thread(() -> {
 
@@ -739,6 +814,10 @@ public class OperatingWindows extends JFrame {
 
     }
 
+    public static boolean isShortcutEnable() {
+        return shortcutEnable;
+    }
+
     private void numberFormatWarning() {
         JOptionPane.showMessageDialog(OperatingWindows.this, "Veuillez entrer un nombre", "Avertissement", JOptionPane.WARNING_MESSAGE);
     }
@@ -875,7 +954,7 @@ public class OperatingWindows extends JFrame {
 
         quitItem.addActionListener(e -> new Thread(() -> {
             MidiManager.exit();
-            arduinoInData.close();
+            ArduinoInData.close();
             dispose();
             System.exit(0);
         }).start());
@@ -974,13 +1053,16 @@ public class OperatingWindows extends JFrame {
     private class MyDispatcher implements KeyEventDispatcher {
         @Override
         public boolean dispatchKeyEvent(KeyEvent e) {
-            if (e.getID() == KeyEvent.KEY_TYPED) {
-                char charTyped = e.getKeyChar();
-                for (SensorRow s : OperatingWindows.sensorRowList) {
-                    if (charTyped == s.getShortcut()) {
-                        OperatingWindows.impulseShortCut(s);
+            if (OperatingWindows.isShortcutEnable()) {
+                if (e.getID() == KeyEvent.KEY_TYPED) {
+                    char charTyped = e.getKeyChar();
+                    for (SensorRow s : OperatingWindows.sensorRowList) {
+                        if (charTyped == s.getShortcut()) {
+                            OperatingWindows.impulseShortCut(s);
+                        }
                     }
                 }
+                return false;
             }
             return false;
         }

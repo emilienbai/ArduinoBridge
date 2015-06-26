@@ -62,6 +62,7 @@ public class Sensor {
 	 * last outputValue
 	 */
 	private int outputValue;
+    private char shortcut;
 
 
 	/**
@@ -70,12 +71,13 @@ public class Sensor {
 	 * @param midiPort midi port to use	
 	 * @param midiReceiver where to send the midi informations
 	 */
-	public Sensor(String name, int arduinoIn, int midiPort,
-			Receiver midiReceiver) {
+    public Sensor(String name, int arduinoIn, int midiPort, char shortcut,
+                  Receiver midiReceiver) {
 		this.name = name;
 		this.arduinoIn = arduinoIn;
 		this.midiPort = midiPort;
-		this.midiReceiver = midiReceiver;
+        this.shortcut = shortcut;
+        this.midiReceiver = midiReceiver;
 		this.minRange = 0;
 		this.maxRange = 127;
 		this.preamplifier = 100;
@@ -86,14 +88,15 @@ public class Sensor {
 		this.outputValue = 0;
 	}
 
-	public Sensor(String name, int arduinoIn, int midiPort,
-				  Receiver midiReceiver, int minRange,
+    public Sensor(String name, int arduinoIn, int midiPort, char shortcut,
+                  Receiver midiReceiver, int minRange,
 				  int maxRange, int preamplifier){
 		this.name = name;
 		this.arduinoIn = arduinoIn;
 		this.midiPort = midiPort;
 		this.midiReceiver = midiReceiver;
-		this.minRange = minRange;
+        this.shortcut = shortcut;
+        this.minRange = minRange;
 		this.maxRange = maxRange;
 		this.preamplifier = preamplifier;
 		this.isMuted = false;
@@ -272,6 +275,14 @@ public class Sensor {
 	public void setIsMutedBySolo(boolean isMutedBySolo) {
 		this.isMutedBySolo = isMutedBySolo;
 	}
+
+    public char getShortcut() {
+        return shortcut;
+    }
+
+    public void setShortcut(char shortcut) {
+        this.shortcut = shortcut;
+    }
 
 	@Override
 	public String toString() {

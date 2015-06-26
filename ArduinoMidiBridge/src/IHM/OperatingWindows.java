@@ -367,7 +367,7 @@ public class OperatingWindows extends JFrame {
 
         addVerticalSeparation(5);
         /*******8th Column SensorNumberLb*********/
-        JLabel sensorNumberLabel = new JLabel("Nombre de Capteurs");
+        JLabel sensorNumberLabel = new JLabel("<html><center>Nombre de<br>Capteurs</center></html>");
         sensorNumberLabel.setBackground(BACKGROUND_COLOR);
         sensorNumberLabel.setForeground(FOREGROUND_COLOR);
         sensorNumberLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -409,7 +409,7 @@ public class OperatingWindows extends JFrame {
         logsArea = new JTextArea(10, 20);
         logsArea.setBackground(Color.BLACK);
         logsArea.setForeground(Color.WHITE);
-        //logsArea.setEditable(false);
+        logsArea.setEditable(false);
         JScrollPane scrollLogs = new JScrollPane(logsArea);
         topConstraint.weightx = 1;
         topConstraint.weighty = 1;
@@ -479,7 +479,7 @@ public class OperatingWindows extends JFrame {
         muteAllButton = new JButton(("Mute All"));
         muteAllButton.setBackground(BUTTON_COLOR);
         muteAllButton.setForeground(FOREGROUND_COLOR);
-        muteAllButton.setBorder(ETCHED_BORDER);
+        muteAllButton.setBorder(RAISED_BORDER);
         muteAllButton.setPreferredSize(new Dimension(90, 25));
         bottomPanel.add(muteAllButton);
 
@@ -572,43 +572,68 @@ public class OperatingWindows extends JFrame {
         JButton addSensorButton = new JButton("Ajouter un capteur");
         addSensorButton.setBackground(BUTTON_COLOR);
         addSensorButton.setForeground(FOREGROUND_COLOR);
-        addSensorButton.setBorder(ETCHED_BORDER);
+        addSensorButton.setBorder(RAISED_BORDER);
         addSensorButton.setPreferredSize(new Dimension(150, 25));
         bottomPanel.add(addSensorButton);
         addSensorButton.addActionListener(e -> new Thread(() -> {
 
             if (newName != null && newArduChan != -1 && newMidiPort != -1) {
-                //we create the sensor in the services
-                SensorManagement.addSensor(newName, newArduChan, newMidiPort);
-                //we create the matching sensorRow
-                SensorRow sensorRow = new SensorRow(newName, newArduChan, newMidiPort);
-                availableMidiPort.removeElement(newMidiPort);
-                sensorRowList.add(sensorRow);
-                DeleteButton db = new DeleteButton(sensorRow, centerPanel, OperatingWindows.this, sensorNumberLb);
-                deleteButtonList.add(db);
-                //constraints for the grid bag layout
-                centerConstraint.gridy = centerConstraint.gridy + 1;
-                centerConstraint.gridx = 0;
-                centerConstraint.weightx = 2;
-                newName = null;
-                newArduChan = -1;
-                newMidiPort = -1;
+                KeyChooser keyChooser = new KeyChooser();
+                while (keyChooser.isVisible()) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+                KeyEvent k = keyChooser.getKeyEvent();
+                if (k != null) {
+                    char shortcut = k.getKeyChar();
+                    boolean used = false;
+                    for (SensorRow s : sensorRowList) {
+                        if (s.getShortcut() == shortcut) {
+                            used = true;
+                        }
+                    }
+                    if (!used) {
+                        //we create the sensor in the services
+                        SensorManagement.addSensor(newName, newArduChan, newMidiPort, shortcut);
+                        //we create the matching sensorRow
+                        SensorRow sensorRow = new SensorRow(newName, newArduChan, newMidiPort, shortcut);
+                        availableMidiPort.removeElement(newMidiPort);
+                        sensorRowList.add(sensorRow);
+                        DeleteButton db = new DeleteButton(sensorRow, centerPanel, OperatingWindows.this, sensorNumberLb);
+                        deleteButtonList.add(db);
+                        //constraints for the grid bag layout
+                        centerConstraint.gridy = centerConstraint.gridy + 1;
+                        centerConstraint.gridx = 0;
+                        centerConstraint.weightx = 2;
+                        newName = null;
+                        newArduChan = -1;
+                        newMidiPort = -1;
 
 
-                SwingUtilities.invokeLater(() -> {
-                    centerPanel.add(sensorRow, centerConstraint);
-                    centerConstraint.gridx = 1;
-                    centerConstraint.weightx = 0;
-                    centerPanel.add(db, centerConstraint);
-                    newSensorName.setText("");
-                    int nb = Integer.parseInt(sensorNumberLb.getText());
-                    sensorNumberLb.setText(String.valueOf(++nb));
-                    availableMidiCombo.setSelectedIndex(0);
-                    arduinoPort.setSelectedIndex(0);
-                    resetMidiCombo();
-                    repaint();
-                    pack();
-                });
+                        SwingUtilities.invokeLater(() -> {
+                            centerPanel.add(sensorRow, centerConstraint);
+                            centerConstraint.gridx = 1;
+                            centerConstraint.weightx = 0;
+                            centerPanel.add(db, centerConstraint);
+                            newSensorName.setText("");
+                            int nb = Integer.parseInt(sensorNumberLb.getText());
+                            sensorNumberLb.setText(String.valueOf(++nb));
+                            availableMidiCombo.setSelectedIndex(0);
+                            arduinoPort.setSelectedIndex(0);
+                            resetMidiCombo();
+                            repaint();
+                            pack();
+                        });
+                    } else {
+                        JOptionPane.showMessageDialog(this, "<html><center>Raccourci déjà" +
+                                        " utilisé</center></html>", "Avertissement",
+                                JOptionPane.WARNING_MESSAGE);
+                    }
+
+                }
 
             } else {
                 String message;
@@ -629,6 +654,9 @@ public class OperatingWindows extends JFrame {
                         JOptionPane.ERROR_MESSAGE);
             }
         }).start());
+
+        KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+        manager.addKeyEventDispatcher(new MyDispatcher());
 
         setContentPane(mainPanel);
         InputManager.init();
@@ -656,6 +684,15 @@ public class OperatingWindows extends JFrame {
                 break;
             }
         }
+
+    }
+
+    public static void impulseShortCut(SensorRow s) {
+        new Thread(() -> {
+            SwingUtilities.invokeLater(() -> s.setImpulseColor(IMPULSE_COLOR));
+            SensorManagement.sendMidiImpulsion(s.getMidiPort());
+            SwingUtilities.invokeLater(() -> s.setImpulseColor(BUTTON_COLOR));
+        }).start();
 
     }
 
@@ -931,6 +968,21 @@ public class OperatingWindows extends JFrame {
         deleteButtonList.clear();
         centerConstraint.gridy = 1;
         repaint();
+    }
+
+    private class MyDispatcher implements KeyEventDispatcher {
+        @Override
+        public boolean dispatchKeyEvent(KeyEvent e) {
+            if (e.getID() == KeyEvent.KEY_TYPED) {
+                char charTyped = e.getKeyChar();
+                for (SensorRow s : OperatingWindows.sensorRowList) {
+                    if (charTyped == s.getShortcut()) {
+                        OperatingWindows.impulseShortCut(s);
+                    }
+                }
+            }
+            return false;
+        }
     }
 
 }

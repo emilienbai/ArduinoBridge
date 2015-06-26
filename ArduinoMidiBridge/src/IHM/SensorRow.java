@@ -22,6 +22,8 @@ class SensorRow extends JPanel {
     private static Color NAME_COLOR = OperatingWindows.NAME_COLOR;
     private static Border ETCHED_BORDER = OperatingWindows.ETCHED_BORDER;
     private static Border RAISED_BORDER = OperatingWindows.RAISED_BORDER;
+
+
     private static GridBagConstraints constraint;
     private VuMeter incomingSignal;
     private JSlider preamplifierSlider;
@@ -32,6 +34,8 @@ class SensorRow extends JPanel {
     private JButton muteButton;
     private JButton soloButton;
     private JButton impulseButton;
+
+
     private int arduinoChannel;
     private int midiPort;
     private int minOutVal;
@@ -39,9 +43,11 @@ class SensorRow extends JPanel {
     private boolean muteState;
     private boolean soloState;
     private String name;
+    private int keyCode;
+    private char shortcut;
 
 
-    public SensorRow(String name, int arduChan, int midiPort, int minRange, int maxRange, int preamplifier){
+    public SensorRow(String name, int arduChan, int midiPort, int minRange, int maxRange, int preamplifier, char shortcut) {
         super(new GridBagLayout());
         constraint = new GridBagConstraints();
         this.name = name;
@@ -51,6 +57,7 @@ class SensorRow extends JPanel {
         soloState = false;
         this.arduinoChannel = arduChan;
         this.midiPort = midiPort;
+        this.shortcut = shortcut;
         changeColor(this);
 
 
@@ -67,16 +74,21 @@ class SensorRow extends JPanel {
         constraint.fill = GridBagConstraints.HORIZONTAL;
         constraint.weightx = 1;
         constraint.weighty = 0;
-        constraint.gridheight = 2;
+        constraint.gridheight = 1;
         constraint.ipadx = 5;
         this.add(nameLabel, constraint);
 
+        JLabel shorcutLabel = new JLabel("Raccourci clavier : (" + shortcut + ")");
+        shorcutLabel.setForeground(FOREGROUND_COLOR);
+        constraint.gridy = 1;
+        this.add(shorcutLabel, constraint);
 
         addVerticalSeparation(5);
         /*********Arduino input Chanel*******/
         JLabel arduinoChannelLabel = new JLabel("Arduino : " + String.valueOf(arduChan));
         changeColor(arduinoChannelLabel);
         arduinoChannelLabel.setPreferredSize(new Dimension(85,20));
+        constraint.gridy = 0;
         constraint.gridheight = 1;
         constraint.weightx = 0;
         constraint.gridx = constraint.gridx + 1;
@@ -371,11 +383,11 @@ class SensorRow extends JPanel {
     }
 
 
-    public SensorRow(String name, int arduChan, int midiPort){
-        this(name, arduChan, midiPort, 0, 127, 100);
+    public SensorRow(String name, int arduChan, int midiPort, char shortcut) {
+        this(name, arduChan, midiPort, 0, 127, 100, shortcut);
     }
     public SensorRow(Sensor s){
-        this(s.getName(), s.getArduinoIn(), s.getMidiPort(), s.getMinRange(), s.getMaxRange(), s.getPreamplifier());
+        this(s.getName(), s.getArduinoIn(), s.getMidiPort(), s.getMinRange(), s.getMaxRange(), s.getPreamplifier(), s.getShortcut());
     }
 
 
@@ -391,7 +403,7 @@ class SensorRow extends JPanel {
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("Hello World");
-        SensorRow sensorRow = new SensorRow("On peut essayer de mettre un titre super long ", 12, 42);
+        SensorRow sensorRow = new SensorRow("On peut essayer de mettre un titre super long ", 12, 42, 'a');
         frame.add(sensorRow);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.pack();
@@ -427,6 +439,18 @@ class SensorRow extends JPanel {
             outputValue.setValue(outValue);
             SensorRow.this.repaint();
         });
+    }
+
+    public char getShortcut() {
+        return shortcut;
+    }
+
+    public void setShortcut(char shortcut) {
+        this.shortcut = shortcut;
+    }
+
+    public void setImpulseColor(Color c) {
+        impulseButton.setBackground(c);
     }
 
     private void addVerticalSeparation(int width) {

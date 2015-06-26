@@ -81,12 +81,14 @@ public class Services {
             file.newLine();
             file.write("<!ATTLIST save sensorNumber CDATA \"0\">");
             file.newLine();
-            file.write("<!ELEMENT sensor (name, arduinoIn, midiPort, minRange, maxRange, preamplifier)>");
+            file.write("<!ELEMENT sensor (name, arduinoIn, midiPort, shortcut, minRange, maxRange, preamplifier)>");
             file.write("<!ELEMENT name (#PCDATA)>");
             file.newLine();
             file.write("<!ELEMENT arduinoIn (#PCDATA)>");
             file.newLine();
             file.write("<!ELEMENT midiPort (#PCDATA)>");
+            file.newLine();
+            file.write("<!ELEMENT shortcut (#PCDATA)>");
             file.newLine();
             file.write("<!ELEMENT minRange (#PCDATA)>");
             file.newLine();
@@ -116,6 +118,8 @@ public class Services {
                 file.write("        <arduinoIn>" + s.getArduinoIn() + "</arduinoIn>");
                 file.newLine();
                 file.write("        <midiPort>" + s.getMidiPort() + "</midiPort>");
+                file.newLine();
+                file.write("        <shortcut>" + s.getShortcut() + "</shortcut>");
                 file.newLine();
                 file.write("        <minRange>" + s.getMinRange() + "</minRange>");
                 file.newLine();
@@ -217,12 +221,16 @@ public class Services {
         String name = getTextValue(sensEl, "name");
         int arduinoIn = getIntValue(sensEl, "arduinoIn");
         int midiPort = getIntValue(sensEl, "midiPort");
+        String shortcut = getTextValue(sensEl, "shortcut");
+        System.out.println("Raccourci chargé " + shortcut);
+        char shortChar = shortcut.charAt(0);
+        System.out.println(shortChar);
         int minRange = getIntValue(sensEl, "minRange");
         int maxRange = getIntValue(sensEl, "maxRange");
         int preamplifier = getIntValue(sensEl, "preamplifier");
 
         /*Return the new sensor*/
-        return new Sensor(name, arduinoIn, midiPort, MidiManager.getMidiReceiver(), minRange, maxRange, preamplifier);
+        return new Sensor(name, arduinoIn, midiPort, shortChar, MidiManager.getMidiReceiver(), minRange, maxRange, preamplifier);
     }
 
     private static ArduinoChan getArduinoChan(Element ardEl) {

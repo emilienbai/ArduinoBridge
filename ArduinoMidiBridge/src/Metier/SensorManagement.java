@@ -20,8 +20,8 @@ public class SensorManagement {
      * @param arduinoIn match with the analog input on the arduino
      * @param midiPort  midiPort where to send data
      */
-    public static void addSensor(String name, int arduinoIn, int midiPort){
-        Sensor s = new Sensor(name, arduinoIn, midiPort, MidiManager.getMidiReceiver());
+    public static void addSensor(String name, int arduinoIn, int midiPort, char shortcut) {
+        Sensor s = new Sensor(name, arduinoIn, midiPort, shortcut, MidiManager.getMidiReceiver());
         sensorList.add(s);
     }
 

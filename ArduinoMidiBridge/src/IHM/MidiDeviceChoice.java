@@ -258,6 +258,7 @@ public class MidiDeviceChoice extends JFrame{
         bottomConstraint.weightx = 1;
         bottomPanel.add(reloadProgress, bottomConstraint);
 
+        //TODO separe button
         /**QuitButton**/
         if(arduinoSet){
             quitButton = new JButton("Quitter");

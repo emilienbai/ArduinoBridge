@@ -60,10 +60,7 @@ public class ArduinoChan {
 
         ArduinoChan that = (ArduinoChan) o;
 
-        if (number != that.number) return false;
-        if (debounce != that.debounce) return false;
-        if (threshold != that.threshold) return false;
-        return enable == that.enable;
+        return number == that.number && debounce == that.debounce && threshold == that.threshold && enable == that.enable;
 
     }
 

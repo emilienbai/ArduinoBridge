@@ -20,9 +20,9 @@ class SensorRow extends JPanel {
     private static Color SOLO_COLOR = OperatingWindows.SOLO_COLOR;
     private static Color IMPULSE_COLOR = OperatingWindows.IMPULSE_COLOR;
     private static Color NAME_COLOR = OperatingWindows.NAME_COLOR;
-    private static Border ETCHED_BORDER = OperatingWindows.ETCHED_BORDER;
     private static Border RAISED_BORDER = OperatingWindows.RAISED_BORDER;
     private static Border LOWERED_BORDER = OperatingWindows.LOWERED_BORDER;
+    private static Border ETCHED_BORDER = OperatingWindows.ETCHED_BORDER;
 
 
     private static GridBagConstraints constraint;
@@ -44,10 +44,21 @@ class SensorRow extends JPanel {
     private boolean muteState;
     private boolean soloState;
     private String name;
-    private int keyCode;
     private char shortcut;
 
+    //TODO Add the delete Button in this Line
 
+    /**
+     * Create a JPanel containing all the element of a sensorRow
+     *
+     * @param name         Name of the channel
+     * @param arduChan     Arduino Input concerned
+     * @param midiPort     Midi port used for the communication
+     * @param minRange     Value of the minimum midi Message
+     * @param maxRange     Value of the maximum midi Message
+     * @param preamplifier Factor of multiplication
+     * @param shortcut     Keyboard Shortcut used to send an impulsion
+     */
     public SensorRow(String name, int arduChan, int midiPort, int minRange, int maxRange, int preamplifier, char shortcut) {
         super(new GridBagLayout());
         constraint = new GridBagConstraints();
@@ -60,6 +71,7 @@ class SensorRow extends JPanel {
         this.midiPort = midiPort;
         this.shortcut = shortcut;
         changeColor(this);
+        this.setBorder(ETCHED_BORDER);
 
 
         /********************Name************/
@@ -343,7 +355,6 @@ class SensorRow extends JPanel {
 
         }).start());
 
-        addVerticalSeparation(5);//TODO boutons enfoncés quand cliqués
         /**********SoloButton**********/
         soloButton = new JButton("Solo");
         soloButton.setBackground(BUTTON_COLOR);
@@ -397,14 +408,19 @@ class SensorRow extends JPanel {
         addVerticalSeparation(5);
     }
 
-
+    /**
+     * Simplified type of constructor with default params
+     * @param name
+     * @param arduChan
+     * @param midiPort
+     * @param shortcut
+     */
     public SensorRow(String name, int arduChan, int midiPort, char shortcut) {
         this(name, arduChan, midiPort, 0, 127, 100, shortcut);
     }
     public SensorRow(Sensor s){
         this(s.getName(), s.getArduinoIn(), s.getMidiPort(), s.getMinRange(), s.getMaxRange(), s.getPreamplifier(), s.getShortcut());
     }
-
 
 
     /**
@@ -425,21 +441,33 @@ class SensorRow extends JPanel {
         frame.setVisible(true);
     }
 
+    /**
+     * getter for the midi port of the SensorRow
+     * @return the midiPort of the sensorRow
+     */
     public int getMidiPort() {
         return midiPort;
     }
 
+    /**
+     * Getter for the arduino Channel of the sensorRow
+     * @return the arduinoChannel of the sensorRow
+     */
     public int getArduinoChannel() {
         return arduinoChannel;
     }
 
+    /**
+     * Getter for the name of the channel
+     * @return the name of the channel
+     */
     @Override
     public String getName() {
         return name;
     }
 
     /**
-     * Set the value of the vu-meter
+     * Set the value of the input vu-meter
      * @param data the value to set
      */
     public void setIncomingSignal(int data){
@@ -449,6 +477,10 @@ class SensorRow extends JPanel {
         });
     }
 
+    /**
+     * Set the value of the output vu-meter
+     * @param outValue the value to set
+     */
     public void setOutputValue(int outValue) {
         SwingUtilities.invokeLater(() -> {
             outputValue.setValue(outValue);
@@ -456,18 +488,26 @@ class SensorRow extends JPanel {
         });
     }
 
+    /**
+     * Getter for the shortcut of the sensorRow
+     * @return the shortcut to use to send an impulsion
+     */
     public char getShortcut() {
         return shortcut;
     }
 
-    public void setShortcut(char shortcut) {
-        this.shortcut = shortcut;
-    }
-
+    /**
+     * Setter for the color of the impulse Button
+     * @param c The color to set
+     */
     public void setImpulseColor(Color c) {
         impulseButton.setBackground(c);
     }
 
+    /**
+     * Add a vertical separation between the element of the SensorRow
+     * @param width width of the separation
+     */
     private void addVerticalSeparation(int width) {
         int temp = (int) constraint.weightx;
         constraint.weightx = 0;
@@ -477,6 +517,4 @@ class SensorRow extends JPanel {
         this.add(Box.createHorizontalStrut(width), constraint);
         constraint.weightx = temp;
     }
-
-
 }

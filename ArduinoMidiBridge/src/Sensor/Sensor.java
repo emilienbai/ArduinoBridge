@@ -62,14 +62,18 @@ public class Sensor {
 	 * last outputValue
 	 */
 	private int outputValue;
+    /**
+     * a keyboard shortcut matching with the sensor
+     */
     private char shortcut;
 
 
 	/**
 	 * @param name Name of the sensor
 	 * @param arduinoIn arduino analogInput number for this sensor
-	 * @param midiPort midi port to use	
-	 * @param midiReceiver where to send the midi informations
+     * @param midiPort midi port to use
+     * @param shortcut shortcut matching with the sensor Object
+     * @param midiReceiver where to send the midi informations
 	 */
     public Sensor(String name, int arduinoIn, int midiPort, char shortcut,
                   Receiver midiReceiver) {
@@ -86,8 +90,19 @@ public class Sensor {
 		this.isMutedAll = false;
 		this.isMutedBySolo = false;
 		this.outputValue = 0;
-	}
+    }
 
+    /**
+     * Constructor of a Sensor Object
+     * @param name name of the sensor
+     * @param arduinoIn arduino analog input matching with the sensor
+     * @param midiPort  midi port to use
+     * @param shortcut shortcut matching with the sensor Object
+     * @param midiReceiver where to send the midi informations
+     * @param minRange Minimal output midi value for this sensor
+     * @param maxRange Maximal output midi value for this sensor
+     * @param preamplifier factor of mutliplication
+     */
     public Sensor(String name, int arduinoIn, int midiPort, char shortcut,
                   Receiver midiReceiver, int minRange,
 				  int maxRange, int preamplifier){
@@ -256,20 +271,8 @@ public class Sensor {
 		return outputValue;
 	}
 
-	public boolean isMuted() {
-		return isMuted;
-	}
-
-	public boolean isMutedAll() {
-		return isMutedAll;
-	}
-
 	public void setIsMutedAll(boolean isMutedAll) {
 		this.isMutedAll = isMutedAll;
-	}
-
-	public boolean isMutedBySolo() {
-		return isMutedBySolo;
 	}
 
 	public void setIsMutedBySolo(boolean isMutedBySolo) {
@@ -278,10 +281,6 @@ public class Sensor {
 
     public char getShortcut() {
         return shortcut;
-    }
-
-    public void setShortcut(char shortcut) {
-        this.shortcut = shortcut;
     }
 
 	@Override

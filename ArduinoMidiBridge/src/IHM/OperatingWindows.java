@@ -31,7 +31,10 @@ public class OperatingWindows extends JFrame {
     public static final Color IMPULSE_COLOR = new Color(45, 121, 36);
     public static final Color NAME_COLOR = new Color(221, 101, 4);
     public static final Color DISABLED_COLOR = new Color(137, 21, 51);
-    /************/
+
+    /*****************************
+     * BORDERS
+     *********************************/
     public static final Border RAISED_BORDER = BorderFactory.createBevelBorder(BevelBorder.RAISED);
     public static final Border LOWERED_BORDER = BorderFactory.createBevelBorder(BevelBorder.LOWERED);
     public static final Border ETCHED_BORDER = BorderFactory.createEtchedBorder(EtchedBorder.LOWERED);
@@ -40,7 +43,7 @@ public class OperatingWindows extends JFrame {
     private static final int DEFAULT_THRESHOLD = 100;
     private static final int DEFAULT_DEBOUNCE = 200;
 
-    /***********/
+    /*************************Attributes*********************************/
     private static JPanel centerPanel;
     private static JMenuBar menuBar;
     private static Vector<Integer> availableMidiPort = new Vector<>();
@@ -55,6 +58,7 @@ public class OperatingWindows extends JFrame {
     private static int selectedSensor = 0;
     private static boolean built = false; //is the window built?
     private static boolean shortcutEnable = true;
+    private static JPanel bottomPanel;
     private JTextArea debounceOneText;
     private JTextArea thresholdOneTextArea;
     private JLabel sensorStatus;
@@ -66,12 +70,14 @@ public class OperatingWindows extends JFrame {
     private int newArduChan = -1;
     private int newMidiPort = -1;
 
-    /************/
-    /**BORDERS***/
+
     private GridBagConstraints centerConstraint;
     private File saveFile = null;
     private JLabel sensorNumberLb;
 
+    /**
+     * Main Windows of the application
+     */
     public OperatingWindows() {
         super("ArduinoBrigde");
         pack();
@@ -133,7 +139,6 @@ public class OperatingWindows extends JFrame {
         ++topConstraint.gridx;
         topConstraint.gridheight = 3;
         topPanel.add(selectedSensorVuMeter, topConstraint);
-
 
         addVerticalSeparation(10);
         /********1st Column Sensor Choice**********/
@@ -265,7 +270,6 @@ public class OperatingWindows extends JFrame {
                 numberFormatWarning();
             }
         }).start());
-
 
         addVerticalSeparation(5);
         /*******4th Column, CalibrateOne***********/
@@ -505,6 +509,8 @@ public class OperatingWindows extends JFrame {
         sensorNumberLb.setForeground(FOREGROUND_COLOR);
         centerPanel.add(sensorNumberLb, centerConstraint);
 
+
+
         /******************************************/
         /**************Bottom Panel****************/
         /******************************************/
@@ -512,7 +518,7 @@ public class OperatingWindows extends JFrame {
         mainConstraint.gridy = mainConstraint.gridy + 1;
         mainConstraint.fill = GridBagConstraints.HORIZONTAL;
         mainConstraint.anchor = GridBagConstraints.LAST_LINE_END;
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
+        bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
         bottomPanel.setBackground(BACKGROUND_COLOR);
         mainPanel.add(bottomPanel, mainConstraint);
 
@@ -530,21 +536,15 @@ public class OperatingWindows extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 if (shortcutEnable) {
                     shortcutEnable = false;
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            disableShortcut.setBorder(LOWERED_BORDER);
-                            disableShortcut.setBackground(DISABLED_COLOR);
-                        }
+                    SwingUtilities.invokeLater(() -> {
+                        disableShortcut.setBorder(LOWERED_BORDER);
+                        disableShortcut.setBackground(DISABLED_COLOR);
                     });
                 } else {
                     shortcutEnable = true;
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            disableShortcut.setBorder((RAISED_BORDER));
-                            disableShortcut.setBackground(BUTTON_COLOR);
-                        }
+                    SwingUtilities.invokeLater(() -> {
+                        disableShortcut.setBorder((RAISED_BORDER));
+                        disableShortcut.setBackground(BUTTON_COLOR);
                     });
                 }
             }
@@ -654,6 +654,7 @@ public class OperatingWindows extends JFrame {
         addSensorButton.addActionListener(e -> new Thread(() -> {
 
             if (newName != null && newArduChan != -1 && newMidiPort != -1) {
+                //Check if every needed information is here
                 KeyChooser keyChooser = new KeyChooser();
                 while (keyChooser.isVisible()) {
                     try {
@@ -688,7 +689,6 @@ public class OperatingWindows extends JFrame {
                         newArduChan = -1;
                         newMidiPort = -1;
 
-
                         SwingUtilities.invokeLater(() -> {
                             centerPanel.add(sensorRow, centerConstraint);
                             centerConstraint.gridx = 1;
@@ -708,7 +708,6 @@ public class OperatingWindows extends JFrame {
                                         " utilisé</center></html>", "Avertissement",
                                 JOptionPane.WARNING_MESSAGE);
                     }
-
                 }
 
             } else {
@@ -737,11 +736,15 @@ public class OperatingWindows extends JFrame {
         setContentPane(mainPanel);
         InputManager.init();
         built = true;
-
     }
 
+    /**
+     * Sort the available midi port into the vector
+     */
     public static void resetMidiCombo() {
         availableMidiPort.sort(new sortVectors());
+        availableMidiCombo.setSelectedIndex(0);
+        availableMidiCombo.repaint();
     }
 
     public static void main(String[] args) {
@@ -751,8 +754,13 @@ public class OperatingWindows extends JFrame {
         frame.setVisible(true);
     }
 
-    public static void removeFromSensorList(int midiPort) {
-
+    /**
+     * Remove a Sensor Row from the list
+     *
+     * @param midiPort the midiport of this sensorRow
+     * @param db       the deletebutton to remove
+     */
+    public static void removeFromSensorList(int midiPort, DeleteButton db) {
         availableMidiPort.add(midiPort);    //on le remet dans les dispos
         for (SensorRow s : sensorRowList) {
             if (s.getMidiPort() == midiPort) {
@@ -760,9 +768,13 @@ public class OperatingWindows extends JFrame {
                 break;
             }
         }
-
+        deleteButtonList.remove(db);
     }
 
+    /**
+     * Send an impulsion on the midiPort of a SensorRow
+     * @param s The sensorrow to modify
+     */
     public static void impulseShortCut(SensorRow s) {
         new Thread(() -> {
             SwingUtilities.invokeLater(() -> s.setImpulseColor(IMPULSE_COLOR));
@@ -772,6 +784,10 @@ public class OperatingWindows extends JFrame {
 
     }
 
+    /**
+     * Add vertical separation in the topPanel
+     * @param width Width of this separation
+     */
     private static void addVerticalSeparation(int width) {
         topConstraint.gridx = topConstraint.gridx + 1;
         topConstraint.gridheight = 3;
@@ -779,12 +795,13 @@ public class OperatingWindows extends JFrame {
         topConstraint.gridheight = 1;
     }
 
-    public static void removeFromDBList(DeleteButton db) {
-        deleteButtonList.remove(db);
-    }
 
+    /**
+     * Update every Vu-Meter on the interface
+     * @param dataIn data sent by the arduino board
+     */
     public static void refreshInterface(String dataIn) {
-        if (built) {
+        if (built) { //begin only if the Frame is built
             String[] splitted = dataIn.split("-");
             //every instruction is separated by a -
             for (int i = 0; i < splitted.length; i += 2) {
@@ -809,19 +826,32 @@ public class OperatingWindows extends JFrame {
         }
     }
 
+    /**
+     * Show logs from the arduino board
+     * @param logs The String to display
+     */
     public static void refreshLogs(String logs) {
         SwingUtilities.invokeLater(() -> logsArea.setText(logs));
-
     }
 
+    /**
+     * getter for shortcutEnable
+     * @return true if shortcuts are activated
+     */
     public static boolean isShortcutEnable() {
         return shortcutEnable;
     }
 
+    /**
+     * Display a warning about the content
+     */
     private void numberFormatWarning() {
         JOptionPane.showMessageDialog(OperatingWindows.this, "Veuillez entrer un nombre", "Avertissement", JOptionPane.WARNING_MESSAGE);
     }
 
+    /**
+     * Create the menuBar of the window
+     */
     private void setMenuBar() {
         menuBar = new JMenuBar();
         menuBar.setBackground(BACKGROUND_COLOR);
@@ -992,12 +1022,18 @@ public class OperatingWindows extends JFrame {
 
     }
 
+    /**
+     * initialize the midiPort Vector
+     */
     private void initMidiPort() {
         for (int i = 0; i < 128; i++) {
             availableMidiPort.add(i);
         }
     }
 
+    /**
+     * Load a setup in the GUI
+     */
     private void loadSetup() {
         new Thread(() -> {
             SwingUtilities.invokeLater(OperatingWindows.this::cleanAction);
@@ -1037,6 +1073,9 @@ public class OperatingWindows extends JFrame {
 
     }
 
+    /**
+     * Clean the GUI for a new session
+     */
     private void cleanAction() {
         sensorRowList.forEach(centerPanel::remove);
         deleteButtonList.forEach(centerPanel::remove);
@@ -1050,6 +1089,21 @@ public class OperatingWindows extends JFrame {
         repaint();
     }
 
+    private static class sortVectors implements Comparator<Integer> {
+
+        @Override
+        public int compare(Integer o1, Integer o2) {
+            if (o1 < o2) {
+                return -1;
+            } else if (o1 > o2)
+                return 1;
+            return 0;
+        }
+    }
+
+    /**
+     * Keyboard Listener
+     */
     private class MyDispatcher implements KeyEventDispatcher {
         @Override
         public boolean dispatchKeyEvent(KeyEvent e) {
@@ -1070,14 +1124,5 @@ public class OperatingWindows extends JFrame {
 
 }
 
-    class sortVectors implements Comparator<Integer> {
 
-        @Override
-        public int compare(Integer o1, Integer o2) {
-            if(o1<o2){
-                return -1;
-            }else if(o1>o2)
-                return 1;
-            return 0;
-        }
-    }
+

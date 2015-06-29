@@ -32,8 +32,8 @@ public class MidiDeviceChoice extends JFrame{
     private JProgressBar reloadProgress;
     private JLabel deviceDescription;
     private MidiDevice.Info choosenDevice = null;
-    private boolean readyToClose = false;
-    private boolean arduinoConnected;
+    private boolean readyToClose = false; //a midiReceiver have been selected;
+    private boolean arduinoConnected;     //The communication with the arduino have already been established
 
     /**
      * Constructor for the frame Midi Device Choice
@@ -107,11 +107,11 @@ public class MidiDeviceChoice extends JFrame{
         topConstraint.weightx =1;
         topPanel.add(arduinoCom, topConstraint);
 
-
         ++topConstraint.gridx;
         topConstraint.weightx = 0;
         topPanel.add(Box.createHorizontalStrut(10), topConstraint);
         topConstraint.weightx = 1;
+
         /******************/
         /***check Button***/
         /******************/
@@ -276,6 +276,7 @@ public class MidiDeviceChoice extends JFrame{
         bottomConstraint.gridx = 2;
         bottomConstraint.gridwidth = 1;
         bottomPanel.add(Box.createHorizontalStrut(5), bottomConstraint);
+
         /**QuitButton**/
         if(arduinoSet){
             quitButton = new JButton("Quitter");
@@ -306,22 +307,19 @@ public class MidiDeviceChoice extends JFrame{
 
         ++bottomConstraint.gridx;
         bottomPanel.add(Box.createHorizontalStrut(5), bottomConstraint);
+
         /**OKButton**/
         okButton = new JButton("OK");
         okButton.setBackground(BUTTON_COLOR);
         okButton.setForeground(FOREGROUND_COLOR);
         okButton.setBorder(RAISED_BORDER);
 
-
         ++bottomConstraint.gridx;
         bottomPanel.add(okButton, bottomConstraint);
 
-
         okButton.addActionListener(e -> {
             if (readyToClose && arduinoConnected) {
-                new Thread(() -> {
-                    SensorManagement.changeReceiver();
-                }).start();
+                new Thread(SensorManagement::changeReceiver).start();
                 dispose();
                 if(arduinoSet) {
                     new OperatingWindows();

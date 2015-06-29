@@ -14,6 +14,14 @@ import java.awt.*;
 public class DeleteButton extends JButton {
     private SensorRow toDelete;
 
+    /**
+     * Constructor for a deletion Button, which remove a SensorRow
+     *
+     * @param toDelete     sensorRow to remove
+     * @param from         Panel where the sensorRow is
+     * @param ancestorFrom The frame to repaint after the deletion
+     * @param sensorNumber Number of the Sensor to remove from the List
+     */
     public DeleteButton(SensorRow toDelete, JPanel from, JFrame ancestorFrom, JLabel sensorNumber ) {
         super("Supprimer");
         this.toDelete = toDelete;
@@ -34,9 +42,8 @@ public class DeleteButton extends JButton {
                 nb = Integer.parseInt(sensorNumber.getText());
                 nb--;
                 SwingUtilities.invokeLater(() -> {
-                    OperatingWindows.removeFromSensorList(toDelete.getMidiPort());
+                    OperatingWindows.removeFromSensorList(toDelete.getMidiPort(), DeleteButton.this);
                     OperatingWindows.resetMidiCombo();
-                    OperatingWindows.removeFromDBList(DeleteButton.this);
                     from.remove(toDelete);
                     from.remove(DeleteButton.this);
                     sensorNumber.setText(String.valueOf(nb));
@@ -47,6 +54,10 @@ public class DeleteButton extends JButton {
         }).start());
     }
 
+    /**
+     * Convert the deleteButton's information into a String
+     * @return The deleteButton's information.
+     */
     public String toString(){
         return "Bouton supprimer de la ligne " + this.toDelete.getName();
            }

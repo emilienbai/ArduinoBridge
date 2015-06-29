@@ -9,11 +9,12 @@ import java.util.Vector;
  */
 public class InputManager {
     private static final int MAX_INPUT = 16;
-
-
     private static Vector<ArduinoChan> arduinoInVector = new Vector(16);
     private static int activeNumber;
 
+    /**
+     * Initialize the arduino manager
+     */
     public static void init() {
 
         for (int i = 0; i < MAX_INPUT; i++) {
@@ -23,10 +24,15 @@ public class InputManager {
         activeNumber = MAX_INPUT;
     }
 
+    /**
+     * Change the number of active channels
+     *
+     * @param newNumber
+     */
     protected static void chooseChanNb(int newNumber) {
         if (newNumber != activeNumber) {
             for (int i = newNumber; i < MAX_INPUT; i++) {
-                ArduinoChan a = (ArduinoChan) arduinoInVector.get(i);
+                ArduinoChan a = arduinoInVector.get(i);
                 a.setEnable(false);
                 arduinoInVector.set(i, a);
             }
@@ -34,46 +40,73 @@ public class InputManager {
         }
     }
 
+    /**
+     * Set the debounce value for an arduinoInput
+     * @param inputNumber The input to modify
+     * @param debounceValue the new time of debounce
+     */
     protected static void setDebounceOne(int inputNumber, int debounceValue) {
-        ArduinoChan a = (ArduinoChan) arduinoInVector.get(inputNumber);
+        ArduinoChan a = arduinoInVector.get(inputNumber);
         a.setDebounce(debounceValue);
         arduinoInVector.set(inputNumber, a);
     }
 
+    /**
+     * Set the threshold value for an arduinoInput
+     * @param inputNumber The input to modify
+     * @param thresholdValue the new threshold
+     */
     protected static void setThresholdOne(int inputNumber, int thresholdValue) {
-        ArduinoChan a = (ArduinoChan) arduinoInVector.get(inputNumber);
+        ArduinoChan a = arduinoInVector.get(inputNumber);
         a.setThreshold(thresholdValue);
         arduinoInVector.set(inputNumber, a);
     }
 
+    /**
+     * Set the value of debounce for every input
+     * @param debounceValue the new time of debounce
+     */
     protected static void setDebounceAll(int debounceValue) {
         for (ArduinoChan a : arduinoInVector) {
             a.setDebounce(debounceValue);
         }
     }
 
+    /**
+     * Set the threshold value for every input
+     * @param thresholdValue the new value of threshold
+     */
     protected static void setThresholdAll(int thresholdValue) {
         for (ArduinoChan a : arduinoInVector) {
             a.setThreshold(thresholdValue);
         }
     }
 
-    private static void listInput() {
-        for (ArduinoChan a : arduinoInVector) {
-            System.out.println(a);
-        }
-    }
 
+    /**
+     * Getter for an arduino channel object from its input number
+     * @param chanNumber
+     * @return
+     */
     protected static ArduinoChan getArduinoChan(int chanNumber) {
         return arduinoInVector.get(chanNumber);
     }
 
+    /**
+     * Getter for every arduino channel object
+     * @return
+     */
     protected static Vector<ArduinoChan> getArduinoInVector() {
         return arduinoInVector;
     }
 
-    public static void loadSetup(Vector<ArduinoChan> a) {
-        arduinoInVector = a;
+    /**
+     * Load an existing vector of arduino Channel
+     *
+     * @param arduiChanVector The vector to load
+     */
+    public static void loadSetup(Vector<ArduinoChan> arduiChanVector) {
+        arduinoInVector = arduiChanVector;
         int number;
         int debounce;
         int threshold;
@@ -93,23 +126,10 @@ public class InputManager {
     }
 
 
-    public static void main(String[] args) {
-        InputManager.init();
-        InputManager.listInput();
-        System.out.println();
-        InputManager.chooseChanNb(10);
-        InputManager.listInput();
-        System.out.println();
-        InputManager.setDebounceOne(5, 400);
-        InputManager.setThresholdOne(4, 800);
-        InputManager.listInput();
-        System.out.println();
-        InputManager.setDebounceAll(200);
-        InputManager.setThresholdAll(150);
-        InputManager.listInput();
-
-    }
-
+    /**
+     * Get the number of active channel
+     * @return the number of active channel in this setup
+     */
     public static int getActiveNumber() {
         return activeNumber;
     }

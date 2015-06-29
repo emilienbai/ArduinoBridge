@@ -57,10 +57,18 @@ public class MidiManager {
         }
     }
 
+    /**
+     * getter for the used midiReceiver
+     *
+     * @return the currently used midiReceiver
+     */
     public static Receiver getMidiReceiver() {
         return midiReceiver;
     }
 
+    /**
+     * Close the connection with the receiver
+     *///todo add a services method to close every single connection
     public static void exit(){
         if(choosenDevice != null) {
             choosenDevice.close();

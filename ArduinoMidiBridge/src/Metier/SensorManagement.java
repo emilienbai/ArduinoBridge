@@ -216,6 +216,11 @@ public class SensorManagement {
         }
     }
 
+    /**
+     * Getter for the sensor list
+     *
+     * @return the list of sensor
+     */
     public static List<Sensor> getSensorList() {
         return sensorList;
     }

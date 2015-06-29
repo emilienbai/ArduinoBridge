@@ -7,9 +7,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.TooManyListenersException;
 
 /**
@@ -20,11 +18,11 @@ public class ArduinoInData implements SerialPortEventListener {
      * The port we're normally going to use.
      */
     public static final String PORT_NAMES[] = {
-            "/dev/tty.usbmodem * - Mac OS X - Uno et Mega 2560", // Mac OS X
-            "/dev/tty.usbserial * - Mac OS X - anciennes cartes",
-            "/dev/ttyACM * - Raspberry Pi & Linux", // Raspberry Pi
-            "/dev/ttyUSB * - Linux", // Linux
-            "COM * - Windows", // Windows
+            "/dev/tty.usbmodem", // Mac OS X
+            "/dev/tty.usbserial",
+            "/dev/ttyACM", // Raspberry Pi
+            "/dev/ttyUSB", // Linux
+            "COM", // Windows
     };
     public static final int NO_ERR = 0;
     public static final int PORT_NOT_FOUND = 1;
@@ -68,7 +66,6 @@ public class ArduinoInData implements SerialPortEventListener {
 
     /**
      * set the noise gate for an input on the arduino
-     *
      * @param sensorNumber the sensor to change
      * @param newValue     the new value of the gate
      * @return true if it worked
@@ -136,9 +133,8 @@ public class ArduinoInData implements SerialPortEventListener {
 
     /**
      * set the number of sensor used by the arduino
-     *
-     * @param newNumber
-     * @return
+     * @param newNumber the new number of sensor
+     * @return true if the message have been sent
      */
     protected static boolean setSensorNumber(int newNumber) {
         String s = "setnb " + newNumber + "\n";
@@ -172,69 +168,15 @@ public class ArduinoInData implements SerialPortEventListener {
         return true;
     }
 
-    public static void main(String[] args) throws InterruptedException {
-        ArduinoInData aid = new ArduinoInData();
-        List<String> test = aid.getAvailablePorts();
-        for (String s : test) {
-            System.out.println(s);
-        }
-        listPorts();
-        //aid.initialize("/dev/ttyACM0");
-
-    }
-
-    static void listPorts() {
-        java.util.Enumeration<CommPortIdentifier> portEnum = CommPortIdentifier.getPortIdentifiers();
-        while (portEnum.hasMoreElements()) {
-            CommPortIdentifier portIdentifier = portEnum.nextElement();
-            System.out.println(portIdentifier.getName() + " - " + getPortTypeName(portIdentifier.getPortType()));
-        }
-    }
-
-    static String getPortTypeName(int portType) {
-        switch (portType) {
-            case CommPortIdentifier.PORT_I2C:
-                return "I2C";
-            case CommPortIdentifier.PORT_PARALLEL:
-                return "Parallel";
-            case CommPortIdentifier.PORT_RAW:
-                return "Raw";
-            case CommPortIdentifier.PORT_RS485:
-                return "RS485";
-            case CommPortIdentifier.PORT_SERIAL:
-                return "Serial";
-            default:
-                return "unknown type";
-        }
-    }
-
-    public List<String> getAvailablePorts() {
-
-        List<String> list = new ArrayList<String>();
-
-        Enumeration portList = CommPortIdentifier.getPortIdentifiers();
-
-        while (portList.hasMoreElements()) {
-            CommPortIdentifier portId = (CommPortIdentifier) portList.nextElement();
-            if (portId.getPortType() == CommPortIdentifier.PORT_SERIAL) {
-                list.add(portId.getName());
-            }
-        }
-
-        return list;
-    }
-
     /**
      * Initialize the connection with the arduino using specified port
-     *
      * @param port the port to use (example /dev/ttyACM0 )
      * @return code of good connection or error.
      */
     public int initialize(String port) {
         // the next line is for Raspberry Pi and
         // gets us into the while loop and was suggested here was suggested http://www.raspberrypi.org/phpBB3/viewtopic.php?f=81&t=32186
-        String[] truePort = port.split(" - | ");
-        System.setProperty("gnu.io.rxtx.SerialPorts", truePort[0]);
+        System.setProperty("gnu.io.rxtx.SerialPorts", port);
 
         CommPortIdentifier portId = null;
         Enumeration portEnum = CommPortIdentifier.getPortIdentifiers();
@@ -243,8 +185,7 @@ public class ArduinoInData implements SerialPortEventListener {
         while (portEnum.hasMoreElements()) {
             CommPortIdentifier currPortId = (CommPortIdentifier) portEnum.nextElement();
             for (String portName : PORT_NAMES) {
-                String[] newPortName = portName.split(" - | ");
-                if (currPortId.getName().startsWith(newPortName[0])) {
+                if (currPortId.getName().startsWith(portName)) {
                     portId = currPortId;
                     break;
                 }

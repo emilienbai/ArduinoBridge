@@ -7,7 +7,9 @@ import java.awt.*;
  * Created by Emilien Bai (emilien.bai@insa-lyon.fr)on 06/2015.
  */
 
-
+/**
+ * A changing color Progress Bar
+ */
 public class VuMeter extends JProgressBar{
     private final Color OK_COLOR = new Color(66, 174, 59);
     private final Color WARNING_COLOR = new Color(209, 96, 9);
@@ -29,23 +31,23 @@ public class VuMeter extends JProgressBar{
         vm.setValue(1000);
     }
 
-    public void setValue(int value, int factor){
+    /**
+     * Change the color of the bar depending on the progression
+     *
+     * @param value the value to set.
+     */
+    @Override
+    public void setValue(int value) {
         super.setValue(value);
-        if (value < 0.65*this.getMaximum()){
+        if (value < 0.65 * this.getMaximum()) {
             this.setForeground(OK_COLOR);
-        }
-        else if (value < 0.85*this.getMaximum()) {
+        } else if (value < 0.85 * this.getMaximum()) {
             this.setForeground(WARNING_COLOR);
-        }
-        else {
+        } else {
             this.setForeground(ALERT_COLOR);
         }
     }
 
-    @Override
-    public void setValue(int value){
-        setValue(value, 1);
     }
-}
 
 

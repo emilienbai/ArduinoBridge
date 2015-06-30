@@ -23,43 +23,82 @@ import java.util.Vector;
 public class Services {
 
 
+    /**
+     * Set the debounce time in second for a sensor
+     *
+     * @param sensorNumber  the sensor to change
+     * @param debounceValue new time of debounce
+     */
     public static void setDebounceOne(int sensorNumber, int debounceValue) {
         ArduinoInData.setDebounceTime(sensorNumber, debounceValue);
         InputManager.setDebounceOne(sensorNumber, debounceValue);
     }
 
+    /**
+     * Set the debounce time in second for all sensor
+     * @param debounceValue new time of debounce
+     */
     public static void setDebounceAll(int debounceValue) {
         ArduinoInData.setDebounceTimeAll(debounceValue);
         InputManager.setDebounceAll(debounceValue);
     }
 
+    /**
+     * Set threshold value for a sensor
+     * @param sensorNumber the sensor to change
+     * @param thresholdValue new threshold for the sensor
+     */
     public static void setThresholdOne(int sensorNumber, int thresholdValue) {
         ArduinoInData.setNoiseGate(sensorNumber, thresholdValue);
         InputManager.setThresholdOne(sensorNumber, thresholdValue);
     }
 
+    /**
+     * Set threshold value for all sensor
+     * @param thresholdValue new threshold value
+     */
     public static void setThresholdAll(int thresholdValue) {
         ArduinoInData.setNoiseGateAll(thresholdValue);
         InputManager.setThresholdAll(thresholdValue);
     }
 
+    /**
+     * Set number of input to listen to
+     * @param newNumber the new number of input
+     */
     public static void setSensorNumber(int newNumber) {
         ArduinoInData.setSensorNumber(newNumber);
         InputManager.chooseChanNb(newNumber);
     }
 
+    /**
+     * Calibrate one sensor
+     * @param sensorNumber The sensor number to calibrate
+     */
     public static void calibrate(int sensorNumber) {
         ArduinoInData.calibrateSensor(sensorNumber);
     }
 
+    /**
+     * Calibrate all sensor
+     */
     public static void calibrateAll() {
         ArduinoInData.calibrateAllSensor();
     }
 
+    /**
+     * Set the calibration duration
+     * @param newCalibrationTime
+     */
     public static void setCalibrationTime(int newCalibrationTime) {
         ArduinoInData.setCalibrationTime(newCalibrationTime);
     }
 
+    /**
+     * Get informations about an arduino channel
+     * @param channelNumber The concerned channel
+     * @return A string tab containing debounce time in [0], threshold in [1] and enable status in [2]
+     */
     public static String[] getChannelInfo(int channelNumber) {
         ArduinoChan a = InputManager.getArduinoChan(channelNumber);
         String[] toReturn = new String[3];
@@ -69,10 +108,18 @@ public class Services {
         return toReturn;
     }
 
+    /**
+     * Get the number of active input
+     * @return number of active input
+     */
     public static int getActiveNumber() {
         return InputManager.getActiveNumber();
     }
 
+    /**
+     * Find available serial port for Mac OS and Linux
+     * @return String tab of serial port
+     */
     public static String[] findSerial() {
         String[] availableSerial;
         if (SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_LINUX) {
@@ -91,6 +138,11 @@ public class Services {
         return availableSerial;
     }
 
+    /**
+     * Save a sensorList and input configuration in a xml file
+     * @param saveFile File where to do the save
+     * @return true if it worked
+     */
     public static boolean saveSetup(File saveFile) {
         List<Sensor> sensorList = SensorManagement.getSensorList();
         Vector<ArduinoChan> arduinoInVector = InputManager.getArduinoInVector();
@@ -177,7 +229,6 @@ public class Services {
 
     /**
      * Load an existing setup from a xml formatted file
-     *
      * @param toLoad the xml file to load
      * @return the result of the loading
      */
@@ -233,7 +284,6 @@ public class Services {
 
     /**
      * Create sensor from a xml element
-     *
      * @param sensEl the xml element to analyse
      * @return the matching sensor
      */
@@ -256,6 +306,11 @@ public class Services {
         return new Sensor(name, arduinoIn, midiPort, shortChar, MidiManager.getMidiReceiver(), minRange, maxRange, preamplifier);
     }
 
+    /**
+     * Getter for an arduino channel from the xml saveFile
+     * @param ardEl Xml Element
+     * @return the arduino channel built
+     */
     private static ArduinoChan getArduinoChan(Element ardEl) {
         int number = getIntValue(ardEl, "number");
         int debounce = getIntValue(ardEl, "debounce");

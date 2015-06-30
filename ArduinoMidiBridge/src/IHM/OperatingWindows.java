@@ -879,6 +879,7 @@ public class OperatingWindows extends JFrame {
             SwingUtilities.invokeLater(() -> {
                 cleanAction();
                 saveItem.setEnabled(false);
+                //todo reload sensor configuration
             });
         }).start());
 

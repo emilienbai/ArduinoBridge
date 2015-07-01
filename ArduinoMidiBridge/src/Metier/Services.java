@@ -138,6 +138,12 @@ public class Services {
         return availableSerial;
     }
 
+    public static void closeApplication(){
+        MidiManager.exit();
+        ArduinoInData.close();
+        System.exit(0);
+    }
+
     /**
      * Save a sensorList and input configuration in a xml file
      * @param saveFile File where to do the save
@@ -352,4 +358,5 @@ public class Services {
     public static Vector<ArduinoChan> getArduinoChanVector() {
         return InputManager.getArduinoInVector();
     }
+
 }

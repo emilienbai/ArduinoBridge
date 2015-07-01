@@ -105,6 +105,7 @@ public class ArduinoChan {
         this.enable = enable;
     }
 
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

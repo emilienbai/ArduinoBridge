@@ -90,10 +90,7 @@ public class OperatingWindows extends JFrame {
             @Override
             public void windowClosing(WindowEvent e) {
                 super.windowClosing(e);
-                MidiManager.exit();
-                ArduinoInData.close();
-                dispose();
-                System.exit(0);
+                Services.closeApplication();
             }
         });
         this.setIconImage(new ImageIcon("logo.png").getImage());
@@ -802,27 +799,31 @@ public class OperatingWindows extends JFrame {
      */
     public static void refreshInterface(String dataIn) {
         if (built) { //begin only if the Frame is built
-            String[] splitted = dataIn.split("-");
-            //every instruction is separated by a -
-            for (int i = 0; i < splitted.length; i += 2) {
-                try {
-                    int sensorNumber = Integer.parseInt(splitted[i]);
-                    if (sensorNumber == selectedSensor) {
-                        selectedSensorVuMeter.setValue(Integer.parseInt(splitted[i + 1]));
-                    }
-                    for (SensorRow s : sensorRowList) {
-                        if (s.getArduinoChannel() == sensorNumber) {
-                            int input = Integer.parseInt(splitted[i + 1]);
-                            s.setIncomingSignal(input); //Setting the in value
-                            int output = SensorManagement.getOutputValue(s.getMidiPort());
-                            s.setOutputValue(output);
+            SwingUtilities.invokeLater(new Runnable() { //TODO faire en sorte que ça marche tout le temps
+                @Override
+                public void run() {
+                    String[] splitted = dataIn.split("-");
+                    //every instruction is separated by a -
+                    for (int i = 0; i < splitted.length; i += 2) {
+                        try {
+                            int sensorNumber = Integer.parseInt(splitted[i]);
+                            if (sensorNumber == selectedSensor) {
+                                selectedSensorVuMeter.setValue(Integer.parseInt(splitted[i + 1]));
+                            }
+                            for (SensorRow s : sensorRowList) {
+                                if (s.getArduinoChannel() == sensorNumber) {
+                                    int input = Integer.parseInt(splitted[i + 1]);
+                                    s.setIncomingSignal(input); //Setting the in value
+                                    int output = SensorManagement.getOutputValue(s.getMidiPort());
+                                    s.setOutputValue(output);
+                                }
+                            }
+                        } catch (NumberFormatException e) {
+                            //e.printStackTrace();
                         }
                     }
-                } catch (NumberFormatException e) {
-                    //e.printStackTrace();
                 }
-
-            }
+            });
         }
     }
 

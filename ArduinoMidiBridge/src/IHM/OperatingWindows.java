@@ -14,6 +14,7 @@ import java.awt.event.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.Vector;
 
 /**
@@ -672,7 +673,7 @@ public class OperatingWindows extends JFrame {
                     }
                     if (!used) {
                         //we create the sensor in the services
-                        SensorManagement.addSensor(newName, newArduChan, newMidiPort, shortcut);
+                        Services.addSensor(newName, newArduChan, newMidiPort, shortcut);
                         //we create the matching sensorRow
                         SensorRow sensorRow = new SensorRow(newName, newArduChan, newMidiPort, shortcut);
                         availableMidiPort.removeElement(newMidiPort);
@@ -777,7 +778,7 @@ public class OperatingWindows extends JFrame {
     public static void impulseShortCut(SensorRow s) {
         new Thread(() -> {
             SwingUtilities.invokeLater(() -> s.setImpulseColor(IMPULSE_COLOR));
-            SensorManagement.sendMidiImpulsion(s.getMidiPort());
+            Services.sendMidiImpulsion(s.getMidiPort());
             SwingUtilities.invokeLater(() -> s.setImpulseColor(BUTTON_COLOR));
         }).start();
 
@@ -1040,9 +1041,11 @@ public class OperatingWindows extends JFrame {
     private void loadSetup() {
         new Thread(() -> {
             SwingUtilities.invokeLater(OperatingWindows.this::cleanAction);
-            java.util.List<Sensor> sensorList = SensorManagement.getSensorList();
+            java.util.Hashtable<Integer, Sensor> sensorList = SensorManagement.getSensorList();
             Vector<ArduinoChan> arduinoChanVector = Services.getArduinoChanVector();
-            for (Sensor s : sensorList) {
+            Sensor s;
+            for (Map.Entry<Integer, Sensor> e : sensorList.entrySet()) {
+                s = e.getValue();
                 SensorRow sr = new SensorRow(s);
                 sensorRowList.add(sr);
                 availableMidiPort.removeElement(s.getMidiPort());

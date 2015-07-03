@@ -242,6 +242,9 @@ public class ArduinoInData implements SerialPortEventListener {
      */
     public synchronized void serialEvent(SerialPortEvent oEvent) {
         if (oEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
+            /*SimpleDateFormat ft =
+                    new SimpleDateFormat("hh:mm:ss:SSS");
+            System.out.println("DATA :" + ft.format(new Date()));*/
             try {
                 String inputLine = input.readLine();
                 if (inputLine.startsWith("-")) {
@@ -249,11 +252,12 @@ public class ArduinoInData implements SerialPortEventListener {
                     OperatingWindows.refreshLogs(arduiLog);
                 } else {
                     new Thread(() -> {
-                        SensorManagement.sendMidiMessage(inputLine);
+                        /*System.out.println("Message Reçu :" + ft.format(new Date()));*/
+                        Services.sendMidiMessage(inputLine);
                         OperatingWindows.refreshInterface(inputLine);
                     }).start();
                 }
-                System.out.println(inputLine);
+                //System.out.println(inputLine);
 
             } catch (Exception e) {
                 System.err.println(e.toString());

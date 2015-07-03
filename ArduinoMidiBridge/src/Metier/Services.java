@@ -13,14 +13,63 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Hashtable;
+import java.util.Map;
 import java.util.Vector;
 
 /**
  * Created by Emilien Bai (emilien.bai@insa-lyon.fr)on 06/2015.
  */
 public class Services {
+
+    /**
+     * Add a sensor
+     *
+     * @param name      name of the sensor
+     * @param arduinoIn match with the analog input on the arduino
+     * @param midiPort  midiPort where to send data
+     */
+    public static void addSensor(String name, int arduinoIn, int midiPort, char shortcut) {
+        Sensor s = new Sensor(name, arduinoIn, midiPort, shortcut, MidiManager.getMidiReceiver());
+        SensorManagement.addSensor(s);
+    }
+
+    /**
+     * delete a sensor
+     *
+     * @param midiPort the midiPort to remove
+     */
+    public static void deleteSensor(int midiPort) {
+        SensorManagement.deleteSensor(midiPort);
+    }
+
+    /**
+     * Deconstruct instruction phrase in order to send messages
+     *
+     * @param instructions string formed arduinoChan-data-arduinoChan-data...
+     */
+    public static void sendMidiMessage(String instructions) {
+        String[] splitted = instructions.split("-");
+        int sensorNumber;
+        int value;
+        if (splitted.length % 2 == 0) {
+            for (int i = 0; i < splitted.length; i += 2) {
+                sensorNumber = Integer.parseInt(splitted[i]);
+                value = Integer.parseInt(splitted[i + 1]);
+                SensorManagement.sendMidiMessage(sensorNumber, value);
+            }
+        }
+    }
+
+
+    /**
+     * This function send a litte midi impulsion
+     *
+     * @param midiPort the port where to send the impulsion
+     */
+    public static void sendMidiImpulsion(int midiPort) {
+        SensorManagement.sendMidiImpulsion(midiPort);
+    }
 
 
     /**
@@ -150,8 +199,9 @@ public class Services {
      * @return true if it worked
      */
     public static boolean saveSetup(File saveFile) {
-        List<Sensor> sensorList = SensorManagement.getSensorList();
+        Hashtable<Integer, Sensor> sensorList = SensorManagement.getSensorList();
         Vector<ArduinoChan> arduinoInVector = InputManager.getArduinoInVector();
+        Sensor s;
         try {
             BufferedWriter file = new BufferedWriter(new FileWriter(saveFile));
             file.write("<?xml version=\"1.0\"?>");
@@ -191,7 +241,8 @@ public class Services {
             file.newLine();
             file.write("<save sensorNumber = \"" + sensorList.size() + "\">");
             file.newLine();
-            for (Sensor s : sensorList) {
+            for (Map.Entry<Integer, Sensor> e : sensorList.entrySet()) {
+                s = e.getValue();
                 file.write("    <sensor>");
                 file.newLine();
                 file.write("        <name>" + s.getName() + "</name>");
@@ -239,7 +290,7 @@ public class Services {
      * @return the result of the loading
      */
     public static boolean loadSetup(File toLoad) {
-        List<Sensor> sensorList = new ArrayList<>();
+        Hashtable<Integer, Sensor> sensorList = new Hashtable<>();
         Vector<ArduinoChan> arduinoInVector = new Vector<>();
         Document dom;
         //get the factory
@@ -267,7 +318,7 @@ public class Services {
                     Sensor s = getSensor(el);
 
                     //add it to list
-                    sensorList.add(s);
+                    sensorList.put(s.getMidiPort(), s);
                 }
             }
             SensorManagement.loadSetup(sensorList);
@@ -301,9 +352,9 @@ public class Services {
         int arduinoIn = getIntValue(sensEl, "arduinoIn");
         int midiPort = getIntValue(sensEl, "midiPort");
         String shortcut = getTextValue(sensEl, "shortcut");
-        System.out.println("Raccourci chargé " + shortcut);
+        //System.out.println("Raccourci chargé " + shortcut);
         char shortChar = shortcut.charAt(0);
-        System.out.println(shortChar);
+        //System.out.println(shortChar);
         int minRange = getIntValue(sensEl, "minRange");
         int maxRange = getIntValue(sensEl, "maxRange");
         int preamplifier = getIntValue(sensEl, "preamplifier");

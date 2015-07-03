@@ -134,6 +134,9 @@ public class Sensor {
 				msg.setMessage(ShortMessage.NOTE_ON, this.midiPort, velocity);
 				this.midiReceiver.send(msg, -1);
 				this.outputValue = velocity;
+				/*SimpleDateFormat ft =
+						new SimpleDateFormat("hh:mm:ss:SSS");
+				System.out.println("Message Envoyé :" + ft.format(new Date()));*/
 			} catch (InvalidMidiDataException e) {
 				e.printStackTrace();
 				System.err.println("Error sending message from " + this.name);
@@ -165,7 +168,7 @@ public class Sensor {
 		try {
 			msg.setMessage(ShortMessage.NOTE_ON, this.midiPort, MAX_VELOCITY);
 			this.midiReceiver.send(msg, -1);
-			System.out.println("Message sent");
+			//System.out.println("Message sent");
 		} catch (InvalidMidiDataException e) {
 			e.printStackTrace();
 			System.err.println("Error sending impulsion from " + this.name);
@@ -179,7 +182,7 @@ public class Sensor {
 		try {
 			msg.setMessage(ShortMessage.NOTE_OFF, this.midiPort, MAX_VELOCITY);
 			this.midiReceiver.send(msg, -1);
-			System.out.println("Message sent");
+			//System.out.println("Message sent");
 		} catch (InvalidMidiDataException e) {
 			e.printStackTrace();
 			System.err.println("Error sending impulsion from " + this.name);
@@ -194,7 +197,7 @@ public class Sensor {
 		try {
 			msg.setMessage(ShortMessage.NOTE_OFF, this.midiPort, MAX_VELOCITY);
 			this.midiReceiver.send(msg, -1);
-			System.out.println("Message sent, channel muted");
+			//System.out.println("Message sent, channel muted");
 		} catch (InvalidMidiDataException e) {
 			e.printStackTrace();
 			System.err.println("Error sending mute instruction from " + this.name);

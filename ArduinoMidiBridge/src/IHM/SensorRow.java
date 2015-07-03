@@ -1,6 +1,7 @@
 package IHM;
 
 import Metier.SensorManagement;
+import Metier.Services;
 import Sensor.Sensor;
 
 import javax.swing.*;
@@ -402,7 +403,7 @@ class SensorRow extends JPanel {
 
         impulseButton.addActionListener(e -> new Thread(() -> {
             SwingUtilities.invokeLater(() -> impulseButton.setBackground(IMPULSE_COLOR));
-            SensorManagement.sendMidiImpulsion(midiPort);
+            Services.sendMidiImpulsion(midiPort);
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e1) {

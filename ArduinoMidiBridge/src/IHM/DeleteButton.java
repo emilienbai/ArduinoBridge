@@ -1,6 +1,6 @@
 package IHM;
 
-import Metier.SensorManagement;
+import Metier.Services;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -31,14 +31,14 @@ public class DeleteButton extends JButton {
         this.setForeground(FOREGROUND_COLOR);
         Border RAISED_BORDER = OperatingWindows.RAISED_BORDER;
         this.setBorder(RAISED_BORDER);
-        this.setPreferredSize(new Dimension(70, 37));
+        this.setPreferredSize(new Dimension(70, 35));
 
 
         this.addActionListener(e -> new Thread(new Runnable() {
             int nb;
             @Override
             public void run() {
-                SensorManagement.deleteSensor(toDelete.getMidiPort());
+                Services.deleteSensor(toDelete.getMidiPort());
                 nb = Integer.parseInt(sensorNumber.getText());
                 nb--;
                 SwingUtilities.invokeLater(() -> {

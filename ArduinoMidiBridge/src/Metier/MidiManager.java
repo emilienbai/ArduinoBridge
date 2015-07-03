@@ -68,7 +68,7 @@ public class MidiManager {
 
     /**
      * Close the connection with the receiver
-     *///todo add a services method to close every single connection
+     */
     public static void exit(){
         if(choosenDevice != null) {
             choosenDevice.close();

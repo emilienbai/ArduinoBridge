@@ -35,6 +35,7 @@ class SensorRow extends JPanel {
     private JButton muteButton;
     private JButton soloButton;
     private JButton impulseButton;
+    private DeleteButton deleteButton;
 
 
     private int arduinoChannel;
@@ -45,8 +46,6 @@ class SensorRow extends JPanel {
     private boolean soloState;
     private String name;
     private char shortcut;
-
-    //TODO Add the delete Button in this Line
 
     /**
      * Create a JPanel containing all the element of a sensorRow
@@ -75,12 +74,14 @@ class SensorRow extends JPanel {
 
 
         /********************Name************/
+
         JLabel nameLabel = new JLabel(name);
         nameLabel.setMaximumSize(new Dimension(145, 50));
         nameLabel.setMinimumSize(new Dimension(80, 10));
         nameLabel.setPreferredSize(new Dimension(110, 20));
         nameLabel.setForeground(NAME_COLOR);
-        constraint.gridx = 0;
+        addVerticalSeparation(5);
+        constraint.gridx = 1;
         constraint.gridy = 0;
         constraint.fill = GridBagConstraints.HORIZONTAL;
         constraint.weightx = 1;
@@ -130,6 +131,7 @@ class SensorRow extends JPanel {
         changeColor(incomingSignal);
         incomingSignal.setPreferredSize(new Dimension(80, 13));
         incomingSignal.setMaximumSize(new Dimension(300, 15));
+        incomingSignal.setBorder(ETCHED_BORDER);
         constraint.weightx = 1;
         constraint.gridx = constraint.gridx + 1;
         this.add(incomingSignal, constraint);
@@ -158,6 +160,7 @@ class SensorRow extends JPanel {
 
         /**********Preamplifier manual value**********/
         preamplifierValue = new JTextField(String.valueOf(preamplifier));
+        preamplifierValue.setBorder(LOWERED_BORDER);
         changeColor(preamplifierValue);
         preamplifierValue.setPreferredSize(new Dimension(35, 18));
         constraint.gridx = constraint.gridx + 1;
@@ -218,6 +221,7 @@ class SensorRow extends JPanel {
         maxOutValue = new JTextField(String.valueOf(this.maxOutVal));
         changeColor(maxOutValue);
         maxOutValue.setPreferredSize(new Dimension(35, 18));
+        maxOutValue.setBorder(LOWERED_BORDER);
         constraint.gridx = constraint.gridx + 1;
         this.add(maxOutValue, constraint);
 
@@ -266,6 +270,7 @@ class SensorRow extends JPanel {
         minOutValue = new JTextField(String.valueOf(this.minOutVal));
         changeColor(minOutValue);
         minOutValue.setPreferredSize(new Dimension(35, 18));
+        minOutValue.setBorder(LOWERED_BORDER);
         constraint.gridx = constraint.gridx + 1;
         this.add(minOutValue, constraint);
 
@@ -320,6 +325,7 @@ class SensorRow extends JPanel {
         outputValue = new VuMeter(SwingConstants.HORIZONTAL, 0, 127);
         outputValue.setPreferredSize(new Dimension(80, 13));
         outputValue.setMaximumSize(new Dimension(300, 15));
+        outputValue.setBorder(ETCHED_BORDER);
         changeColor(outputValue);
         constraint.weightx = 1;
         constraint.gridx = constraint.gridx + 1;
@@ -355,6 +361,7 @@ class SensorRow extends JPanel {
 
         }).start());
 
+        addVerticalSeparation(5);
         /**********SoloButton**********/
         soloButton = new JButton("Solo");
         soloButton.setBackground(BUTTON_COLOR);
@@ -434,11 +441,25 @@ class SensorRow extends JPanel {
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("Hello World");
+        JPanel panel = new JPanel();
+        JLabel label = new JLabel("1");
         SensorRow sensorRow = new SensorRow("On peut essayer de mettre un titre super long ", 12, 42, 'a');
-        frame.add(sensorRow);
+        DeleteButton db = new DeleteButton(sensorRow, panel, frame, label);
+        sensorRow.setDeleteButton(db);
+        panel.add(sensorRow);
+        frame.add(panel);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
+    }
+
+    public void setDeleteButton(DeleteButton db) {
+        deleteButton = db;
+        ++constraint.gridx;
+        constraint.gridy = 0;
+        constraint.gridheight = 2;
+        this.add(deleteButton, constraint);
+        addVerticalSeparation(10);
     }
 
     /**

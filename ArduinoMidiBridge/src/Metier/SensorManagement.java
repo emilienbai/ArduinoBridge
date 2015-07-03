@@ -48,10 +48,13 @@ public class SensorManagement {
         int sensorNumber;
         //every instruction is separated by a -
         if ((splitted.length % 2) == 0) {
-            sensorNumber = Integer.parseInt(splitted[0]);
-            for(Sensor s : sensorList){
-                if (s.getArduinoIn()==sensorNumber){
-                    s.sendMidiMessage(Integer.parseInt(splitted[1]));
+            //if well formed, it is analyse, else, it's ignored
+            for (int i = 0; i < splitted.length; i += 2) {
+                sensorNumber = Integer.parseInt(splitted[i]);
+                for (Sensor s : sensorList) {
+                    if (s.getArduinoIn() == sensorNumber) {
+                        s.sendMidiMessage(Integer.parseInt(splitted[i + 1]));
+                    }
                 }
             }
         }

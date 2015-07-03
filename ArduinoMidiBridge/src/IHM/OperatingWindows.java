@@ -108,7 +108,7 @@ public class OperatingWindows extends JFrame {
         /****************Top Panel*****************/
         /******************************************/
         mainConstraint.fill = GridBagConstraints.BOTH;
-        mainConstraint.weighty = 1;
+        mainConstraint.weighty = 8;
         mainConstraint.weightx = 1;
         mainConstraint.gridy = mainConstraint.gridy + 1;
         mainConstraint.gridx = 0;
@@ -127,6 +127,7 @@ public class OperatingWindows extends JFrame {
         /***********Selected sensor Vu Meter*******/
         selectedSensorVuMeter = new VuMeter(SwingConstants.VERTICAL, 0, 1024);
         selectedSensorVuMeter.setPreferredSize(new Dimension(15, 120));
+        selectedSensorVuMeter.setMinimumSize(new Dimension(15, 80));
         selectedSensorVuMeter.setBackground(BACKGROUND_COLOR);
         topConstraint.gridx = 0;
         topConstraint.weighty = 1;
@@ -678,6 +679,7 @@ public class OperatingWindows extends JFrame {
                         sensorRowList.add(sensorRow);
                         DeleteButton db = new DeleteButton(sensorRow, centerPanel, OperatingWindows.this, sensorNumberLb);
                         deleteButtonList.add(db);
+                        sensorRow.setDeleteButton(db);
                         //constraints for the grid bag layout
                         centerConstraint.gridy = centerConstraint.gridy + 1;
                         centerConstraint.gridx = 0;
@@ -690,7 +692,7 @@ public class OperatingWindows extends JFrame {
                             centerPanel.add(sensorRow, centerConstraint);
                             centerConstraint.gridx = 1;
                             centerConstraint.weightx = 0;
-                            centerPanel.add(db, centerConstraint);
+                            //centerPanel.add(db, centerConstraint);
                             newSensorName.setText("");
                             int nb = Integer.parseInt(sensorNumberLb.getText());
                             sensorNumberLb.setText(String.valueOf(++nb));
@@ -799,7 +801,7 @@ public class OperatingWindows extends JFrame {
      */
     public static void refreshInterface(String dataIn) {
         if (built) { //begin only if the Frame is built
-            SwingUtilities.invokeLater(new Runnable() { //TODO faire en sorte que ça marche tout le temps
+            SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     String[] splitted = dataIn.split("-");
@@ -880,7 +882,6 @@ public class OperatingWindows extends JFrame {
             SwingUtilities.invokeLater(() -> {
                 cleanAction();
                 saveItem.setEnabled(false);
-                //todo reload sensor configuration
             });
         }).start());
 
@@ -1047,6 +1048,7 @@ public class OperatingWindows extends JFrame {
                 availableMidiPort.removeElement(s.getMidiPort());
                 DeleteButton db = new DeleteButton(sr, centerPanel, OperatingWindows.this, sensorNumberLb);
                 deleteButtonList.add(db);
+                sr.setDeleteButton(db);
                 //constraints for the grid bag layout
                 centerConstraint.gridy = centerConstraint.gridy + 1;
                 centerConstraint.gridx = 0;
@@ -1055,7 +1057,7 @@ public class OperatingWindows extends JFrame {
                     centerPanel.add(sr, centerConstraint);
                     centerConstraint.gridx = 1;
                     centerConstraint.weightx = 0;
-                    centerPanel.add(db, centerConstraint);
+                    //centerPanel.add(db, centerConstraint);
                 });
             }
             String debounce = String.valueOf(arduinoChanVector.get(selectedSensor).getDebounce());

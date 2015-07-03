@@ -1,6 +1,6 @@
 // Constants
 #define nSensors 16
-#define loopDelay 1
+#define loopDelay 2
 #define commandSize 4
 #define debug false
 #define sensorMax 1023

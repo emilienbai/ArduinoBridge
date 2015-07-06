@@ -133,6 +133,31 @@ public class InputManager {
     public static int getActiveNumber() {
         return activeNumber;
     }
+
+    /**
+     * Re-set all the input after a software reset
+     */
+    public static void reset() {
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        for (ArduinoChan a : arduinoInVector) {
+            int debounce = a.getDebounce();
+            int threshold = a.getThreshold();
+            int number = a.getNumber();
+            ArduinoInData.setDebounceTime(number, debounce);
+            try {
+                Thread.sleep(100);
+
+                ArduinoInData.setNoiseGate(number, threshold);
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }
 
 

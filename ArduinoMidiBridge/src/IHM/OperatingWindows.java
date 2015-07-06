@@ -7,6 +7,7 @@ import Sensor.Sensor;
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.filechooser.FileFilter;
 import java.awt.*;
@@ -103,6 +104,7 @@ public class OperatingWindows extends JFrame {
         GridBagConstraints mainConstraint = new GridBagConstraints();
         JPanel mainPanel = new JPanel(mainLayout);
         mainPanel.setBackground(BACKGROUND_COLOR);
+        mainPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
 
         /******************************************/
@@ -456,13 +458,36 @@ public class OperatingWindows extends JFrame {
         logsArea.setForeground(Color.WHITE);
         logsArea.setEditable(false);
         JScrollPane scrollLogs = new JScrollPane(logsArea);
+        scrollLogs.setMinimumSize(new Dimension(180, 120));
         topConstraint.weightx = 1;
         topConstraint.weighty = 1;
         topConstraint.gridy = 0;
         ++topConstraint.gridx;
-        topConstraint.gridheight = 3;
+        topConstraint.gridheight = 2;
         topConstraint.gridwidth = 3;
         topPanel.add(scrollLogs, topConstraint);
+
+
+        /*******10th Column, reset button***********/
+        JButton resetButton = new JButton("Reset Arduino");
+        resetButton.setBackground(BUTTON_COLOR);
+        resetButton.setForeground(FOREGROUND_COLOR);
+        resetButton.setBorder(RAISED_BORDER);
+        resetButton.setPreferredSize(new Dimension(30, 30));
+        topConstraint.gridy = 2;
+        topPanel.add(resetButton, topConstraint);
+
+        resetButton.addActionListener(e -> {
+            int choice = JOptionPane.showConfirmDialog(OperatingWindows.this, "<html><center>Êtes vous sur de vouloir réinitialiser l'arduino?" +
+                            "<br>Cette action peut prendre du temps pendant lequel aucun message ne sera transmis",
+                    "Question", JOptionPane.YES_NO_OPTION);
+
+            if (choice == JOptionPane.YES_OPTION) {
+                new Thread(() -> {
+                    Services.resetArduino();
+                }).start();
+            }
+        });
 
         /******************************************/
         /**************Center Panel****************/
@@ -479,6 +504,7 @@ public class OperatingWindows extends JFrame {
         centerConstraint.fill = GridBagConstraints.HORIZONTAL;
         centerPanel = new JPanel(centerLayout);
         centerPanel.setBackground(BACKGROUND_COLOR);
+        centerPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
         JScrollPane centerPanelScroll = new JScrollPane(centerPanel);
         centerPanelScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -607,6 +633,20 @@ public class OperatingWindows extends JFrame {
             }
         });
 
+        newSensorName.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                super.focusGained(e);
+                shortcutEnable = false;
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                super.focusLost(e);
+                shortcutEnable = true;
+            }
+        });
+
         /*****************ArduChLabel***************/
         JLabel newChan = new JLabel("Canal Arduino : ");
         newChan.setBackground(BACKGROUND_COLOR);
@@ -652,7 +692,7 @@ public class OperatingWindows extends JFrame {
         bottomPanel.add(addSensorButton);
         addSensorButton.addActionListener(e -> new Thread(() -> {
 
-            if (newName != null && newArduChan != -1 && newMidiPort != -1) {
+            if (newName != null && newArduChan != -1 && newMidiPort != -1 && !newName.equals("")) {
                 //Check if every needed information is here
                 KeyChooser keyChooser = new KeyChooser();
                 while (keyChooser.isVisible()) {
@@ -712,7 +752,7 @@ public class OperatingWindows extends JFrame {
 
             } else {
                 String message;
-                if (newName == null) {
+                if (newName == null || newName.equals("")) {
                     message = "<html><center>Veuillez entrer un nom pour ce capteur " +
                             "</center></html>";
                 } else if (newArduChan == -1) {
@@ -773,7 +813,7 @@ public class OperatingWindows extends JFrame {
 
     /**
      * Send an impulsion on the midiPort of a SensorRow
-     * @param s The sensorrow to modify
+     * @param s The sensorRow to modify
      */
     public static void impulseShortCut(SensorRow s) {
         new Thread(() -> {
@@ -835,7 +875,10 @@ public class OperatingWindows extends JFrame {
      * @param logs The String to display
      */
     public static void refreshLogs(String logs) {
-        SwingUtilities.invokeLater(() -> logsArea.setText(logs));
+        SwingUtilities.invokeLater(() -> {
+            logsArea.setText(logs);
+            logsArea.repaint();
+        });
     }
 
     /**

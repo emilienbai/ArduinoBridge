@@ -22,6 +22,8 @@ import java.util.Vector;
  */
 public class Services {
 
+
+    //todo add a reset procedure to reboot the arduino
     /**
      * Add a sensor
      *
@@ -185,6 +187,16 @@ public class Services {
             availableSerial[0] = "COMX";
         }
         return availableSerial;
+    }
+
+    /**
+     * Reset procedure for the arduino
+     */
+    public static void resetArduino() {
+        SensorManagement.muteAll();
+        ArduinoInData.resetArduino();
+        InputManager.reset();
+        SensorManagement.unMuteAll();
     }
 
     public static void closeApplication(){

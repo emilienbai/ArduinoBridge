@@ -11,6 +11,8 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Vector;
 
 import static java.lang.System.exit;
@@ -22,6 +24,7 @@ public class MidiDeviceChoice extends JFrame{
     private final Color BACKGROUND_COLOR = OperatingWindows.BACKGROUND_COLOR;
     private final Color BUTTON_COLOR = OperatingWindows.BUTTON_COLOR;
     private final Color FOREGROUND_COLOR = OperatingWindows.FOREGROUND_COLOR;
+    private final Color NAME_COLOR = OperatingWindows.NAME_COLOR;
     private final Border RAISED_BORDER = OperatingWindows.RAISED_BORDER;
     private final Border LOWERED_BORDER = OperatingWindows.LOWERED_BORDER;
     private final Border ETCHED_BORDER = OperatingWindows.ETCHED_BORDER;
@@ -104,7 +107,7 @@ public class MidiDeviceChoice extends JFrame{
         arduinoCom.setBackground(BACKGROUND_COLOR);
         arduinoCom.setForeground(FOREGROUND_COLOR);
         topConstraint.gridx = topConstraint.gridx + 1;
-        topConstraint.weightx =1;
+        topConstraint.weightx = 3;
         topPanel.add(arduinoCom, topConstraint);
 
         ++topConstraint.gridx;
@@ -167,6 +170,37 @@ public class MidiDeviceChoice extends JFrame{
         topPanel.add(Box.createHorizontalStrut(10), topConstraint);
         topConstraint.weightx = 1;
 
+        /********************/
+        /******Separator*****/
+        /********************/
+        JSeparator sep = new JSeparator(SwingConstants.VERTICAL);
+        sep.setPreferredSize(new Dimension(1, 30));
+        ++topConstraint.gridx;
+        topConstraint.weightx = 0;
+        topPanel.add(sep, topConstraint);
+
+        ++topConstraint.gridx;
+        topPanel.add(Box.createHorizontalStrut(10), topConstraint);
+        topConstraint.weightx = 1;
+
+        /********************/
+        /***Network Button***/
+        /********************/
+        JButton clientConnexion = new JButton("Connexion Client réseau");
+        clientConnexion.setBackground(BUTTON_COLOR);
+        clientConnexion.setForeground(FOREGROUND_COLOR);
+        clientConnexion.setBorder(RAISED_BORDER);
+
+        ++topConstraint.gridx;
+        topConstraint.weightx = 1;
+        topPanel.add(clientConnexion, topConstraint);
+
+        clientConnexion.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            }
+        });
 
 
         /**********************************************************/
@@ -322,7 +356,8 @@ public class MidiDeviceChoice extends JFrame{
                 new Thread(SensorManagement::changeReceiver).start();
                 dispose();
                 if(arduinoSet) {
-                    new OperatingWindows();
+                    new OperatingWindows(true);
+                    //todo adapt with the choices
                 }
             } else if (!readyToClose) {
                 JOptionPane.showMessageDialog(MidiDeviceChoice.this,

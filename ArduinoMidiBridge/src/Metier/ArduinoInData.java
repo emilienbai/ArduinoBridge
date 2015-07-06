@@ -121,6 +121,10 @@ public class ArduinoInData implements SerialPortEventListener {
         return sendAsciiString(s);
     }
 
+    protected static boolean resetArduino() {
+        return sendAsciiString("rst\n");
+    }
+
     /**
      * Launch the calibration of all sensors
      *

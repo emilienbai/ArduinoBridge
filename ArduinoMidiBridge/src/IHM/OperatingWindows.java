@@ -80,7 +80,7 @@ public class OperatingWindows extends JFrame {
     /**
      * Main Windows of the application
      */
-    public OperatingWindows() {
+    public OperatingWindows(boolean isServer) {
         super("ArduinoBrigde");
         pack();
         setPreferredSize(new Dimension(800, 400));
@@ -788,7 +788,7 @@ public class OperatingWindows extends JFrame {
     }
 
     public static void main(String[] args) {
-        JFrame frame = new OperatingWindows();
+        JFrame frame = new OperatingWindows(true);
         frame.pack();
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setVisible(true);

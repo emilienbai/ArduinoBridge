@@ -25,7 +25,7 @@ public class EchoClient {
             System.out.println("Usage: java EchoClient <EchoServer host> <EchoServer port>");
             System.exit(1);
         }
-        socoutth = new SocOutTh(args[0], args[1]);
+        socoutth = new SocOutTh(args[0], Integer.parseInt(args[1]));
         socoutth.start();
     }
 }

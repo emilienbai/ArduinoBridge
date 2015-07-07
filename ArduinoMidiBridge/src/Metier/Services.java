@@ -23,7 +23,6 @@ import java.util.Vector;
 public class Services {
 
 
-    //todo add a reset procedure to reboot the arduino
     /**
      * Add a sensor
      *

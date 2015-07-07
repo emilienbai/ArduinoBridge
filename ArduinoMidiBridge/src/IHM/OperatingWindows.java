@@ -32,7 +32,7 @@ public class OperatingWindows extends JFrame {
     public static final Color SOLO_COLOR = new Color(169, 162, 0);
     public static final Color IMPULSE_COLOR = new Color(45, 121, 36);
     public static final Color NAME_COLOR = new Color(221, 101, 4);
-    public static final Color DISABLED_COLOR = new Color(137, 21, 51);
+    public static final Color DISABLED_COLOR = new Color(96, 50, 137);
 
     /*****************************
      * BORDERS
@@ -1051,6 +1051,14 @@ public class OperatingWindows extends JFrame {
         midiSettingItem.setForeground(FOREGROUND_COLOR);
 
         midiSettingItem.addActionListener(e -> new MidiDeviceChoice(false));
+
+        /**ServerSetting Item**/
+        JMenuItem serverSettingItem = new JMenuItem("Paramètres serveur");
+        editMenu.add(serverSettingItem);
+        serverSettingItem.setBackground(BACKGROUND_COLOR);
+        serverSettingItem.setForeground(FOREGROUND_COLOR);
+
+        //TODO Open server windows
 
         //Aide
         JMenu helpMenu = new JMenu("Aide");

@@ -21,6 +21,15 @@ import static java.lang.System.exit;
  * Created by Emilien Bai (emilien.bai@insa-lyon.fr)on 06/2015.
  */
 public class MidiDeviceChoice extends JFrame{
+    public static final int ARDUINO_CONNECTION = 0;
+    public static final int NETWORK_CONNECTION = 1;
+    private static JComboBox arduinoCom;
+    private static JLabel arduinoLabel;
+    private static JButton arduinoCheck;
+    private static JButton clientConnexion;
+    private static JSeparator sep;
+    private static boolean arduinoConnected;     //The communication with the arduino have already been established
+    private static boolean networkConnected = false;
     private final Color BACKGROUND_COLOR = OperatingWindows.BACKGROUND_COLOR;
     private final Color BUTTON_COLOR = OperatingWindows.BUTTON_COLOR;
     private final Color FOREGROUND_COLOR = OperatingWindows.FOREGROUND_COLOR;
@@ -35,14 +44,14 @@ public class MidiDeviceChoice extends JFrame{
     private JProgressBar reloadProgress;
     private JLabel deviceDescription;
     private MidiDevice.Info choosenDevice = null;
-    private boolean readyToClose = false; //a midiReceiver have been selected;
-    private boolean arduinoConnected;     //The communication with the arduino have already been established
+    private boolean midiConnected = false; //a midiReceiver have been selected;
+    private ConnexionInfo connexionInfo;
 
     /**
      * Constructor for the frame Midi Device Choice
-     * @param arduinoSet true if the arduino connection needs to be done
+     * @param connectionToSet true if a connection needs to be done
      */
-    public MidiDeviceChoice(boolean arduinoSet){
+    public MidiDeviceChoice(boolean connectionToSet) {
         super("Choix du périphérique midi");
         this.setPreferredSize(new Dimension(800, 600));
         this.setResizable(false);
@@ -53,7 +62,7 @@ public class MidiDeviceChoice extends JFrame{
         this.setIconImage(new ImageIcon("logo.png").getImage());
         this.setLocationRelativeTo(null);
 
-        arduinoConnected = !arduinoSet;
+        arduinoConnected = !connectionToSet; //the arduino is connected if connectionToSet is false (don't need to be set)
 
         /**Main Panel**/
         JPanel mainPanel = new JPanel(new GridBagLayout());
@@ -84,12 +93,12 @@ public class MidiDeviceChoice extends JFrame{
         mainConstraint.weightx = 1;
         mainConstraint.gridwidth = 1;
         mainPanel.add(topPanel, mainConstraint);
-        topPanel.setVisible(arduinoSet);
+        topPanel.setVisible(connectionToSet);
 
         /******************/
         /***ArduinoLabel***/
         /******************/
-        JLabel arduinoLabel = new JLabel("Port de communication : ");
+        arduinoLabel = new JLabel("Port de communication : ");
         arduinoLabel.setBackground(BACKGROUND_COLOR);
         arduinoLabel.setForeground(FOREGROUND_COLOR);
         GridBagConstraints topConstraint = new GridBagConstraints();
@@ -102,7 +111,7 @@ public class MidiDeviceChoice extends JFrame{
         /*******************/
         /***ComPort Combo***/
         /*******************/
-        JComboBox arduinoCom = new JComboBox(Services.findSerial());
+        arduinoCom = new JComboBox(Services.findSerial());
         arduinoCom.setEditable(true);
         arduinoCom.setBackground(BACKGROUND_COLOR);
         arduinoCom.setForeground(FOREGROUND_COLOR);
@@ -118,7 +127,7 @@ public class MidiDeviceChoice extends JFrame{
         /******************/
         /***check Button***/
         /******************/
-        JButton arduinoCheck = new JButton("Valider");
+        arduinoCheck = new JButton("Valider");
         arduinoCheck.setBackground(BUTTON_COLOR);
         arduinoCheck.setForeground(FOREGROUND_COLOR);
         arduinoCheck.setBorder(RAISED_BORDER);
@@ -134,13 +143,7 @@ public class MidiDeviceChoice extends JFrame{
                 System.out.println(port);
                 switch (aid.initialize(port)) {
                     case ArduinoInData.NO_ERR:
-                        arduinoConnected = true;
-                        SwingUtilities.invokeLater(() -> {
-                            arduinoCom.setVisible(false);
-                            arduinoCheck.setVisible(false);
-                            arduinoLabel.setText("Connexion à l'arduino effectuée");
-                        });
-
+                        connect(ARDUINO_CONNECTION);
                         break;
                     case ArduinoInData.PORT_NOT_FOUND:
                         errorMessage[0] = "<html><center>Impossible de trouver le port spécifié " +
@@ -173,7 +176,7 @@ public class MidiDeviceChoice extends JFrame{
         /********************/
         /******Separator*****/
         /********************/
-        JSeparator sep = new JSeparator(SwingConstants.VERTICAL);
+        sep = new JSeparator(SwingConstants.VERTICAL);
         sep.setPreferredSize(new Dimension(1, 30));
         ++topConstraint.gridx;
         topConstraint.weightx = 0;
@@ -186,7 +189,7 @@ public class MidiDeviceChoice extends JFrame{
         /********************/
         /***Network Button***/
         /********************/
-        JButton clientConnexion = new JButton("Connexion Client réseau");
+        clientConnexion = new JButton("Connexion Client réseau");
         clientConnexion.setBackground(BUTTON_COLOR);
         clientConnexion.setForeground(FOREGROUND_COLOR);
         clientConnexion.setBorder(RAISED_BORDER);
@@ -198,7 +201,12 @@ public class MidiDeviceChoice extends JFrame{
         clientConnexion.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        connexionInfo = new ConnexionInfo();
+                    }
+                });
             }
         });
 
@@ -222,7 +230,7 @@ public class MidiDeviceChoice extends JFrame{
             choosenDevice = (MidiDevice.Info) deviceList.getSelectedValue();
             String description = choosenDevice.getDescription();
             String vendor = choosenDevice.getVendor();
-            readyToClose = MidiManager.chooseMidiDevice(choosenDevice);
+                    midiConnected = MidiManager.chooseMidiDevice(choosenDevice);
             SwingUtilities.invokeLater(() -> deviceDescription.setText("<html>Description : " + description + "<br>"
                                         + "Vendeur : " + vendor + "</html>"));
         }).start()
@@ -312,7 +320,7 @@ public class MidiDeviceChoice extends JFrame{
         bottomPanel.add(Box.createHorizontalStrut(5), bottomConstraint);
 
         /**QuitButton**/
-        if(arduinoSet){
+        if (connectionToSet) {
             quitButton = new JButton("Quitter");
         }
         else{
@@ -329,7 +337,7 @@ public class MidiDeviceChoice extends JFrame{
         bottomPanel.add(quitButton, bottomConstraint);
 
         quitButton.addActionListener(e -> {
-            if(arduinoSet){
+            if (connectionToSet) {
                 MidiManager.exit();
                 ArduinoInData.close();
                 exit(0);
@@ -352,14 +360,14 @@ public class MidiDeviceChoice extends JFrame{
         bottomPanel.add(okButton, bottomConstraint);
 
         okButton.addActionListener(e -> {
-            if (readyToClose && arduinoConnected) {
+            if ((midiConnected && arduinoConnected) || (midiConnected && networkConnected)) {//If a valid midi device is 
+                // choosen and arduino or network is ok -> we set midi receiver
                 new Thread(SensorManagement::changeReceiver).start();
                 dispose();
-                if(arduinoSet) {
-                    new OperatingWindows(true);
-                    //todo adapt with the choices
+                if (connectionToSet) {
+                    new OperatingWindows(!networkConnected); //if connected, the application is a client
                 }
-            } else if (!readyToClose) {
+            } else if (!midiConnected) {
                 JOptionPane.showMessageDialog(MidiDeviceChoice.this,
                         "<html><center>Impossible de se connecter au " +
                                 "périphérique midi sélectionné<br> " +
@@ -369,7 +377,7 @@ public class MidiDeviceChoice extends JFrame{
             }
             else{
                 JOptionPane.showMessageDialog(MidiDeviceChoice.this,
-                        "<html><center>Communication arduino non établie" +
+                        "<html><center>Communication arduino ou réseau non établie" +
                                 "</center></html>",
                         " Avertissement ",
                         JOptionPane.WARNING_MESSAGE);
@@ -395,6 +403,25 @@ public class MidiDeviceChoice extends JFrame{
         }).start();
 
 
+    }
+
+    public static void connect(int meanOfConnection) {
+        SwingUtilities.invokeLater(() -> {
+            arduinoCom.setVisible(false);
+            arduinoCheck.setVisible(false);
+            clientConnexion.setVisible(false);
+            sep.setVisible(false);
+            switch (meanOfConnection) {
+                case ARDUINO_CONNECTION:
+                    arduinoLabel.setText("Connexion à l'arduino effectuée");
+                    arduinoConnected = true;
+                    break;
+                case NETWORK_CONNECTION:
+                    arduinoLabel.setText("Connexion au serveur effectuée");
+                    networkConnected = true;
+            }
+
+        });
     }
 
 

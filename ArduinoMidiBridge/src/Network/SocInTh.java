@@ -36,11 +36,8 @@ public class SocInTh extends Thread {
     public void run() {
         try {
             String line = "";
-            String endofline = "";
-            String[] command;
 
             while (!finished) {
-                line = "";
                 line = socIn.readLine(); //receive message from server
                 System.out.println(line);
                 // we print the corresponding message on terminal.

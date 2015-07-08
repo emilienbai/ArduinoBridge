@@ -1,6 +1,8 @@
 
 package Network;
 
+import Metier.Services;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 
@@ -37,12 +39,12 @@ public class SocInTh extends Thread {
         try {
             String line = "";
 
-            while (!finished) {
+            while (!finished && line != null) {
                 line = socIn.readLine(); //receive message from server
                 System.out.println(line);
                 // we print the corresponding message on terminal.
-                //todo uncomment when ready
-                //Services.sendMidiMessage(line);
+
+                Services.sendMidiMessage(line);
             }
         } catch (IOException e) {
             System.err.println("Error in SocInTh");

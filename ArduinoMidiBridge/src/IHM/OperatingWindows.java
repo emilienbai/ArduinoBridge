@@ -60,7 +60,6 @@ public class OperatingWindows extends JFrame {
     private static int selectedSensor = 0;
     private static boolean built = false; //is the window built?
     private static boolean shortcutEnable = true;
-    private static JPanel bottomPanel;
     private JTextArea debounceOneText;
     private JTextArea thresholdOneTextArea;
     private JLabel sensorStatus;
@@ -71,6 +70,8 @@ public class OperatingWindows extends JFrame {
     private String newName = null;
     private int newArduChan = -1;
     private int newMidiPort = -1;
+    private ServerSettings serverSettings = null;
+    private boolean isServer;
 
 
     private GridBagConstraints centerConstraint;
@@ -82,7 +83,7 @@ public class OperatingWindows extends JFrame {
      */
     public OperatingWindows(boolean isServer) {
         super("ArduinoBrigde");
-        pack();
+        this.isServer = isServer;
         setPreferredSize(new Dimension(800, 400));
         setMinimumSize(new Dimension(200, 100));
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -124,7 +125,9 @@ public class OperatingWindows extends JFrame {
         topPanel.setBackground(BACKGROUND_COLOR);
         topPanel.setBorder(LOWERED_BORDER);
         topPanel.add(new JSeparator(JSeparator.VERTICAL));
-        mainPanel.add(topPanel, mainConstraint);
+        if (this.isServer) {
+            mainPanel.add(topPanel, mainConstraint);
+        }
 
 
         /***********Selected sensor Vu Meter*******/
@@ -483,9 +486,7 @@ public class OperatingWindows extends JFrame {
                     "Question", JOptionPane.YES_NO_OPTION);
 
             if (choice == JOptionPane.YES_OPTION) {
-                new Thread(() -> {
-                    Services.resetArduino();
-                }).start();
+                new Thread(Services::resetArduino).start();
             }
         });
 
@@ -543,7 +544,7 @@ public class OperatingWindows extends JFrame {
         mainConstraint.gridy = mainConstraint.gridy + 1;
         mainConstraint.fill = GridBagConstraints.HORIZONTAL;
         mainConstraint.anchor = GridBagConstraints.LAST_LINE_END;
-        bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
         bottomPanel.setBackground(BACKGROUND_COLOR);
         mainPanel.add(bottomPanel, mainConstraint);
 
@@ -842,28 +843,25 @@ public class OperatingWindows extends JFrame {
      */
     public static void refreshInterface(String dataIn) {
         if (built) { //begin only if the Frame is built
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    String[] splitted = dataIn.split("-");
-                    //every instruction is separated by a -
-                    for (int i = 0; i < splitted.length; i += 2) {
-                        try {
-                            int sensorNumber = Integer.parseInt(splitted[i]);
-                            if (sensorNumber == selectedSensor) {
-                                selectedSensorVuMeter.setValue(Integer.parseInt(splitted[i + 1]));
-                            }
-                            for (SensorRow s : sensorRowList) {
-                                if (s.getArduinoChannel() == sensorNumber) {
-                                    int input = Integer.parseInt(splitted[i + 1]);
-                                    s.setIncomingSignal(input); //Setting the in value
-                                    int output = SensorManagement.getOutputValue(s.getMidiPort());
-                                    s.setOutputValue(output);
-                                }
-                            }
-                        } catch (NumberFormatException e) {
-                            //e.printStackTrace();
+            SwingUtilities.invokeLater(() -> {
+                String[] splitted = dataIn.split("-");
+                //every instruction is separated by a -
+                for (int i = 0; i < splitted.length; i += 2) {
+                    try {
+                        int sensorNumber = Integer.parseInt(splitted[i]);
+                        if (sensorNumber == selectedSensor) {
+                            selectedSensorVuMeter.setValue(Integer.parseInt(splitted[i + 1]));
                         }
+                        for (SensorRow s : sensorRowList) {
+                            if (s.getArduinoChannel() == sensorNumber) {
+                                int input = Integer.parseInt(splitted[i + 1]);
+                                s.setIncomingSignal(input); //Setting the in value
+                                int output = SensorManagement.getOutputValue(s.getMidiPort());
+                                s.setOutputValue(output);
+                            }
+                        }
+                    } catch (NumberFormatException e) {
+                        //e.printStackTrace();
                     }
                 }
             });
@@ -1054,11 +1052,19 @@ public class OperatingWindows extends JFrame {
 
         /**ServerSetting Item**/
         JMenuItem serverSettingItem = new JMenuItem("Paramètres serveur");
-        editMenu.add(serverSettingItem);
+        if (this.isServer) {
+            editMenu.add(serverSettingItem);
+        }
         serverSettingItem.setBackground(BACKGROUND_COLOR);
         serverSettingItem.setForeground(FOREGROUND_COLOR);
 
-        //TODO Open server windows
+        serverSettingItem.addActionListener(e -> {
+            if (serverSettings != null) {
+                serverSettings.setVisible(true);
+            } else {
+                serverSettings = new ServerSettings();
+            }
+        });
 
         //Aide
         JMenu helpMenu = new JMenu("Aide");

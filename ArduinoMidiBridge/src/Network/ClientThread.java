@@ -23,6 +23,8 @@ public class ClientThread
      */
     private PrintStream socOut;
 
+    private boolean running;
+
 
     /**
      * ClientThread constructor
@@ -35,6 +37,7 @@ public class ClientThread
         socOut = new PrintStream(clientSocket.getOutputStream());
         Server.addClient(socOut); // ajout du prinstream
         // correspondant à la liste
+        running = true;
 
     }
 
@@ -44,24 +47,27 @@ public class ClientThread
      **/
     public void run() {
         try {
-            BufferedReader socIn = null;
+            BufferedReader socIn;
             socIn = new BufferedReader(new InputStreamReader
                     (clientSocket.getInputStream()));
             //Initialise the adapted BufferedReader
 
-            while (true) {
+            while (running) {
                 String line = socIn.readLine();
                 if (line.equals("QUIT")) {
                     Server.removeClient(socOut);
                     break;
                 } else {
                     System.out.println("Server receive : " + line);
+                    Server.addLogs("Server receive : " + line);
                 }
 
             }
             socIn.close();
         } catch (Exception e) {
-            System.err.println("Error in EchoServer:" + e);
+            System.err.println("Error in ClientThread:" + e);
+            Server.clientDisconnection(this, clientSocket.getInetAddress(), socOut);
+            running = false;
         }
     }
 

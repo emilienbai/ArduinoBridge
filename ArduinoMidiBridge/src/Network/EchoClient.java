@@ -20,12 +20,13 @@ public class EchoClient {
      * @throws IOException
      * @throws UnknownHostException
      **/
-    public static void main(String[] args) throws UnknownHostException, IOException {
+    public static void main(String[] args) throws IOException {
         if (args.length != 2) {
             System.out.println("Usage: java EchoClient <EchoServer host> <EchoServer port>");
             System.exit(1);
         }
         socoutth = new SocOutTh(args[0], Integer.parseInt(args[1]));
+        SocOutTh.connect();
         socoutth.start();
     }
 }

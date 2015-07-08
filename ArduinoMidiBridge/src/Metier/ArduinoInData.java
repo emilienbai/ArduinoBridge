@@ -256,12 +256,10 @@ public class ArduinoInData implements SerialPortEventListener {
                     OperatingWindows.refreshLogs(arduiLog);
                 } else {
                     new Thread(() -> {
-                        /*System.out.println("Message Reçu :" + ft.format(new Date()));*/
                         Services.sendMidiMessage(inputLine);
                         OperatingWindows.refreshInterface(inputLine);
                     }).start();
                 }
-                //System.out.println(inputLine);
 
             } catch (Exception e) {
                 System.err.println(e.toString());

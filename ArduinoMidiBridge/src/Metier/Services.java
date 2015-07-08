@@ -1,5 +1,10 @@
 package Metier;
 
+import IHM.MidiDeviceChoice;
+import IHM.OperatingWindows;
+import IHM.ServerSettings;
+import Network.Server;
+import Network.SocOutTh;
 import Sensor.ArduinoChan;
 import Sensor.Sensor;
 import com.jgoodies.common.base.SystemUtils;
@@ -22,6 +27,10 @@ import java.util.Vector;
  */
 public class Services {
 
+
+    private static String arduiLog = "Logs :\n";
+    private static boolean serverEnabled = false;
+    private static boolean clientEnabled = false;
 
     /**
      * Add a sensor
@@ -50,16 +59,28 @@ public class Services {
      * @param instructions string formed arduinoChan-data-arduinoChan-data...
      */
     public static void sendMidiMessage(String instructions) {
-        String[] splitted = instructions.split("-");
-        int sensorNumber;
-        int value;
-        if (splitted.length % 2 == 0) {
-            for (int i = 0; i < splitted.length; i += 2) {
-                sensorNumber = Integer.parseInt(splitted[i]);
-                value = Integer.parseInt(splitted[i + 1]);
-                SensorManagement.sendMidiMessage(sensorNumber, value);
+        if (instructions.startsWith("-")) {
+            arduiLog += instructions + "\n";
+            OperatingWindows.refreshLogs(arduiLog);
+        } else {
+            if (serverEnabled) {
+                Server.sendData(instructions);
             }
+            String[] splitted = instructions.split("-");
+            int sensorNumber;
+            int value;
+            if (splitted.length % 2 == 0) {
+                for (int i = 0; i < splitted.length; i += 2) {
+                    sensorNumber = Integer.parseInt(splitted[i]);
+                    value = Integer.parseInt(splitted[i + 1]);
+                    SensorManagement.sendMidiMessage(sensorNumber, value);
+
+                }
+            }
+            OperatingWindows.refreshInterface(instructions);
+
         }
+
     }
 
 
@@ -86,6 +107,7 @@ public class Services {
 
     /**
      * Set the debounce time in second for all sensor
+     *
      * @param debounceValue new time of debounce
      */
     public static void setDebounceAll(int debounceValue) {
@@ -95,7 +117,8 @@ public class Services {
 
     /**
      * Set threshold value for a sensor
-     * @param sensorNumber the sensor to change
+     *
+     * @param sensorNumber   the sensor to change
      * @param thresholdValue new threshold for the sensor
      */
     public static void setThresholdOne(int sensorNumber, int thresholdValue) {
@@ -105,6 +128,7 @@ public class Services {
 
     /**
      * Set threshold value for all sensor
+     *
      * @param thresholdValue new threshold value
      */
     public static void setThresholdAll(int thresholdValue) {
@@ -114,6 +138,7 @@ public class Services {
 
     /**
      * Set number of input to listen to
+     *
      * @param newNumber the new number of input
      */
     public static void setSensorNumber(int newNumber) {
@@ -123,6 +148,7 @@ public class Services {
 
     /**
      * Calibrate one sensor
+     *
      * @param sensorNumber The sensor number to calibrate
      */
     public static void calibrate(int sensorNumber) {
@@ -138,7 +164,7 @@ public class Services {
 
     /**
      * Set the calibration duration
-     * @param newCalibrationTime
+     * @param newCalibrationTime the new duration for calibration
      */
     public static void setCalibrationTime(int newCalibrationTime) {
         ArduinoInData.setCalibrationTime(newCalibrationTime);
@@ -146,6 +172,7 @@ public class Services {
 
     /**
      * Get informations about an arduino channel
+     *
      * @param channelNumber The concerned channel
      * @return A string tab containing debounce time in [0], threshold in [1] and enable status in [2]
      */
@@ -160,6 +187,7 @@ public class Services {
 
     /**
      * Get the number of active input
+     *
      * @return number of active input
      */
     public static int getActiveNumber() {
@@ -168,6 +196,7 @@ public class Services {
 
     /**
      * Find available serial port for Mac OS and Linux
+     *
      * @return String tab of serial port
      */
     public static String[] findSerial() {
@@ -188,6 +217,10 @@ public class Services {
         return availableSerial;
     }
 
+    public static void fillServerSettings(String logs) {
+        ServerSettings.fillInfo(logs);
+    }
+
     /**
      * Reset procedure for the arduino
      */
@@ -198,14 +231,41 @@ public class Services {
         SensorManagement.unMuteAll();
     }
 
-    public static void closeApplication(){
+    public static void closeApplication() {
         MidiManager.exit();
         ArduinoInData.close();
+        if (serverEnabled) {
+            Server.close();
+        } else if (clientEnabled) {
+            SocOutTh.disconnect();
+        }
         System.exit(0);
+    }
+
+    public static void enableServer() {
+        new Thread(Server::run).start();
+        serverEnabled = true;
+    }
+
+    public static void disableServer() {
+        Server.close();
+        serverEnabled = false;
+    }
+
+    public static boolean connectClient(String hostname, int portNumber) {
+        SocOutTh sot = new SocOutTh(hostname, portNumber);
+        if (SocOutTh.connect()) {
+            sot.start();
+            MidiDeviceChoice.connect(MidiDeviceChoice.NETWORK_CONNECTION);
+            clientEnabled = true;
+            return true;
+        }
+        return false;
     }
 
     /**
      * Save a sensorList and input configuration in a xml file
+     *
      * @param saveFile File where to do the save
      * @return true if it worked
      */
@@ -297,6 +357,7 @@ public class Services {
 
     /**
      * Load an existing setup from a xml formatted file
+     *
      * @param toLoad the xml file to load
      * @return the result of the loading
      */
@@ -352,6 +413,7 @@ public class Services {
 
     /**
      * Create sensor from a xml element
+     *
      * @param sensEl the xml element to analyse
      * @return the matching sensor
      */
@@ -376,6 +438,7 @@ public class Services {
 
     /**
      * Getter for an arduino channel from the xml saveFile
+     *
      * @param ardEl Xml Element
      * @return the arduino channel built
      */

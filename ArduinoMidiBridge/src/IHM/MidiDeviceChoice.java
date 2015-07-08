@@ -7,12 +7,9 @@ import Metier.Services;
 
 import javax.sound.midi.MidiDevice;
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Vector;
 
 import static java.lang.System.exit;
@@ -30,13 +27,6 @@ public class MidiDeviceChoice extends JFrame{
     private static JSeparator sep;
     private static boolean arduinoConnected;     //The communication with the arduino have already been established
     private static boolean networkConnected = false;
-    private final Color BACKGROUND_COLOR = OperatingWindows.BACKGROUND_COLOR;
-    private final Color BUTTON_COLOR = OperatingWindows.BUTTON_COLOR;
-    private final Color FOREGROUND_COLOR = OperatingWindows.FOREGROUND_COLOR;
-    private final Color NAME_COLOR = OperatingWindows.NAME_COLOR;
-    private final Border RAISED_BORDER = OperatingWindows.RAISED_BORDER;
-    private final Border LOWERED_BORDER = OperatingWindows.LOWERED_BORDER;
-    private final Border ETCHED_BORDER = OperatingWindows.ETCHED_BORDER;
     private JButton okButton;
     private JButton reloadButton;
     private JButton quitButton;
@@ -45,7 +35,6 @@ public class MidiDeviceChoice extends JFrame{
     private JLabel deviceDescription;
     private MidiDevice.Info choosenDevice = null;
     private boolean midiConnected = false; //a midiReceiver have been selected;
-    private ConnexionInfo connexionInfo;
 
     /**
      * Constructor for the frame Midi Device Choice
@@ -55,10 +44,10 @@ public class MidiDeviceChoice extends JFrame{
         super("Choix du périphérique midi");
         this.setPreferredSize(new Dimension(800, 600));
         this.setResizable(false);
-        this.setUndecorated(true);
+        //this.setUndecorated(true);
         setVisible(true);
         pack();
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         this.setIconImage(new ImageIcon("logo.png").getImage());
         this.setLocationRelativeTo(null);
 
@@ -66,12 +55,12 @@ public class MidiDeviceChoice extends JFrame{
 
         /**Main Panel**/
         JPanel mainPanel = new JPanel(new GridBagLayout());
-        mainPanel.setBackground(BACKGROUND_COLOR);
-        mainPanel.setForeground(FOREGROUND_COLOR);
+        mainPanel.setBackground(OperatingWindows.BACKGROUND_COLOR);
+        mainPanel.setForeground(OperatingWindows.FOREGROUND_COLOR);
         TitledBorder mainPanelTitle = BorderFactory.createTitledBorder(
-                RAISED_BORDER,
+                OperatingWindows.RAISED_BORDER,
                 "Choisissez votre périphérique Midi" );
-        mainPanelTitle.setTitleColor(FOREGROUND_COLOR);
+        mainPanelTitle.setTitleColor(OperatingWindows.FOREGROUND_COLOR);
         mainPanel.setBorder(mainPanelTitle);
         this.add(mainPanel);
         GridBagConstraints mainConstraint = new GridBagConstraints();
@@ -80,11 +69,11 @@ public class MidiDeviceChoice extends JFrame{
 
         /**arduino Setting Panel**/
         JPanel topPanel = new JPanel(new GridBagLayout());
-        topPanel.setBackground(BACKGROUND_COLOR);
-        topPanel.setForeground(FOREGROUND_COLOR);
-        TitledBorder topPanelTitle = BorderFactory.createTitledBorder(LOWERED_BORDER,
+        topPanel.setBackground(OperatingWindows.BACKGROUND_COLOR);
+        topPanel.setForeground(OperatingWindows.FOREGROUND_COLOR);
+        TitledBorder topPanelTitle = BorderFactory.createTitledBorder(OperatingWindows.LOWERED_BORDER,
                 "Choix du canal de communication Arduino");
-        topPanelTitle.setTitleColor(FOREGROUND_COLOR);
+        topPanelTitle.setTitleColor(OperatingWindows.FOREGROUND_COLOR);
         topPanel.setBorder(topPanelTitle);
         mainConstraint.gridx = 0;
         mainConstraint.gridy = 0;
@@ -99,8 +88,8 @@ public class MidiDeviceChoice extends JFrame{
         /***ArduinoLabel***/
         /******************/
         arduinoLabel = new JLabel("Port de communication : ");
-        arduinoLabel.setBackground(BACKGROUND_COLOR);
-        arduinoLabel.setForeground(FOREGROUND_COLOR);
+        arduinoLabel.setBackground(OperatingWindows.BACKGROUND_COLOR);
+        arduinoLabel.setForeground(OperatingWindows.FOREGROUND_COLOR);
         GridBagConstraints topConstraint = new GridBagConstraints();
         topConstraint.anchor = GridBagConstraints.LINE_START;
         topConstraint.fill = GridBagConstraints.BOTH;
@@ -113,8 +102,8 @@ public class MidiDeviceChoice extends JFrame{
         /*******************/
         arduinoCom = new JComboBox(Services.findSerial());
         arduinoCom.setEditable(true);
-        arduinoCom.setBackground(BACKGROUND_COLOR);
-        arduinoCom.setForeground(FOREGROUND_COLOR);
+        arduinoCom.setBackground(OperatingWindows.BACKGROUND_COLOR);
+        arduinoCom.setForeground(OperatingWindows.FOREGROUND_COLOR);
         topConstraint.gridx = topConstraint.gridx + 1;
         topConstraint.weightx = 3;
         topPanel.add(arduinoCom, topConstraint);
@@ -128,9 +117,9 @@ public class MidiDeviceChoice extends JFrame{
         /***check Button***/
         /******************/
         arduinoCheck = new JButton("Valider");
-        arduinoCheck.setBackground(BUTTON_COLOR);
-        arduinoCheck.setForeground(FOREGROUND_COLOR);
-        arduinoCheck.setBorder(RAISED_BORDER);
+        arduinoCheck.setBackground(OperatingWindows.BUTTON_COLOR);
+        arduinoCheck.setForeground(OperatingWindows.FOREGROUND_COLOR);
+        arduinoCheck.setBorder(OperatingWindows.RAISED_BORDER);
         topConstraint.gridx = topConstraint.gridx + 1;
         topConstraint.weightx = 0.5;
         topPanel.add(arduinoCheck, topConstraint);
@@ -190,36 +179,26 @@ public class MidiDeviceChoice extends JFrame{
         /***Network Button***/
         /********************/
         clientConnexion = new JButton("Connexion Client réseau");
-        clientConnexion.setBackground(BUTTON_COLOR);
-        clientConnexion.setForeground(FOREGROUND_COLOR);
-        clientConnexion.setBorder(RAISED_BORDER);
+        clientConnexion.setBackground(OperatingWindows.BUTTON_COLOR);
+        clientConnexion.setForeground(OperatingWindows.FOREGROUND_COLOR);
+        clientConnexion.setBorder(OperatingWindows.RAISED_BORDER);
 
         ++topConstraint.gridx;
         topConstraint.weightx = 1;
         topPanel.add(clientConnexion, topConstraint);
 
-        clientConnexion.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        connexionInfo = new ConnexionInfo();
-                    }
-                });
-            }
-        });
+        clientConnexion.addActionListener(e -> SwingUtilities.invokeLater(ConnexionInfo::new));
 
 
         /**********************************************************/
         /*********************JScroll Pane List********************/
         deviceList = new JList();
-        deviceList.setBackground(BACKGROUND_COLOR);
-        deviceList.setForeground(FOREGROUND_COLOR);
+        deviceList.setBackground(OperatingWindows.BACKGROUND_COLOR);
+        deviceList.setForeground(OperatingWindows.FOREGROUND_COLOR);
         JScrollPane scrollList = new JScrollPane(deviceList);
-        scrollList.setBackground(BACKGROUND_COLOR);
-        scrollList.setForeground(FOREGROUND_COLOR);
-        scrollList.setBorder(LOWERED_BORDER);
+        scrollList.setBackground(OperatingWindows.BACKGROUND_COLOR);
+        scrollList.setForeground(OperatingWindows.FOREGROUND_COLOR);
+        scrollList.setBorder(OperatingWindows.LOWERED_BORDER);
         mainConstraint.gridy = 1;
         mainConstraint.gridx = 0;
         mainConstraint.weighty =1;
@@ -240,9 +219,9 @@ public class MidiDeviceChoice extends JFrame{
 
         /*****Details Panel*****/
         JPanel deviceDetails = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        deviceDetails.setBackground(BACKGROUND_COLOR);
-        deviceDetails.setForeground(FOREGROUND_COLOR);
-        deviceDetails.setBorder(ETCHED_BORDER);
+        deviceDetails.setBackground(OperatingWindows.BACKGROUND_COLOR);
+        deviceDetails.setForeground(OperatingWindows.FOREGROUND_COLOR);
+        deviceDetails.setBorder(OperatingWindows.ETCHED_BORDER);
         mainConstraint.gridy = 2;
         mainConstraint.fill = GridBagConstraints.HORIZONTAL;
         mainConstraint.weighty = 0;
@@ -250,15 +229,15 @@ public class MidiDeviceChoice extends JFrame{
 
         /**Details Label**/
         deviceDescription = new JLabel("<html>Description : <br>Vendeur : </html> ");
-        deviceDescription.setBackground(BACKGROUND_COLOR);
-        deviceDescription.setForeground(FOREGROUND_COLOR);
+        deviceDescription.setBackground(OperatingWindows.BACKGROUND_COLOR);
+        deviceDescription.setForeground(OperatingWindows.FOREGROUND_COLOR);
         deviceDetails.add(deviceDescription);
 
 
         /*****Bottom Pannel*****/
         JPanel bottomPanel = new JPanel(new GridBagLayout());
-        bottomPanel.setBackground(BACKGROUND_COLOR);
-        bottomPanel.setForeground(FOREGROUND_COLOR);
+        bottomPanel.setBackground(OperatingWindows.BACKGROUND_COLOR);
+        bottomPanel.setForeground(OperatingWindows.FOREGROUND_COLOR);
         bottomPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
         mainConstraint.gridy = 3;
         mainPanel.add(bottomPanel, mainConstraint);
@@ -269,9 +248,9 @@ public class MidiDeviceChoice extends JFrame{
 
         /**Reload Button**/
         reloadButton = new JButton("Recharger");
-        reloadButton.setBackground(BUTTON_COLOR);
-        reloadButton.setForeground(FOREGROUND_COLOR);
-        reloadButton.setBorder(RAISED_BORDER);
+        reloadButton.setBackground(OperatingWindows.BUTTON_COLOR);
+        reloadButton.setForeground(OperatingWindows.FOREGROUND_COLOR);
+        reloadButton.setBorder(OperatingWindows.RAISED_BORDER);
 
         bottomConstraint.gridy = 0;
         bottomConstraint.gridx = 0;
@@ -301,8 +280,8 @@ public class MidiDeviceChoice extends JFrame{
 
         /***Progress Bar for reloading***/
         reloadProgress = new JProgressBar(SwingConstants.HORIZONTAL);
-        reloadProgress.setBackground(BACKGROUND_COLOR);
-        reloadProgress.setForeground(FOREGROUND_COLOR);
+        reloadProgress.setBackground(OperatingWindows.BACKGROUND_COLOR);
+        reloadProgress.setForeground(OperatingWindows.FOREGROUND_COLOR);
         reloadProgress.setIndeterminate(true);
         reloadProgress.setBorderPainted(true);
         reloadProgress.setVisible(false);
@@ -326,9 +305,9 @@ public class MidiDeviceChoice extends JFrame{
         else{
             quitButton = new JButton("Annuler");
         }
-        quitButton.setBackground(BUTTON_COLOR);
-        quitButton.setForeground(FOREGROUND_COLOR);
-        quitButton.setBorder(RAISED_BORDER);
+        quitButton.setBackground(OperatingWindows.BUTTON_COLOR);
+        quitButton.setForeground(OperatingWindows.FOREGROUND_COLOR);
+        quitButton.setBorder(OperatingWindows.RAISED_BORDER);
 
         bottomConstraint.fill = GridBagConstraints.BOTH;
         ++bottomConstraint.gridx;
@@ -352,9 +331,9 @@ public class MidiDeviceChoice extends JFrame{
 
         /**OKButton**/
         okButton = new JButton("OK");
-        okButton.setBackground(BUTTON_COLOR);
-        okButton.setForeground(FOREGROUND_COLOR);
-        okButton.setBorder(RAISED_BORDER);
+        okButton.setBackground(OperatingWindows.BUTTON_COLOR);
+        okButton.setForeground(OperatingWindows.FOREGROUND_COLOR);
+        okButton.setBorder(OperatingWindows.RAISED_BORDER);
 
         ++bottomConstraint.gridx;
         bottomPanel.add(okButton, bottomConstraint);

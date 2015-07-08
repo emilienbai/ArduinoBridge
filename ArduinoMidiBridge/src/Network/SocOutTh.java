@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 /***
  * SocOutTh
@@ -21,29 +20,19 @@ public class SocOutTh extends Thread {
     private static int port;
     private static String hostname;
 
-    /**
-     * SocOutTh's construtor.
-     * It opens the socket between the client and the server.
-     *
-     * @param hostname and portnumber,formatted as Strings.
-     * @throws IOException
-     * @throws UnknownHostException
-     **/
+
     public SocOutTh(String hostname, int portnb) {
-        this.port = portnb;
-        this.hostname = hostname;
+        port = portnb;
+        SocOutTh.hostname = hostname;
 
 
     }
 
     public static boolean connect() {
         stdIn = new BufferedReader(new InputStreamReader(System.in));
-        /*
-      the communication socket with the server
-	 */
-        Socket echoSocket = null;
+
         try {
-            echoSocket = new Socket(hostname, port);
+            Socket echoSocket = new Socket(hostname, port);
             BufferedReader socIn = new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
             socOut = new PrintStream(echoSocket.getOutputStream());
             SIT = new SocInTh(socIn);
@@ -55,14 +44,6 @@ public class SocOutTh extends Thread {
         }
     }
 
-    /**
-     * getter for the printstream used for sending messages to the server
-     *
-     * @return socOut the prinstream to the server
-     */
-    public static PrintStream getSocOut() {
-        return socOut;
-    }
 
     public static void disconnect() {
         //closing procedure
@@ -82,7 +63,7 @@ public class SocOutTh extends Thread {
      **/
     public void run() {
         try {
-            String line = "a";
+            String line;
             while (true) {
                 line = stdIn.readLine();
                 //read the standard input
@@ -92,7 +73,6 @@ public class SocOutTh extends Thread {
                     break;
                 }
             }
-
 
         } catch (IOException e) {
             System.err.println("Error in SocOutTh");

@@ -147,8 +147,16 @@ public class SensorManagement {
         }
     }
 
-    protected static void setToggle(int midiPort, boolean state) {
-        sensorList.get(midiPort).setToggle(state);
+    protected static void setMode(int midiPort, int mode) {
+        sensorList.get(midiPort).setMode(mode);
+    }
+
+    protected static void setLineThreshold(int midiPort, int threshold) {
+        sensorList.get(midiPort).setNoiseThreshold(threshold);
+    }
+
+    protected static void setLineDebounce(int midiPort, int debounce) {
+        sensorList.get(midiPort).setDebounceTime(debounce);
     }
 
     /**
@@ -194,6 +202,23 @@ public class SensorManagement {
     public static void loadSetup(Hashtable<Integer, Sensor> newSensorList) {
         newSetup();
         sensorList = newSensorList;
+    }
+
+
+    protected static int getMaxRange(int midiPort) {
+        return sensorList.get(midiPort).getMaxRange();
+    }
+
+    protected static int getMinRange(int midiPort) {
+        return sensorList.get(midiPort).getMinRange();
+    }
+
+    protected static int getDebounceTime(int midiPort) {
+        return sensorList.get(midiPort).getDebounceTime();
+    }
+
+    protected static int getNoiseThreshold(int midiPort) {
+        return sensorList.get(midiPort).getNoiseThreshold();
     }
 
 

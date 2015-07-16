@@ -35,6 +35,8 @@ public class OperatingWindows extends JFrame {
     public static final Color DISABLED_COLOR = new Color(96, 50, 137);
     public static final Color TOGGLE_COLOR = new Color(171, 66, 153);
     public static final Color FADER_COLOR = new Color(61, 87, 255);
+    public static final Color MOMENTARY_COLOR = new Color(37, 255, 68);
+
 
     /*****************************
      * BORDERS

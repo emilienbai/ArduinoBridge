@@ -7,8 +7,8 @@ import Sensor.Sensor;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
@@ -38,9 +38,10 @@ class SensorRow extends JPanel {
     private JButton muteButton;
     private JButton soloButton;
     private JButton impulseButton;
+    private JButton toggleButton;
     private DeleteButton deleteButton;
-    private boolean toggle;
-
+    private JLabel maxLabel;
+    private JLabel minLabel;
 
     private int arduinoChannel;
     private int midiPort;
@@ -50,6 +51,10 @@ class SensorRow extends JPanel {
     private boolean soloState;
     private String name;
     private char shortcut;
+    private int mode;
+    private int noiseThreshold;
+    private int debounceTime;
+
 
     /**
      * Create a JPanel containing all the element of a sensorRow
@@ -62,7 +67,7 @@ class SensorRow extends JPanel {
      * @param preamplifier Factor of multiplication
      * @param shortcut     Keyboard Shortcut used to send an impulsion
      */
-    public SensorRow(String name, int arduChan, int midiPort, int minRange, int maxRange, int preamplifier, char shortcut, boolean toggle) {
+    public SensorRow(String name, int arduChan, int midiPort, int minRange, int maxRange, int preamplifier, char shortcut, int mode, int noiseThreshold, int debounceTime) {
         super(new GridBagLayout());
         constraint = new GridBagConstraints();
         this.name = name;
@@ -73,7 +78,9 @@ class SensorRow extends JPanel {
         this.arduinoChannel = arduChan;
         this.midiPort = midiPort;
         this.shortcut = shortcut;
-        this.toggle = toggle;
+        this.mode = mode;
+        this.noiseThreshold = noiseThreshold;
+        this.debounceTime = debounceTime;
         changeColor(this);
         this.setBorder(ETCHED_BORDER);
 
@@ -216,14 +223,20 @@ class SensorRow extends JPanel {
 
         addVerticalSeparation(5);
 
-        /**********MaximumLabel**********/
-        JLabel maxLabel = new JLabel("Max :");
+        /**********Maximum-Threshold - Label**********/
+        if (this.mode == Sensor.FADER) {
+            maxLabel = new JLabel("Max :");
+            maxOutValue = new JTextField(String.valueOf(this.maxOutVal));
+        } else {
+            maxLabel = new JLabel("Seuil :");
+            maxOutValue = new JTextField(String.valueOf(this.noiseThreshold));
+        }
         changeColor(maxLabel);
         ++constraint.gridx;
         constraint.gridheight = 1;
         this.add(maxLabel, constraint);
         /*maximum output value*/
-        maxOutValue = new JTextField(String.valueOf(this.maxOutVal));
+
         changeColor(maxOutValue);
         maxOutValue.setPreferredSize(new Dimension(35, 18));
         maxOutValue.setBorder(LOWERED_BORDER);
@@ -241,20 +254,13 @@ class SensorRow extends JPanel {
                 new Thread(() -> {
                     int key = e.getKeyCode();
                     if(key == KeyEvent.VK_ENTER) {
-                        int newValue = Integer.parseInt(maxOutValue.getText());
-                        if (newValue <= 127 && newValue >= minOutVal) {
-                            SensorManagement.changeMaxRange(midiPort, newValue);
-                            maxOutVal = newValue;
-                        } else if (newValue > 127) {
-                            SensorManagement.changeMinRange(midiPort, 127);
-                            minOutVal = 127;
-                            SwingUtilities.invokeLater(() -> maxOutValue.setText("127"));
+                        try {
+                            int newValue = Integer.parseInt(maxOutValue.getText());
+                            maxThreshModification(newValue);
+                        } catch (NumberFormatException e1) {
+                            numberFormatWarning();
                         }
-                        else{
-                            SensorManagement.changeMinRange(midiPort, minOutVal);
-                            maxOutVal = minOutVal;
-                            SwingUtilities.invokeLater(() -> maxOutValue.setText(String.valueOf(minOutVal)));
-                        }
+
 
                     }
                 }).start();
@@ -265,14 +271,41 @@ class SensorRow extends JPanel {
 
             }
         });
-        /**********Minimum Label**********/
-        JLabel minLabel = new JLabel("Min :");
+
+        maxOutValue.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                try {
+                    int newValue = Integer.parseInt(maxOutValue.getText());
+                    maxThreshModification(newValue);
+                } catch (NumberFormatException e1) {
+                    numberFormatWarning();
+                }
+
+            }
+        });
+
+
+        /**********Minimum-Debounce Label**********/
+        if (this.mode == Sensor.FADER) {
+            minLabel = new JLabel("Min :");
+            minOutValue = new JTextField(String.valueOf(this.minOutVal));
+        } else {
+            minLabel = new JLabel("Debounce :");
+            minOutValue = new JTextField(String.valueOf(this.debounceTime));
+        }
         changeColor(minLabel);
         --constraint.gridx;
         constraint.gridy = 1;
         this.add(minLabel, constraint);
         /**minimum output value**/
-        minOutValue = new JTextField(String.valueOf(this.minOutVal));
+
+
         changeColor(minOutValue);
         minOutValue.setPreferredSize(new Dimension(35, 18));
         minOutValue.setBorder(LOWERED_BORDER);
@@ -290,21 +323,12 @@ class SensorRow extends JPanel {
                 new Thread(() -> {
                     int key = e.getKeyCode();
                     if(key == KeyEvent.VK_ENTER) {
-                        int newValue = Integer.parseInt(minOutValue.getText());
-                        if (newValue >= 0 && newValue <= maxOutVal) {
-                            SensorManagement.changeMinRange(midiPort, newValue);
-                            minOutVal = newValue;
-                        } else if (newValue < 0) {
-                            SensorManagement.changeMinRange(midiPort, 0);
-                            minOutVal = 0;
-                            SwingUtilities.invokeLater(() -> minOutValue.setText("000"));
+                        try {
+                            int newValue = Integer.parseInt(minOutValue.getText());
+                            minDebModification(newValue);
+                        } catch (NumberFormatException e1) {
+                            numberFormatWarning();
                         }
-                        else{
-                            SensorManagement.changeMinRange(midiPort, maxOutVal);
-                            minOutVal = maxOutVal;
-                            SwingUtilities.invokeLater(() -> minOutValue.setText(String.valueOf(maxOutVal)));
-                        }
-
                     }
                 }).start();
             }
@@ -312,6 +336,23 @@ class SensorRow extends JPanel {
             @Override
             public void keyReleased(KeyEvent e) {
 
+            }
+        });
+
+        minOutValue.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                try {
+                    int newValue = Integer.parseInt(minOutValue.getText());
+                    minDebModification(newValue);
+                } catch (NumberFormatException e1) {
+                    numberFormatWarning();
+                }
             }
         });
 
@@ -420,13 +461,16 @@ class SensorRow extends JPanel {
         addVerticalSeparation(5);
 
         /**********Toggle Button**********/
-        JButton toggleButton = new JButton();
-        if (this.toggle) {
+        toggleButton = new JButton();
+        if (this.mode == Sensor.TOGGLE) {
             toggleButton.setText("Toggle");
             toggleButton.setBackground(OperatingWindows.TOGGLE_COLOR);
-        } else {
+        } else if (this.mode == Sensor.FADER) {
             toggleButton.setText("Fader");
             toggleButton.setBackground(OperatingWindows.FADER_COLOR);
+        } else if (this.mode == Sensor.MOMENTARY) {
+            toggleButton.setText("Momentary");
+            toggleButton.setBackground(OperatingWindows.MOMENTARY_COLOR);
         }
         toggleButton.setForeground(OperatingWindows.FOREGROUND_COLOR);
         toggleButton.setBorder(OperatingWindows.RAISED_BORDER);
@@ -435,55 +479,33 @@ class SensorRow extends JPanel {
         constraint.gridx = constraint.gridx + 1;
         this.add(toggleButton, constraint);
 
-        toggleButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (SensorRow.this.toggle) {
-                            Services.setToggle(midiPort, false);
-                            SwingUtilities.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    toggleButton.setText("Fader");
-                                    toggleButton.setBackground(OperatingWindows.FADER_COLOR);
-                                }
-                            });
-                        } else {
-                            Services.setToggle(midiPort, true);
-                            SwingUtilities.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    toggleButton.setText("Toggle");
-                                    toggleButton.setBackground(OperatingWindows.TOGGLE_COLOR);
-                                }
-                            });
-                        }
-                        SensorRow.this.toggle = !SensorRow.this.toggle;
-
-
-                    }
-                }).start();
-
+        toggleButton.addActionListener(e -> new Thread(() -> {
+            if (SensorRow.this.mode == Sensor.MOMENTARY) {
+                changeMode(Sensor.FADER);
+            } else if (SensorRow.this.mode == Sensor.FADER) {
+                changeMode(Sensor.TOGGLE);
+            } else {
+                changeMode(Sensor.MOMENTARY);
             }
-        });
+
+
+        }).start());
         addVerticalSeparation(5);
 
     }
 
     /**
-     * Simplified type of constructor with default params
-     * @param name
-     * @param arduChan
-     * @param midiPort
-     * @param shortcut
+     * Simplified constructor with defalut parameters
+     * @param name Name of the channel
+     * @param arduChan arduino channel for the row
+     * @param midiPort midiPort for the row
+     * @param shortcut keyboard shortcut for this row
      */
     public SensorRow(String name, int arduChan, int midiPort, char shortcut) {
-        this(name, arduChan, midiPort, 0, 127, 100, shortcut, false);
+        this(name, arduChan, midiPort, 0, 127, 100, shortcut, Sensor.FADER, 0, 0);
     }
     public SensorRow(Sensor s){
-        this(s.getName(), s.getArduinoIn(), s.getMidiPort(), s.getMinRange(), s.getMaxRange(), s.getPreamplifier(), s.getShortcut(), s.isToggle());
+        this(s.getName(), s.getArduinoIn(), s.getMidiPort(), s.getMinRange(), s.getMaxRange(), s.getPreamplifier(), s.getShortcut(), s.getMode(), s.getNoiseThreshold(), s.getDebounceTime());
     }
 
 
@@ -508,6 +530,100 @@ class SensorRow extends JPanel {
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
+    }
+
+    public void maxThreshModification(int newValue) {
+        if (SensorRow.this.mode == Sensor.FADER) {
+            if (newValue <= 127 && newValue >= minOutVal) {
+                Services.changeMaxRange(midiPort, newValue);
+                maxOutVal = newValue;
+            } else if (newValue > 127) {
+                Services.changeMinRange(midiPort, 127);
+                minOutVal = 127;
+                SwingUtilities.invokeLater(() -> maxOutValue.setText("127"));
+            } else {
+                SensorManagement.changeMinRange(midiPort, minOutVal);
+                maxOutVal = minOutVal;
+                SwingUtilities.invokeLater(() -> maxOutValue.setText(String.valueOf(minOutVal)));
+            }
+        } else {
+            if (newValue > 0) {
+                Services.setLineThreshold(midiPort, newValue);
+                noiseThreshold = newValue;
+            } else {
+                Services.setLineThreshold(midiPort, 0);
+                noiseThreshold = 0;
+                SwingUtilities.invokeLater(() -> maxOutValue.setText("0"));
+            }
+        }
+
+    }
+
+    public void minDebModification(int newValue) {
+        if (SensorRow.this.mode == Sensor.FADER) {
+            if (newValue >= 0 && newValue <= maxOutVal) {
+                SensorManagement.changeMinRange(midiPort, newValue);
+                minOutVal = newValue;
+            } else if (newValue < 0) {
+                SensorManagement.changeMinRange(midiPort, 0);
+                minOutVal = 0;
+                SwingUtilities.invokeLater(() -> minOutValue.setText("000"));
+            } else {
+                SensorManagement.changeMinRange(midiPort, maxOutVal);
+                minOutVal = maxOutVal;
+                SwingUtilities.invokeLater(() -> minOutValue.setText(String.valueOf(maxOutVal)));
+            }
+        } else {
+            if (newValue > 0) {
+                Services.setLineDebounce(midiPort, newValue);
+                debounceTime = newValue;
+            } else {
+                Services.setLineDebounce(midiPort, 0);
+                debounceTime = 0;
+                SwingUtilities.invokeLater(() -> minOutValue.setText("0"));
+            }
+        }
+
+    }
+
+    private void numberFormatWarning() {
+        JOptionPane.showMessageDialog(SensorRow.this, "Veuillez entrer un nombre", "Avertissement", JOptionPane.WARNING_MESSAGE);
+    }
+
+    private void changeMode(int mode) {
+        this.mode = mode;
+        if (mode == Sensor.FADER) {
+            Services.setMode(midiPort, Sensor.FADER);
+            SwingUtilities.invokeLater(() -> {
+                toggleButton.setText("Fader");
+                toggleButton.setBackground(OperatingWindows.FADER_COLOR);
+                maxLabel.setText("Max :");
+                minLabel.setText("Min :");
+                maxOutValue.setText(String.valueOf(Services.getMaxRange(midiPort)));
+                minOutValue.setText(String.valueOf(Services.getMinRange(midiPort)));
+            });
+        } else if (mode == Sensor.MOMENTARY) {
+            Services.setMode(midiPort, Sensor.MOMENTARY);
+            SwingUtilities.invokeLater(() -> {
+                toggleButton.setText("Momentary");
+                toggleButton.setBackground(OperatingWindows.MOMENTARY_COLOR);
+                maxLabel.setText("Seuil :");
+                minLabel.setText("Debounce :");
+                maxOutValue.setText(String.valueOf(Services.getLineThreshold(midiPort)));
+                minOutValue.setText(String.valueOf(Services.getLineDebounce(midiPort)));
+            });
+        } else if (mode == Sensor.TOGGLE) {
+            Services.setMode(midiPort, Sensor.TOGGLE);
+            SwingUtilities.invokeLater(() -> {
+                toggleButton.setText("Toggle");
+                toggleButton.setBackground(OperatingWindows.TOGGLE_COLOR);
+                maxLabel.setText("Seuil :");
+                minLabel.setText("Debounce :");
+                maxOutValue.setText(String.valueOf(Services.getLineThreshold(midiPort)));
+                minOutValue.setText(String.valueOf(Services.getLineDebounce(midiPort)));
+            });
+        }
+        repaint();
     }
 
     public void setDeleteButton(DeleteButton db) {

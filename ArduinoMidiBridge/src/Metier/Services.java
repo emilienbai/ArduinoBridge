@@ -82,6 +82,22 @@ public class Services {
 
     }
 
+    public static void changeMaxRange(int midiPort, int maxRange) {
+        SensorManagement.changeMaxRange(midiPort, maxRange);
+    }
+
+    public static int getMaxRange(int midiPort) {
+        return SensorManagement.getMaxRange(midiPort);
+    }
+
+    public static void changeMinRange(int midiPort, int minRange) {
+        SensorManagement.changeMinRange(midiPort, minRange);
+    }
+
+    public static int getMinRange(int midiPort) {
+        return SensorManagement.getMinRange(midiPort);
+    }
+
 
     /**
      * This function send a litte midi impulsion
@@ -93,8 +109,24 @@ public class Services {
     }
 
 
-    public static void setToggle(int midiPort, boolean state) {
-        SensorManagement.setToggle(midiPort, state);
+    public static void setMode(int midiPort, int mode) {
+        SensorManagement.setMode(midiPort, mode);
+    }
+
+    public static void setLineThreshold(int midiPort, int threshold) {
+        SensorManagement.setLineThreshold(midiPort, threshold);
+    }
+
+    public static int getLineThreshold(int midiPort) {
+        return SensorManagement.getNoiseThreshold(midiPort);
+    }
+
+    public static void setLineDebounce(int midiPort, int debounce) {
+        SensorManagement.setLineDebounce(midiPort, debounce);
+    }
+
+    public static int getLineDebounce(int midiPort) {
+        return SensorManagement.getDebounceTime(midiPort);
     }
 
     /**
@@ -342,7 +374,11 @@ public class Services {
                 file.newLine();
                 file.write("        <preamplifier>" + s.getPreamplifier() + "</preamplifier>");
                 file.newLine();
-                file.write("        <toggle>" + s.isToggle() + "</toggle>");
+                file.write("        <mode>" + s.getMode() + "</mode>");
+                file.newLine();
+                file.write("        <noiseThreshold>" + s.getNoiseThreshold() + "</noiseThreshold>");
+                file.newLine();
+                file.write("        <debounceTime>" + s.getDebounceTime() + "</debounceTime>");
                 file.newLine();
                 file.write("    </sensor>");
                 file.newLine();
@@ -442,12 +478,10 @@ public class Services {
         int minRange = getIntValue(sensEl, "minRange");
         int maxRange = getIntValue(sensEl, "maxRange");
         int preamplifier = getIntValue(sensEl, "preamplifier");
-        String toggle = getTextValue(sensEl, "toggle");
-        if (toggle.equals("true")) {
-            return new Sensor(name, arduinoIn, midiPort, shortChar, MidiManager.getMidiReceiver(), minRange, maxRange, preamplifier, true);
-        } else {
-            return new Sensor(name, arduinoIn, midiPort, shortChar, MidiManager.getMidiReceiver(), minRange, maxRange, preamplifier, false);
-        }
+        int mode = getIntValue(sensEl, "mode");
+        int noiseThreshold = getIntValue(sensEl, "noiseThreshold");
+        int debounceTime = getIntValue(sensEl, "debounceTime");
+        return new Sensor(name, arduinoIn, midiPort, shortChar, MidiManager.getMidiReceiver(), minRange, maxRange, preamplifier, mode, noiseThreshold, debounceTime);
         /*Return the new sensor*/
     }
 

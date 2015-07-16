@@ -6,13 +6,19 @@ package Sensor;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.Receiver;
 import javax.sound.midi.ShortMessage;
+import java.util.Date;
 
 /**
  * @author emilien Bai
  */
 public class Sensor {
+	public final static int FADER = 0;
+	public final static int TOGGLE = 1;
+	public final static int MOMENTARY = 2;
+
 	final static int MAX_FROM_SENSOR = 1024;
-	final static int MAX_VELOCITY = 127; 
+	final static int MAX_VELOCITY = 127;
+
 	/**
 	 * Name given to the sensor
 	 */
@@ -67,14 +73,25 @@ public class Sensor {
      */
     private char shortcut;
 	/**
-	 * the sensor act like a toggle button once send on, once send off
+	 * how sensor does act : fader - toggle button - momentary button
 	 */
-	private boolean toggle;
+	private int mode;
 	/**
 	 * Last action of the toggle button
 	 */
 	private boolean lastWasOn;
-
+	/**
+	 * Noise threshold for toggle or momentary
+	 */
+	private int noiseThreshold;
+	/**
+	 * Debounce time for toggle or momentary
+	 */
+	private int debounceTime;
+	/**
+	 * Date of the last impulsion
+	 */
+	private Date lastChange;
 
 	/**
 	 * @param name Name of the sensor
@@ -97,9 +114,12 @@ public class Sensor {
 		this.isSoloed = false;
 		this.isMutedAll = false;
 		this.isMutedBySolo = false;
-		this.toggle = false;
+		this.mode = FADER;
 		this.lastWasOn = false;
+		this.noiseThreshold = 0;
+		this.debounceTime = 0;
 		this.outputValue = 0;
+		this.lastChange = new Date();
 
     }
 
@@ -116,7 +136,7 @@ public class Sensor {
      */
     public Sensor(String name, int arduinoIn, int midiPort, char shortcut,
                   Receiver midiReceiver, int minRange,
-				  int maxRange, int preamplifier, boolean toggle){
+				  int maxRange, int preamplifier, int mode, int noiseThreshold, int debounceTime){
 		this.name = name;
 		this.arduinoIn = arduinoIn;
 		this.midiPort = midiPort;
@@ -131,16 +151,21 @@ public class Sensor {
 		this.isMutedBySolo = false;
 		this.lastWasOn = false;
 		this.outputValue = 0;
-		this.toggle = toggle;
+		this.mode = mode;
+		this.noiseThreshold = noiseThreshold;
+		this.debounceTime = debounceTime;
+		this.lastChange = new Date();
 	}
 	/**
 	 * This method send midi messages to the receiver
 	 * @param dataFromSensor the input value of the sensor
 	 */
 	public void sendMidiMessage(int dataFromSensor){
-		if((!isMuted && !isMutedBySolo && !isMutedAll)||(isSoloed&&!isMutedAll)) {
-			if (toggle) {
-				if (dataFromSensor != 0) {
+		if((!isMuted && !isMutedBySolo && !isMutedAll)||(isSoloed && !isMutedAll)) {
+			Date now = new Date();
+			if (mode == TOGGLE) {
+				if (dataFromSensor > noiseThreshold && (now.getTime() - lastChange.getTime()) > debounceTime) {
+					lastChange = now;
 					ShortMessage msg = new ShortMessage();
 					if (lastWasOn) {
 						try {
@@ -152,16 +177,42 @@ public class Sensor {
 						}
 					} else {
 						try {
-							msg.setMessage(ShortMessage.NOTE_ON, this.midiPort, 127);
+							msg.setMessage(ShortMessage.NOTE_ON, this.midiPort, MAX_VELOCITY);
 							lastWasOn = true;
-							this.outputValue = 127;
+							this.outputValue = MAX_VELOCITY;
 						} catch (InvalidMidiDataException e) {
 							e.printStackTrace();
 						}
 					}
 					this.midiReceiver.send(msg, -1);
 				}
-			} else {
+			} else if (mode == MOMENTARY) {
+				if (dataFromSensor > noiseThreshold && (now.getTime() - lastChange.getTime()) > debounceTime) {
+					lastChange = now;
+					ShortMessage msg = new ShortMessage();
+					if (!lastWasOn) {
+						try {
+							msg.setMessage(ShortMessage.NOTE_ON, this.midiPort, MAX_VELOCITY);
+							lastWasOn = true;
+							this.outputValue = MAX_VELOCITY;
+						} catch (InvalidMidiDataException e) {
+							e.printStackTrace();
+						}
+					}
+					this.midiReceiver.send(msg, -1);
+				} else if (dataFromSensor <= noiseThreshold) {
+					lastChange = now;
+					ShortMessage msg = new ShortMessage();
+					try {
+						msg.setMessage(ShortMessage.NOTE_OFF, this.midiPort, 0);
+						lastWasOn = false;
+						this.outputValue = 0;
+					} catch (InvalidMidiDataException e) {
+						e.printStackTrace();
+					}
+				}
+				}
+			else {
 				int velocity; //velocity of the message to send;
 				velocity = calculate(dataFromSensor);
 				ShortMessage msg = new ShortMessage();
@@ -169,9 +220,6 @@ public class Sensor {
 					msg.setMessage(ShortMessage.NOTE_ON, this.midiPort, velocity);
 					this.midiReceiver.send(msg, -1);
 					this.outputValue = velocity;
-				/*SimpleDateFormat ft =
-						new SimpleDateFormat("hh:mm:ss:SSS");
-				System.out.println("Message Envoyé :" + ft.format(new Date()));*/
 				} catch (InvalidMidiDataException e) {
 					e.printStackTrace();
 					System.err.println("Error sending message from " + this.name);
@@ -322,15 +370,31 @@ public class Sensor {
         return shortcut;
 	}
 
-	public boolean isToggle() {
-		return toggle;
+	public int getMode() {
+		return mode;
 	}
 
-	public void setToggle(boolean toggle) {
-		this.toggle = toggle;
+	public void setMode(int mode) {
+		this.mode = mode;
 	}
 
-	@Override
+	public int getNoiseThreshold() {
+		return noiseThreshold;
+	}
+
+	public void setNoiseThreshold(int noiseThreshold) {
+		this.noiseThreshold = noiseThreshold;
+	}
+
+	public int getDebounceTime() {
+		return debounceTime;
+	}
+
+	public void setDebounceTime(int debounceTime) {
+		this.debounceTime = debounceTime;
+	}
+
+    @Override
 	public String toString() {
 		return "Sensor{" +
 				"name = '" + name + '\'' +
@@ -339,6 +403,6 @@ public class Sensor {
 				",  minRange =" + minRange +
 				", maxRange = " + maxRange +
 				", preamplifer = " + preamplifier + "" +
-				", toggle = " + toggle + "}";
+				", mode = " + mode + "}";
 	}
 }

@@ -27,7 +27,6 @@ import java.util.Vector;
  */
 public class Services {
 
-
     private static String arduiLog = "Logs :\n";
     private static boolean serverEnabled = false;
     private static boolean clientEnabled = false;
@@ -93,6 +92,10 @@ public class Services {
         SensorManagement.sendMidiImpulsion(midiPort);
     }
 
+
+    public static void setToggle(int midiPort, boolean state) {
+        SensorManagement.setToggle(midiPort, state);
+    }
 
     /**
      * Set the debounce time in second for a sensor
@@ -236,8 +239,6 @@ public class Services {
         ArduinoInData.close();
         if (serverEnabled) {
             Server.close();
-        } else if (clientEnabled) {
-            SocOutTh.disconnect();
         }
         System.exit(0);
     }
@@ -262,6 +263,17 @@ public class Services {
         }
         return false;
     }
+
+    public static void signalDisconnection() {
+        OperatingWindows.signalDisconnection();
+        clientEnabled = false;
+    }
+
+    public static boolean isClient() {
+        return clientEnabled;
+    }
+
+
 
     /**
      * Save a sensorList and input configuration in a xml file
@@ -330,6 +342,8 @@ public class Services {
                 file.newLine();
                 file.write("        <preamplifier>" + s.getPreamplifier() + "</preamplifier>");
                 file.newLine();
+                file.write("        <toggle>" + s.isToggle() + "</toggle>");
+                file.newLine();
                 file.write("    </sensor>");
                 file.newLine();
             }
@@ -388,7 +402,6 @@ public class Services {
 
                     //get the Employee object
                     Sensor s = getSensor(el);
-
                     //add it to list
                     sensorList.put(s.getMidiPort(), s);
                 }
@@ -425,15 +438,17 @@ public class Services {
         int arduinoIn = getIntValue(sensEl, "arduinoIn");
         int midiPort = getIntValue(sensEl, "midiPort");
         String shortcut = getTextValue(sensEl, "shortcut");
-        //System.out.println("Raccourci chargé " + shortcut);
         char shortChar = shortcut.charAt(0);
-        //System.out.println(shortChar);
         int minRange = getIntValue(sensEl, "minRange");
         int maxRange = getIntValue(sensEl, "maxRange");
         int preamplifier = getIntValue(sensEl, "preamplifier");
-
+        String toggle = getTextValue(sensEl, "toggle");
+        if (toggle.equals("true")) {
+            return new Sensor(name, arduinoIn, midiPort, shortChar, MidiManager.getMidiReceiver(), minRange, maxRange, preamplifier, true);
+        } else {
+            return new Sensor(name, arduinoIn, midiPort, shortChar, MidiManager.getMidiReceiver(), minRange, maxRange, preamplifier, false);
+        }
         /*Return the new sensor*/
-        return new Sensor(name, arduinoIn, midiPort, shortChar, MidiManager.getMidiReceiver(), minRange, maxRange, preamplifier);
     }
 
     /**

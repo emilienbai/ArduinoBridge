@@ -168,7 +168,10 @@ public class ArduinoInData implements SerialPortEventListener {
             return false;
         } catch (InterruptedException e) {
             e.printStackTrace();
+        } catch (NullPointerException e) {
+
         }
+
         return true;
     }
 

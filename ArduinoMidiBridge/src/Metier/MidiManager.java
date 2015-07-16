@@ -30,7 +30,7 @@ public class MidiManager {
                 d.getReceiver();
                 toReturn.add(anInfo);
             } catch (MidiUnavailableException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }
             if (d != null) {
                 d.close();

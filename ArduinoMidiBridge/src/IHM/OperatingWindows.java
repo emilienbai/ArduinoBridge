@@ -33,6 +33,8 @@ public class OperatingWindows extends JFrame {
     public static final Color IMPULSE_COLOR = new Color(45, 121, 36);
     public static final Color NAME_COLOR = new Color(221, 101, 4);
     public static final Color DISABLED_COLOR = new Color(96, 50, 137);
+    public static final Color TOGGLE_COLOR = new Color(171, 66, 153);
+    public static final Color FADER_COLOR = new Color(61, 87, 255);
 
     /*****************************
      * BORDERS
@@ -60,6 +62,7 @@ public class OperatingWindows extends JFrame {
     private static int selectedSensor = 0;
     private static boolean built = false; //is the window built?
     private static boolean shortcutEnable = true;
+    private static JMenuItem clientSettingItem;
     private JTextArea debounceOneText;
     private JTextArea thresholdOneTextArea;
     private JLabel sensorStatus;
@@ -72,6 +75,7 @@ public class OperatingWindows extends JFrame {
     private int newMidiPort = -1;
     private ServerSettings serverSettings = null;
     private boolean isServer;
+    private ConnexionInfo connexionInfo = null;
 
 
     private GridBagConstraints centerConstraint;
@@ -887,6 +891,12 @@ public class OperatingWindows extends JFrame {
         return shortcutEnable;
     }
 
+    public static void signalDisconnection() {
+        JOptionPane.showMessageDialog(centerPanel, "La connexion au serveur a été perdu, pour se reconnecter :" +
+                " Edition -> Paramètres Client", "Attention", JOptionPane.NO_OPTION);
+        clientSettingItem.setEnabled(true);
+    }
+
     /**
      * Display a warning about the content
      */
@@ -1065,6 +1075,27 @@ public class OperatingWindows extends JFrame {
                 serverSettings = new ServerSettings();
             }
         });
+
+
+        /**ClientSetting Item**/
+        clientSettingItem = new JMenuItem("Paramètres client");
+        if (!this.isServer) {
+            editMenu.add(clientSettingItem);
+            clientSettingItem.setEnabled(false);
+        }
+        clientSettingItem.setBackground(BACKGROUND_COLOR);
+        clientSettingItem.setForeground(FOREGROUND_COLOR);
+
+        clientSettingItem.addActionListener(e -> SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (connexionInfo == null) {
+                    connexionInfo = new ConnexionInfo();
+                } else {
+                    connexionInfo.setVisible(true);
+                }
+            }
+        }));
 
         //Aide
         JMenu helpMenu = new JMenu("Aide");

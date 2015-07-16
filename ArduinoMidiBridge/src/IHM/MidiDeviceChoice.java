@@ -10,6 +10,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Vector;
 
 import static java.lang.System.exit;
@@ -20,13 +22,16 @@ import static java.lang.System.exit;
 public class MidiDeviceChoice extends JFrame{
     public static final int ARDUINO_CONNECTION = 0;
     public static final int NETWORK_CONNECTION = 1;
+    public static final int EDITION_CONNECTION = 2;
     private static JComboBox arduinoCom;
     private static JLabel arduinoLabel;
     private static JButton arduinoCheck;
     private static JButton clientConnexion;
-    private static JSeparator sep;
+    private static JSeparator sep1, sep2;
+    private static JButton editionMode;
     private static boolean arduinoConnected;     //The communication with the arduino have already been established
     private static boolean networkConnected = false;
+    private static boolean editionConnected = false;
     private JButton okButton;
     private JButton reloadButton;
     private JButton quitButton;
@@ -72,7 +77,7 @@ public class MidiDeviceChoice extends JFrame{
         topPanel.setBackground(OperatingWindows.BACKGROUND_COLOR);
         topPanel.setForeground(OperatingWindows.FOREGROUND_COLOR);
         TitledBorder topPanelTitle = BorderFactory.createTitledBorder(OperatingWindows.LOWERED_BORDER,
-                "Choix du canal de communication Arduino");
+                "Choix du mode de communication");
         topPanelTitle.setTitleColor(OperatingWindows.FOREGROUND_COLOR);
         topPanel.setBorder(topPanelTitle);
         mainConstraint.gridx = 0;
@@ -101,9 +106,9 @@ public class MidiDeviceChoice extends JFrame{
         /***ComPort Combo***/
         /*******************/
         arduinoCom = new JComboBox(Services.findSerial());
-        arduinoCom.setEditable(true);
         arduinoCom.setBackground(OperatingWindows.BACKGROUND_COLOR);
         arduinoCom.setForeground(OperatingWindows.FOREGROUND_COLOR);
+        arduinoCom.setEditable(true);
         topConstraint.gridx = topConstraint.gridx + 1;
         topConstraint.weightx = 3;
         topPanel.add(arduinoCom, topConstraint);
@@ -165,11 +170,11 @@ public class MidiDeviceChoice extends JFrame{
         /********************/
         /******Separator*****/
         /********************/
-        sep = new JSeparator(SwingConstants.VERTICAL);
-        sep.setPreferredSize(new Dimension(1, 30));
+        sep1 = new JSeparator(SwingConstants.VERTICAL);
+        sep1.setPreferredSize(new Dimension(1, 30));
         ++topConstraint.gridx;
         topConstraint.weightx = 0;
-        topPanel.add(sep, topConstraint);
+        topPanel.add(sep1, topConstraint);
 
         ++topConstraint.gridx;
         topPanel.add(Box.createHorizontalStrut(10), topConstraint);
@@ -187,7 +192,43 @@ public class MidiDeviceChoice extends JFrame{
         topConstraint.weightx = 1;
         topPanel.add(clientConnexion, topConstraint);
 
-        clientConnexion.addActionListener(e -> SwingUtilities.invokeLater(ConnexionInfo::new));
+        clientConnexion.addActionListener(e -> SwingUtilities.invokeLater(() -> new ConnexionInfo()));
+
+        ++topConstraint.gridx;
+        topConstraint.weightx = 0;
+        topPanel.add(Box.createHorizontalStrut(10), topConstraint);
+
+
+        /********************/
+        /******Separator*****/
+        /********************/
+        sep2 = new JSeparator(SwingConstants.VERTICAL);
+        sep2.setPreferredSize(new Dimension(1, 30));
+        ++topConstraint.gridx;
+        topPanel.add(sep2, topConstraint);
+
+        ++topConstraint.gridx;
+        topConstraint.weightx = 0;
+        topPanel.add(Box.createHorizontalStrut(10), topConstraint);
+
+        /*******************/
+        /****EditionMode****/
+        /*******************/
+        editionMode = new JButton("Mode Edition");
+        editionMode.setBackground(OperatingWindows.BUTTON_COLOR);
+        editionMode.setForeground(OperatingWindows.FOREGROUND_COLOR);
+        editionMode.setBorder(OperatingWindows.RAISED_BORDER);
+
+        ++topConstraint.gridx;
+        topConstraint.weightx = 1;
+        topPanel.add(editionMode, topConstraint);
+
+        editionMode.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                connect(EDITION_CONNECTION);
+            }
+        });
 
 
         /**********************************************************/
@@ -339,12 +380,12 @@ public class MidiDeviceChoice extends JFrame{
         bottomPanel.add(okButton, bottomConstraint);
 
         okButton.addActionListener(e -> {
-            if ((midiConnected && arduinoConnected) || (midiConnected && networkConnected)) {//If a valid midi device is 
+            if ((midiConnected && arduinoConnected) || (midiConnected && networkConnected) || (midiConnected && editionConnected)) {//If a valid midi device is
                 // choosen and arduino or network is ok -> we set midi receiver
                 new Thread(SensorManagement::changeReceiver).start();
                 dispose();
-                if (connectionToSet) {
-                    new OperatingWindows(!networkConnected); //if connected, the application is a client
+                if (connectionToSet || editionConnected) {
+                    new OperatingWindows(!networkConnected && !editionConnected); //if  not connected, the application is a server
                 }
             } else if (!midiConnected) {
                 JOptionPane.showMessageDialog(MidiDeviceChoice.this,
@@ -389,7 +430,9 @@ public class MidiDeviceChoice extends JFrame{
             arduinoCom.setVisible(false);
             arduinoCheck.setVisible(false);
             clientConnexion.setVisible(false);
-            sep.setVisible(false);
+            editionMode.setVisible(false);
+            sep1.setVisible(false);
+            sep2.setVisible(false);
             switch (meanOfConnection) {
                 case ARDUINO_CONNECTION:
                     arduinoLabel.setText("Connexion à l'arduino effectuée");
@@ -398,6 +441,10 @@ public class MidiDeviceChoice extends JFrame{
                 case NETWORK_CONNECTION:
                     arduinoLabel.setText("Connexion au serveur effectuée");
                     networkConnected = true;
+                    break;
+                case EDITION_CONNECTION:
+                    arduinoLabel.setText(("Connexion en mode édition"));
+                    editionConnected = true;
             }
 
         });

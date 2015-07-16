@@ -139,7 +139,7 @@ public class InputManager {
      */
     public static void reset() {
         try {
-            Thread.sleep(100);
+            Thread.sleep(50);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -149,10 +149,10 @@ public class InputManager {
             int number = a.getNumber();
             ArduinoInData.setDebounceTime(number, debounce);
             try {
-                Thread.sleep(100);
+                Thread.sleep(50);
 
                 ArduinoInData.setNoiseGate(number, threshold);
-                Thread.sleep(100);
+                Thread.sleep(50);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

@@ -147,6 +147,10 @@ public class SensorManagement {
         }
     }
 
+    protected static void setToggle(int midiPort, boolean state) {
+        sensorList.get(midiPort).setToggle(state);
+    }
+
     /**
      * In case the user wants to start a new session of the app
      */

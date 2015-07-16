@@ -66,6 +66,14 @@ public class Sensor {
      * a keyboard shortcut matching with the sensor
      */
     private char shortcut;
+	/**
+	 * the sensor act like a toggle button once send on, once send off
+	 */
+	private boolean toggle;
+	/**
+	 * Last action of the toggle button
+	 */
+	private boolean lastWasOn;
 
 
 	/**
@@ -89,7 +97,10 @@ public class Sensor {
 		this.isSoloed = false;
 		this.isMutedAll = false;
 		this.isMutedBySolo = false;
+		this.toggle = false;
+		this.lastWasOn = false;
 		this.outputValue = 0;
+
     }
 
     /**
@@ -105,7 +116,7 @@ public class Sensor {
      */
     public Sensor(String name, int arduinoIn, int midiPort, char shortcut,
                   Receiver midiReceiver, int minRange,
-				  int maxRange, int preamplifier){
+				  int maxRange, int preamplifier, boolean toggle){
 		this.name = name;
 		this.arduinoIn = arduinoIn;
 		this.midiPort = midiPort;
@@ -118,28 +129,53 @@ public class Sensor {
 		this.isSoloed = false;
 		this.isMutedAll = false;
 		this.isMutedBySolo = false;
+		this.lastWasOn = false;
 		this.outputValue = 0;
-
+		this.toggle = toggle;
 	}
 	/**
 	 * This method send midi messages to the receiver
 	 * @param dataFromSensor the input value of the sensor
 	 */
 	public void sendMidiMessage(int dataFromSensor){
-		if((!isMuted && !isMutedBySolo && !isMutedAll)||(isSoloed&&!isMutedAll)){
-			int velocity; //velocity of the message to send;
-			velocity = calculate(dataFromSensor);
-			ShortMessage msg = new ShortMessage();
-			try {
-				msg.setMessage(ShortMessage.NOTE_ON, this.midiPort, velocity);
-				this.midiReceiver.send(msg, -1);
-				this.outputValue = velocity;
+		if((!isMuted && !isMutedBySolo && !isMutedAll)||(isSoloed&&!isMutedAll)) {
+			if (toggle) {
+				if (dataFromSensor != 0) {
+					ShortMessage msg = new ShortMessage();
+					if (lastWasOn) {
+						try {
+							msg.setMessage(ShortMessage.NOTE_OFF, this.midiPort, 0);
+							lastWasOn = false;
+							this.outputValue = 0;
+						} catch (InvalidMidiDataException e) {
+							e.printStackTrace();
+						}
+					} else {
+						try {
+							msg.setMessage(ShortMessage.NOTE_ON, this.midiPort, 127);
+							lastWasOn = true;
+							this.outputValue = 127;
+						} catch (InvalidMidiDataException e) {
+							e.printStackTrace();
+						}
+					}
+					this.midiReceiver.send(msg, -1);
+				}
+			} else {
+				int velocity; //velocity of the message to send;
+				velocity = calculate(dataFromSensor);
+				ShortMessage msg = new ShortMessage();
+				try {
+					msg.setMessage(ShortMessage.NOTE_ON, this.midiPort, velocity);
+					this.midiReceiver.send(msg, -1);
+					this.outputValue = velocity;
 				/*SimpleDateFormat ft =
 						new SimpleDateFormat("hh:mm:ss:SSS");
 				System.out.println("Message Envoyé :" + ft.format(new Date()));*/
-			} catch (InvalidMidiDataException e) {
-				e.printStackTrace();
-				System.err.println("Error sending message from " + this.name);
+				} catch (InvalidMidiDataException e) {
+					e.printStackTrace();
+					System.err.println("Error sending message from " + this.name);
+				}
 			}
 		}
 	}
@@ -284,7 +320,15 @@ public class Sensor {
 
     public char getShortcut() {
         return shortcut;
-    }
+	}
+
+	public boolean isToggle() {
+		return toggle;
+	}
+
+	public void setToggle(boolean toggle) {
+		this.toggle = toggle;
+	}
 
 	@Override
 	public String toString() {
@@ -294,6 +338,7 @@ public class Sensor {
 				", midiPort = " + midiPort +
 				",  minRange =" + minRange +
 				", maxRange = " + maxRange +
-				", preamplifer = " + preamplifier+"}";
+				", preamplifer = " + preamplifier + "" +
+				", toggle = " + toggle + "}";
 	}
 }

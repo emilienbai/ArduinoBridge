@@ -163,6 +163,7 @@ void pushReset()
 { 
   String s = "-Full Reset";
   Serial.println(s);
+  delay(10);
   asm volatile (" jmp 0");
 }
 

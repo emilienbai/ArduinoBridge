@@ -29,7 +29,6 @@ public class SocInTh extends Thread {
     public SocInTh(BufferedReader br) {
         this.socIn = br;
         finished = false;
-        //SocInTh is running
     }
 
     /**
@@ -41,26 +40,18 @@ public class SocInTh extends Thread {
 
             while (!finished && line != null) {
                 line = socIn.readLine(); //receive message from server
-                System.out.println(line);
-                // we print the corresponding message on terminal.
-
                 Services.sendMidiMessage(line);
             }
         } catch (IOException e) {
             System.err.println("Error in SocInTh");
-            e.printStackTrace();
+            finished = true;
+        } catch (NullPointerException e) {
+            System.out.println("On a perdu le serveur biatch");
+            Services.signalDisconnection();
         }
 
     }
 
-    /**
-     * Close the BufferedReader
-     *
-     * @throws IOException
-     **/
-    public void StopInTh() throws IOException {
-        socIn.close();
-    }
 
     /**
      * getter for the finished boolean

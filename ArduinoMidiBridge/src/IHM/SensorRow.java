@@ -7,6 +7,8 @@ import Sensor.Sensor;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
@@ -37,6 +39,7 @@ class SensorRow extends JPanel {
     private JButton soloButton;
     private JButton impulseButton;
     private DeleteButton deleteButton;
+    private boolean toggle;
 
 
     private int arduinoChannel;
@@ -59,7 +62,7 @@ class SensorRow extends JPanel {
      * @param preamplifier Factor of multiplication
      * @param shortcut     Keyboard Shortcut used to send an impulsion
      */
-    public SensorRow(String name, int arduChan, int midiPort, int minRange, int maxRange, int preamplifier, char shortcut) {
+    public SensorRow(String name, int arduChan, int midiPort, int minRange, int maxRange, int preamplifier, char shortcut, boolean toggle) {
         super(new GridBagLayout());
         constraint = new GridBagConstraints();
         this.name = name;
@@ -70,6 +73,7 @@ class SensorRow extends JPanel {
         this.arduinoChannel = arduChan;
         this.midiPort = midiPort;
         this.shortcut = shortcut;
+        this.toggle = toggle;
         changeColor(this);
         this.setBorder(ETCHED_BORDER);
 
@@ -414,6 +418,58 @@ class SensorRow extends JPanel {
         }).start());
 
         addVerticalSeparation(5);
+
+        /**********Toggle Button**********/
+        JButton toggleButton = new JButton();
+        if (this.toggle) {
+            toggleButton.setText("Toggle");
+            toggleButton.setBackground(OperatingWindows.TOGGLE_COLOR);
+        } else {
+            toggleButton.setText("Fader");
+            toggleButton.setBackground(OperatingWindows.FADER_COLOR);
+        }
+        toggleButton.setForeground(OperatingWindows.FOREGROUND_COLOR);
+        toggleButton.setBorder(OperatingWindows.RAISED_BORDER);
+        toggleButton.setPreferredSize(new Dimension(70, 35));
+
+        constraint.gridx = constraint.gridx + 1;
+        this.add(toggleButton, constraint);
+
+        toggleButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (SensorRow.this.toggle) {
+                            Services.setToggle(midiPort, false);
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    toggleButton.setText("Fader");
+                                    toggleButton.setBackground(OperatingWindows.FADER_COLOR);
+                                }
+                            });
+                        } else {
+                            Services.setToggle(midiPort, true);
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    toggleButton.setText("Toggle");
+                                    toggleButton.setBackground(OperatingWindows.TOGGLE_COLOR);
+                                }
+                            });
+                        }
+                        SensorRow.this.toggle = !SensorRow.this.toggle;
+
+
+                    }
+                }).start();
+
+            }
+        });
+        addVerticalSeparation(5);
+
     }
 
     /**
@@ -424,10 +480,10 @@ class SensorRow extends JPanel {
      * @param shortcut
      */
     public SensorRow(String name, int arduChan, int midiPort, char shortcut) {
-        this(name, arduChan, midiPort, 0, 127, 100, shortcut);
+        this(name, arduChan, midiPort, 0, 127, 100, shortcut, false);
     }
     public SensorRow(Sensor s){
-        this(s.getName(), s.getArduinoIn(), s.getMidiPort(), s.getMinRange(), s.getMaxRange(), s.getPreamplifier(), s.getShortcut());
+        this(s.getName(), s.getArduinoIn(), s.getMidiPort(), s.getMinRange(), s.getMaxRange(), s.getPreamplifier(), s.getShortcut(), s.isToggle());
     }
 
 

@@ -10,15 +10,18 @@ import java.awt.*;
  * Created by Emilien Bai (emilien.bai@insa-lyon.fr)on 07/2015.
  */
 
-
+/**
+ * Frame to fill with informations to connect a server
+ */
 public class ConnexionInfo extends JFrame {
 
     public ConnexionInfo() {
         super("Connexion au serveur");
-        //this.setUndecorated(true);
         this.setLocationRelativeTo(null);
         this.setResizable(false);
-        this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+        this.setLocationRelativeTo(null);
+        this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
         JPanel mainPanel = new JPanel(new GridLayout(3, 2, 10, 10));
         mainPanel.setBackground(OperatingWindows.BACKGROUND_COLOR);
@@ -30,7 +33,7 @@ public class ConnexionInfo extends JFrame {
         addressLabel.setForeground(OperatingWindows.FOREGROUND_COLOR);
         mainPanel.add(addressLabel);
 
-
+        /**Field for the server address**/
         JTextField addressField = new JTextField();
         addressField.setBackground(OperatingWindows.BACKGROUND_COLOR);
         addressField.setForeground(OperatingWindows.FOREGROUND_COLOR);
@@ -43,6 +46,7 @@ public class ConnexionInfo extends JFrame {
         portLabel.setForeground(OperatingWindows.FOREGROUND_COLOR);
         mainPanel.add(portLabel);
 
+        /**Field for the port number**/
         JTextField portField = new JTextField("5000");
         portField.setBackground(OperatingWindows.BACKGROUND_COLOR);
         portField.setForeground(OperatingWindows.FOREGROUND_COLOR);
@@ -50,17 +54,16 @@ public class ConnexionInfo extends JFrame {
         portField.setPreferredSize(new Dimension(100, 15));
         mainPanel.add(portField);
 
+        /**Cancel the connexion procedure**/
         JButton cancelButton = new JButton("Annuler");
         cancelButton.setBackground(OperatingWindows.BUTTON_COLOR);
         cancelButton.setForeground(OperatingWindows.FOREGROUND_COLOR);
         cancelButton.setBorder(OperatingWindows.RAISED_BORDER);
         mainPanel.add(cancelButton);
 
-        cancelButton.addActionListener(e -> {
-            ConnexionInfo.this.setVisible(false);
-            ConnexionInfo.this.dispose();
-        });
+        cancelButton.addActionListener(e -> ConnexionInfo.this.dispose());
 
+        /**Validate the connexion tentative**/
         JButton okButton = new JButton("OK");
         okButton.setBackground(OperatingWindows.BUTTON_COLOR);
         okButton.setForeground(OperatingWindows.FOREGROUND_COLOR);
@@ -70,15 +73,19 @@ public class ConnexionInfo extends JFrame {
         okButton.addActionListener(e -> {
             String hostname = addressField.getText();
             String port = portField.getText();
-            if (hostname != null && port != null && !hostname.equals("") && !port.equals("")) {
+            if (hostname != null && port != null && !hostname.equals("") && !port.equals("") && !Services.isClient()) {
                 try {
                     int portNumber = Integer.parseInt(port);
-                    if (!Services.connectClient(hostname, portNumber)) {
+                    if (Services.connectClient(hostname, portNumber)) {
+                        dispose();
+                    } else {
                         JOptionPane.showMessageDialog(ConnexionInfo.this, "Echec de la connexion au serveur Assurez vous que les paramètres renseignés sont corrects.");
                     }
                 } catch (NumberFormatException e1) {
                     JOptionPane.showMessageDialog(ConnexionInfo.this, "Le port doit être un nombre");
                 }
+            } else if (Services.isClient()) {
+                dispose();
             }
         });
 

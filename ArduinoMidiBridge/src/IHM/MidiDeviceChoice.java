@@ -19,7 +19,7 @@ import static java.lang.System.exit;
 /**
  * Created by Emilien Bai (emilien.bai@insa-lyon.fr)on 06/2015.
  */
-public class MidiDeviceChoice extends JFrame{
+public class MidiDeviceChoice extends JFrame {
     public static final int ARDUINO_CONNECTION = 0;
     public static final int NETWORK_CONNECTION = 1;
     public static final int EDITION_CONNECTION = 2;
@@ -43,6 +43,7 @@ public class MidiDeviceChoice extends JFrame{
 
     /**
      * Constructor for the frame Midi Device Choice
+     *
      * @param connectionToSet true if a connection needs to be done
      */
     public MidiDeviceChoice(boolean connectionToSet) {
@@ -64,7 +65,7 @@ public class MidiDeviceChoice extends JFrame{
         mainPanel.setForeground(OperatingWindows.FOREGROUND_COLOR);
         TitledBorder mainPanelTitle = BorderFactory.createTitledBorder(
                 OperatingWindows.RAISED_BORDER,
-                "Choisissez votre périphérique Midi" );
+                "Choisissez votre périphérique Midi");
         mainPanelTitle.setTitleColor(OperatingWindows.FOREGROUND_COLOR);
         mainPanel.setBorder(mainPanelTitle);
         this.add(mainPanel);
@@ -100,7 +101,7 @@ public class MidiDeviceChoice extends JFrame{
         topConstraint.fill = GridBagConstraints.BOTH;
         topConstraint.gridx = 0;
         topConstraint.gridy = 0;
-        topPanel.add(arduinoLabel,topConstraint);
+        topPanel.add(arduinoLabel, topConstraint);
 
         /*******************/
         /***ComPort Combo***/
@@ -156,7 +157,7 @@ public class MidiDeviceChoice extends JFrame{
                                 "</center><html>";
                         break;
                 }
-                if(errorMessage[0] !=null){
+                if (errorMessage[0] != null) {
                     JOptionPane.showMessageDialog(MidiDeviceChoice.this, errorMessage[0], "Erreur", JOptionPane.ERROR_MESSAGE);
                 }
             }).start();
@@ -192,7 +193,7 @@ public class MidiDeviceChoice extends JFrame{
         topConstraint.weightx = 1;
         topPanel.add(clientConnexion, topConstraint);
 
-        clientConnexion.addActionListener(e -> SwingUtilities.invokeLater(() -> new ConnexionInfo()));
+        clientConnexion.addActionListener(e -> SwingUtilities.invokeLater(ConnexionInfo::new));
 
         ++topConstraint.gridx;
         topConstraint.weightx = 0;
@@ -242,18 +243,18 @@ public class MidiDeviceChoice extends JFrame{
         scrollList.setBorder(OperatingWindows.LOWERED_BORDER);
         mainConstraint.gridy = 1;
         mainConstraint.gridx = 0;
-        mainConstraint.weighty =1;
+        mainConstraint.weighty = 1;
         mainConstraint.fill = GridBagConstraints.BOTH;
         mainPanel.add(scrollList, mainConstraint);
 
         deviceList.addListSelectionListener(e -> new Thread(() -> {
-            choosenDevice = (MidiDevice.Info) deviceList.getSelectedValue();
-            String description = choosenDevice.getDescription();
-            String vendor = choosenDevice.getVendor();
+                    choosenDevice = (MidiDevice.Info) deviceList.getSelectedValue();
+                    String description = choosenDevice.getDescription();
+                    String vendor = choosenDevice.getVendor();
                     midiConnected = MidiManager.chooseMidiDevice(choosenDevice);
-            SwingUtilities.invokeLater(() -> deviceDescription.setText("<html>Description : " + description + "<br>"
-                                        + "Vendeur : " + vendor + "</html>"));
-        }).start()
+                    SwingUtilities.invokeLater(() -> deviceDescription.setText("<html>Description : " + description + "<br>"
+                            + "Vendeur : " + vendor + "</html>"));
+                }).start()
 
         );
 
@@ -284,7 +285,7 @@ public class MidiDeviceChoice extends JFrame{
         mainPanel.add(bottomPanel, mainConstraint);
 
         GridBagConstraints bottomConstraint = new GridBagConstraints();
-        bottomConstraint.fill  =GridBagConstraints.BOTH;
+        bottomConstraint.fill = GridBagConstraints.BOTH;
         bottomConstraint.ipadx = 10;
 
         /**Reload Button**/
@@ -300,22 +301,22 @@ public class MidiDeviceChoice extends JFrame{
         bottomPanel.add(reloadButton, bottomConstraint);
 
         reloadButton.addActionListener(e -> new Thread(() -> {
-        SwingUtilities.invokeLater(() -> {
-            reloadProgress.setVisible(true);
-            reloadButton.setVisible(false);
-            quitButton.setVisible(false);
-            okButton.setVisible(false);
-        });
-        Vector<MidiDevice.Info> availableDevice = MidiManager.getAvailableMidiDevices();
-        choosenDevice = null;
-        SwingUtilities.invokeLater(() -> {
-            deviceList.setListData(availableDevice);
-            reloadProgress.setVisible(false);
-            reloadButton.setVisible(true);
-            quitButton.setVisible(true);
-            okButton.setVisible(true);
-        });
-    }).start()
+                    SwingUtilities.invokeLater(() -> {
+                        reloadProgress.setVisible(true);
+                        reloadButton.setVisible(false);
+                        quitButton.setVisible(false);
+                        okButton.setVisible(false);
+                    });
+                    Vector<MidiDevice.Info> availableDevice = MidiManager.getAvailableMidiDevices();
+                    choosenDevice = null;
+                    SwingUtilities.invokeLater(() -> {
+                        deviceList.setListData(availableDevice);
+                        reloadProgress.setVisible(false);
+                        reloadButton.setVisible(true);
+                        quitButton.setVisible(true);
+                        okButton.setVisible(true);
+                    });
+                }).start()
 
         );
 
@@ -342,8 +343,7 @@ public class MidiDeviceChoice extends JFrame{
         /**QuitButton**/
         if (connectionToSet) {
             quitButton = new JButton("Quitter");
-        }
-        else{
+        } else {
             quitButton = new JButton("Annuler");
         }
         quitButton.setBackground(OperatingWindows.BUTTON_COLOR);
@@ -361,8 +361,7 @@ public class MidiDeviceChoice extends JFrame{
                 MidiManager.exit();
                 ArduinoInData.close();
                 exit(0);
-            }
-            else{
+            } else {
                 dispose();
             }
         });
@@ -394,8 +393,7 @@ public class MidiDeviceChoice extends JFrame{
                                 "Veuillez réessayer</center></html>",
                         " Avertissement ",
                         JOptionPane.WARNING_MESSAGE);
-            }
-            else{
+            } else {
                 JOptionPane.showMessageDialog(MidiDeviceChoice.this,
                         "<html><center>Communication arduino ou réseau non établie" +
                                 "</center></html>",
@@ -451,7 +449,7 @@ public class MidiDeviceChoice extends JFrame{
     }
 
 
-    public static void main (String[] args){
+    public static void main(String[] args) {
         JFrame frame = new MidiDeviceChoice(true);
         frame.setVisible(true);
         frame.pack();

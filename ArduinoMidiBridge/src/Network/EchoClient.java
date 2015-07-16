@@ -12,8 +12,6 @@ import java.net.UnknownHostException;
 public class EchoClient {
 
     static SocOutTh socoutth;
-
-
     /**
      * main method, start a new Thread.
      *
@@ -30,4 +28,3 @@ public class EchoClient {
         socoutth.start();
     }
 }
-

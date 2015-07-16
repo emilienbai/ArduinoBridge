@@ -66,6 +66,7 @@ public class ArduinoInData implements SerialPortEventListener {
 
     /**
      * set the noise gate for an input on the arduino
+     *
      * @param sensorNumber the sensor to change
      * @param newValue     the new value of the gate
      * @return true if it worked
@@ -137,6 +138,7 @@ public class ArduinoInData implements SerialPortEventListener {
 
     /**
      * set the number of sensor used by the arduino
+     *
      * @param newNumber the new number of sensor
      * @return true if the message have been sent
      */
@@ -166,10 +168,8 @@ public class ArduinoInData implements SerialPortEventListener {
         } catch (IOException e) {
             e.printStackTrace();
             return false;
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | NullPointerException e) {
             e.printStackTrace();
-        } catch (NullPointerException e) {
-
         }
 
         return true;
@@ -177,6 +177,7 @@ public class ArduinoInData implements SerialPortEventListener {
 
     /**
      * Initialize the connection with the arduino using specified port
+     *
      * @param port the port to use (example /dev/ttyACM0 )
      * @return code of good connection or error.
      */

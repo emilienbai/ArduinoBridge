@@ -16,9 +16,10 @@ public class MidiManager {
     /**
      * Obtain all midi device on which it is possible to send
      * midi messages
+     *
      * @return Vector of the devices information
      */
-    public static Vector<MidiDevice.Info> getAvailableMidiDevices(){
+    public static Vector<MidiDevice.Info> getAvailableMidiDevices() {
         MidiDevice.Info[] info = MidiSystem.getMidiDeviceInfo();
         Vector<MidiDevice.Info> toReturn = new Vector<>();
         //we check which of the devices are available to send midi message
@@ -41,10 +42,11 @@ public class MidiManager {
 
     /**
      * Choose the midi device you want to use to send your messages
+     *
      * @param info The MidiDevice.Info matching the device we want to set
-     * @return  True if the midiReceiver is succesfully set.
+     * @return True if the midiReceiver is succesfully set.
      */
-    public static boolean chooseMidiDevice(MidiDevice.Info info){
+    public static boolean chooseMidiDevice(MidiDevice.Info info) {
         try {
             choosenDevice = MidiSystem.getMidiDevice(info);
             choosenDevice.open();
@@ -69,12 +71,9 @@ public class MidiManager {
     /**
      * Close the connection with the receiver
      */
-    public static void exit(){
-        if(choosenDevice != null) {
+    public static void exit() {
+        if (choosenDevice != null) {
             choosenDevice.close();
         }
     }
-
-
-
 }

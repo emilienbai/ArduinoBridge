@@ -38,7 +38,6 @@ public class ClientThread
         Server.addClient(socOut); // ajout du prinstream
         // correspondant à la liste
         running = true;
-
     }
 
     /**
@@ -51,7 +50,6 @@ public class ClientThread
             socIn = new BufferedReader(new InputStreamReader
                     (clientSocket.getInputStream()));
             //Initialise the adapted BufferedReader
-
             while (running) {
                 String line = socIn.readLine();
                 if (line.equals("QUIT")) {
@@ -61,7 +59,6 @@ public class ClientThread
                     System.out.println("Server receive : " + line);
                     Server.addLogs("Server receive : " + line);
                 }
-
             }
             socIn.close();
         } catch (Exception e) {
@@ -70,8 +67,4 @@ public class ClientThread
             running = false;
         }
     }
-
-
 }
-
-  

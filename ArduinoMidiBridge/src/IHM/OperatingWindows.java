@@ -2,7 +2,7 @@ package IHM;
 
 import Metier.*;
 import Sensor.ArduinoChan;
-import Sensor.Sensor;
+import Sensor.MidiSensor;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -49,7 +49,9 @@ public class OperatingWindows extends JFrame {
     private static final int DEFAULT_THRESHOLD = 100;
     private static final int DEFAULT_DEBOUNCE = 200;
 
-    /*************************Attributes*********************************/
+    /*************************
+     * Attributes
+     *********************************/
     private static JPanel centerPanel;
     private static JMenuBar menuBar;
     private static Vector<Integer> availableMidiPort = new Vector<>();
@@ -542,7 +544,6 @@ public class OperatingWindows extends JFrame {
         centerPanel.add(sensorNumberLb, centerConstraint);
 
 
-
         /******************************************/
         /**************Bottom Panel****************/
         /******************************************/
@@ -820,6 +821,7 @@ public class OperatingWindows extends JFrame {
 
     /**
      * Send an impulsion on the midiPort of a SensorRow
+     *
      * @param s The sensorRow to modify
      */
     public static void impulseShortCut(SensorRow s) {
@@ -833,6 +835,7 @@ public class OperatingWindows extends JFrame {
 
     /**
      * Add vertical separation in the topPanel
+     *
      * @param width Width of this separation
      */
     private static void addVerticalSeparation(int width) {
@@ -845,6 +848,7 @@ public class OperatingWindows extends JFrame {
 
     /**
      * Update every Vu-Meter on the interface
+     *
      * @param dataIn data sent by the arduino board
      */
     public static void refreshInterface(String dataIn) {
@@ -876,6 +880,7 @@ public class OperatingWindows extends JFrame {
 
     /**
      * Show logs from the arduino board
+     *
      * @param logs The String to display
      */
     public static void refreshLogs(String logs) {
@@ -887,6 +892,7 @@ public class OperatingWindows extends JFrame {
 
     /**
      * getter for shortcutEnable
+     *
      * @return true if shortcuts are activated
      */
     public static boolean isShortcutEnable() {
@@ -1088,14 +1094,11 @@ public class OperatingWindows extends JFrame {
         clientSettingItem.setBackground(BACKGROUND_COLOR);
         clientSettingItem.setForeground(FOREGROUND_COLOR);
 
-        clientSettingItem.addActionListener(e -> SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                if (connexionInfo == null) {
-                    connexionInfo = new ConnexionInfo();
-                } else {
-                    connexionInfo.setVisible(true);
-                }
+        clientSettingItem.addActionListener(e -> SwingUtilities.invokeLater(() -> {
+            if (connexionInfo == null) {
+                connexionInfo = new ConnexionInfo();
+            } else {
+                connexionInfo.setVisible(true);
             }
         }));
 
@@ -1131,10 +1134,10 @@ public class OperatingWindows extends JFrame {
     private void loadSetup() {
         new Thread(() -> {
             SwingUtilities.invokeLater(OperatingWindows.this::cleanAction);
-            java.util.Hashtable<Integer, Sensor> sensorList = SensorManagement.getSensorList();
+            java.util.Hashtable<Integer, MidiSensor> sensorList = SensorManagement.getSensorList();
             Vector<ArduinoChan> arduinoChanVector = Services.getArduinoChanVector();
-            Sensor s;
-            for (Map.Entry<Integer, Sensor> e : sensorList.entrySet()) {
+            MidiSensor s;
+            for (Map.Entry<Integer, MidiSensor> e : sensorList.entrySet()) {
                 s = e.getValue();
                 SensorRow sr = new SensorRow(s);
                 sensorRowList.add(sr);
@@ -1220,6 +1223,3 @@ public class OperatingWindows extends JFrame {
     }
 
 }
-
-
-

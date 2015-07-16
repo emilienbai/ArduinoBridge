@@ -2,6 +2,7 @@ package IHM;
 
 import Metier.SensorManagement;
 import Metier.Services;
+import Sensor.MidiSensor;
 import Sensor.Sensor;
 
 import javax.swing.*;
@@ -115,7 +116,7 @@ class SensorRow extends JPanel {
         /*********Arduino input Chanel*******/
         JLabel arduinoChannelLabel = new JLabel("Arduino : " + String.valueOf(arduChan));
         changeColor(arduinoChannelLabel);
-        arduinoChannelLabel.setPreferredSize(new Dimension(85,20));
+        arduinoChannelLabel.setPreferredSize(new Dimension(85, 20));
         constraint.gridy = 0;
         constraint.gridheight = 1;
         constraint.weightx = 0;
@@ -188,20 +189,17 @@ class SensorRow extends JPanel {
             public void keyPressed(KeyEvent e) {
                 new Thread(() -> {
                     int key = e.getKeyCode();
-                    if(key == KeyEvent.VK_ENTER) {
+                    if (key == KeyEvent.VK_ENTER) {
                         int newValue = Integer.parseInt(preamplifierValue.getText());
-                        if(newValue>0){
+                        if (newValue > 0) {
                             SensorManagement.changePreamplifier(midiPort, newValue);
                         }
                         SwingUtilities.invokeLater(() -> {
-                            if(newValue<=preamplifierSlider.getMaximum()){
+                            if (newValue <= preamplifierSlider.getMaximum()) {
                                 preamplifierSlider.setValue(newValue);
-                            }
-                            else if (newValue<=0){
+                            } else if (newValue <= 0) {
                                 preamplifierValue.setText(String.valueOf(preamplifierSlider.getValue()));
-                            }
-                            else
-                            {
+                            } else {
                                 preamplifierSlider.setValue(preamplifierSlider.getMaximum());
                             }
                         });
@@ -253,7 +251,7 @@ class SensorRow extends JPanel {
             public void keyPressed(KeyEvent e) {
                 new Thread(() -> {
                     int key = e.getKeyCode();
-                    if(key == KeyEvent.VK_ENTER) {
+                    if (key == KeyEvent.VK_ENTER) {
                         try {
                             int newValue = Integer.parseInt(maxOutValue.getText());
                             maxThreshModification(newValue);
@@ -322,7 +320,7 @@ class SensorRow extends JPanel {
             public void keyPressed(KeyEvent e) {
                 new Thread(() -> {
                     int key = e.getKeyCode();
-                    if(key == KeyEvent.VK_ENTER) {
+                    if (key == KeyEvent.VK_ENTER) {
                         try {
                             int newValue = Integer.parseInt(minOutValue.getText());
                             minDebModification(newValue);
@@ -388,15 +386,14 @@ class SensorRow extends JPanel {
         this.add(muteButton, constraint);
 
         muteButton.addActionListener(e -> new Thread(() -> {
-            if (muteState){
+            if (muteState) {
                 SensorManagement.unmute(midiPort);
                 muteState = false;
                 SwingUtilities.invokeLater(() -> {
                     muteButton.setBackground(BUTTON_COLOR);
                     muteButton.setBorder(RAISED_BORDER);
                 });
-            }
-            else {
+            } else {
                 SensorManagement.mute(midiPort);
                 muteState = true;
                 SwingUtilities.invokeLater(() -> {
@@ -496,7 +493,8 @@ class SensorRow extends JPanel {
 
     /**
      * Simplified constructor with defalut parameters
-     * @param name Name of the channel
+     *
+     * @param name     Name of the channel
      * @param arduChan arduino channel for the row
      * @param midiPort midiPort for the row
      * @param shortcut keyboard shortcut for this row
@@ -504,16 +502,18 @@ class SensorRow extends JPanel {
     public SensorRow(String name, int arduChan, int midiPort, char shortcut) {
         this(name, arduChan, midiPort, 0, 127, 100, shortcut, Sensor.FADER, 0, 0);
     }
-    public SensorRow(Sensor s){
+
+    public SensorRow(MidiSensor s) {
         this(s.getName(), s.getArduinoIn(), s.getMidiPort(), s.getMinRange(), s.getMaxRange(), s.getPreamplifier(), s.getShortcut(), s.getMode(), s.getNoiseThreshold(), s.getDebounceTime());
     }
 
 
     /**
      * Adapt the color of a swing Component
+     *
      * @param comp the swing component to adapt
      */
-    private static void changeColor(JComponent comp){
+    private static void changeColor(JComponent comp) {
         comp.setBackground(BACKGROUND_COLOR);
         comp.setForeground(FOREGROUND_COLOR);
     }
@@ -637,6 +637,7 @@ class SensorRow extends JPanel {
 
     /**
      * getter for the midi port of the SensorRow
+     *
      * @return the midiPort of the sensorRow
      */
     public int getMidiPort() {
@@ -645,6 +646,7 @@ class SensorRow extends JPanel {
 
     /**
      * Getter for the arduino Channel of the sensorRow
+     *
      * @return the arduinoChannel of the sensorRow
      */
     public int getArduinoChannel() {
@@ -653,6 +655,7 @@ class SensorRow extends JPanel {
 
     /**
      * Getter for the name of the channel
+     *
      * @return the name of the channel
      */
     @Override
@@ -662,9 +665,10 @@ class SensorRow extends JPanel {
 
     /**
      * Set the value of the input vu-meter
+     *
      * @param data the value to set
      */
-    public void setIncomingSignal(int data){
+    public void setIncomingSignal(int data) {
         SwingUtilities.invokeLater(() -> {
             incomingSignal.setValue(data);
             SensorRow.this.repaint();
@@ -673,6 +677,7 @@ class SensorRow extends JPanel {
 
     /**
      * Set the value of the output vu-meter
+     *
      * @param outValue the value to set
      */
     public void setOutputValue(int outValue) {
@@ -684,6 +689,7 @@ class SensorRow extends JPanel {
 
     /**
      * Getter for the shortcut of the sensorRow
+     *
      * @return the shortcut to use to send an impulsion
      */
     public char getShortcut() {
@@ -692,6 +698,7 @@ class SensorRow extends JPanel {
 
     /**
      * Setter for the color of the impulse Button
+     *
      * @param c The color to set
      */
     public void setImpulseColor(Color c) {
@@ -700,6 +707,7 @@ class SensorRow extends JPanel {
 
     /**
      * Add a vertical separation between the element of the SensorRow
+     *
      * @param width width of the separation
      */
     private void addVerticalSeparation(int width) {

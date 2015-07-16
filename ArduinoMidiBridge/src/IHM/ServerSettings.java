@@ -143,4 +143,3 @@ public class ServerSettings extends JFrame {
         new ServerSettings();
     }
 }
-

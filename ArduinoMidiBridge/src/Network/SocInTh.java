@@ -1,4 +1,3 @@
-
 package Network;
 
 import Metier.Services;
@@ -46,12 +45,9 @@ public class SocInTh extends Thread {
             System.err.println("Error in SocInTh");
             finished = true;
         } catch (NullPointerException e) {
-            System.out.println("On a perdu le serveur biatch");
             Services.signalDisconnection();
         }
-
     }
-
 
     /**
      * getter for the finished boolean
@@ -61,6 +57,4 @@ public class SocInTh extends Thread {
     public boolean GetFinished() {
         return finished;
     }
-
-
 }

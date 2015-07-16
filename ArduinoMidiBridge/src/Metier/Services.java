@@ -6,7 +6,7 @@ import IHM.ServerSettings;
 import Network.Server;
 import Network.SocOutTh;
 import Sensor.ArduinoChan;
-import Sensor.Sensor;
+import Sensor.MidiSensor;
 import com.jgoodies.common.base.SystemUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -39,7 +39,7 @@ public class Services {
      * @param midiPort  midiPort where to send data
      */
     public static void addSensor(String name, int arduinoIn, int midiPort, char shortcut) {
-        Sensor s = new Sensor(name, arduinoIn, midiPort, shortcut, MidiManager.getMidiReceiver());
+        MidiSensor s = new MidiSensor(name, arduinoIn, midiPort, shortcut, MidiManager.getMidiReceiver());
         SensorManagement.addSensor(s);
     }
 
@@ -199,6 +199,7 @@ public class Services {
 
     /**
      * Set the calibration duration
+     *
      * @param newCalibrationTime the new duration for calibration
      */
     public static void setCalibrationTime(int newCalibrationTime) {
@@ -306,7 +307,6 @@ public class Services {
     }
 
 
-
     /**
      * Save a sensorList and input configuration in a xml file
      *
@@ -314,9 +314,9 @@ public class Services {
      * @return true if it worked
      */
     public static boolean saveSetup(File saveFile) {
-        Hashtable<Integer, Sensor> sensorList = SensorManagement.getSensorList();
+        Hashtable<Integer, MidiSensor> sensorList = SensorManagement.getSensorList();
         Vector<ArduinoChan> arduinoInVector = InputManager.getArduinoInVector();
-        Sensor s;
+        MidiSensor s;
         try {
             BufferedWriter file = new BufferedWriter(new FileWriter(saveFile));
             file.write("<?xml version=\"1.0\"?>");
@@ -327,7 +327,7 @@ public class Services {
             file.newLine();
             file.write("<!ATTLIST save sensorNumber CDATA \"0\">");
             file.newLine();
-            file.write("<!ELEMENT sensor (name, arduinoIn, midiPort, shortcut, minRange, maxRange, preamplifier)>");
+            file.write("<!ELEMENT sensor (name, arduinoIn, midiPort, shortcut, minRange, maxRange, preamplifier, mode, noiseThreshold, debounceTime)>");
             file.write("<!ELEMENT name (#PCDATA)>");
             file.newLine();
             file.write("<!ELEMENT arduinoIn (#PCDATA)>");
@@ -341,6 +341,10 @@ public class Services {
             file.write("<!ELEMENT maxRange (#PCDATA)>");
             file.newLine();
             file.write("<!ELEMENT preamplifier (#PCDATA)>");
+            file.newLine();
+            file.write("<!ELEMENT noiseThreshold (#PCDATA)>");
+            file.newLine();
+            file.write("<!ELEMENT debounceTime (#PCDATA)>");
             file.newLine();
             file.write("<!ELEMENT input (number, debounce, threshold, enable)>");
             file.newLine();
@@ -356,7 +360,7 @@ public class Services {
             file.newLine();
             file.write("<save sensorNumber = \"" + sensorList.size() + "\">");
             file.newLine();
-            for (Map.Entry<Integer, Sensor> e : sensorList.entrySet()) {
+            for (Map.Entry<Integer, MidiSensor> e : sensorList.entrySet()) {
                 s = e.getValue();
                 file.write("    <sensor>");
                 file.newLine();
@@ -412,7 +416,7 @@ public class Services {
      * @return the result of the loading
      */
     public static boolean loadSetup(File toLoad) {
-        Hashtable<Integer, Sensor> sensorList = new Hashtable<>();
+        Hashtable<Integer, MidiSensor> sensorList = new Hashtable<>();
         Vector<ArduinoChan> arduinoInVector = new Vector<>();
         Document dom;
         //get the factory
@@ -437,7 +441,7 @@ public class Services {
                     Element el = (Element) nl.item(i);
 
                     //get the Employee object
-                    Sensor s = getSensor(el);
+                    MidiSensor s = getSensor(el);
                     //add it to list
                     sensorList.put(s.getMidiPort(), s);
                 }
@@ -466,7 +470,7 @@ public class Services {
      * @param sensEl the xml element to analyse
      * @return the matching sensor
      */
-    private static Sensor getSensor(Element sensEl) {
+    private static MidiSensor getSensor(Element sensEl) {
 
         //for each <sensor> element get text or int values of
         //name, arduinoIn, midiPort, minRange, maxRange, preamplifier
@@ -481,7 +485,7 @@ public class Services {
         int mode = getIntValue(sensEl, "mode");
         int noiseThreshold = getIntValue(sensEl, "noiseThreshold");
         int debounceTime = getIntValue(sensEl, "debounceTime");
-        return new Sensor(name, arduinoIn, midiPort, shortChar, MidiManager.getMidiReceiver(), minRange, maxRange, preamplifier, mode, noiseThreshold, debounceTime);
+        return new MidiSensor(name, arduinoIn, midiPort, shortChar, MidiManager.getMidiReceiver(), minRange, maxRange, preamplifier, mode, noiseThreshold, debounceTime);
         /*Return the new sensor*/
     }
 

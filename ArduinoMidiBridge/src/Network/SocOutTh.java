@@ -14,12 +14,9 @@ public class SocOutTh extends Thread {
     private static String hostname;
     private static boolean running;
 
-
     public SocOutTh(String hostname, int portnb) {
         port = portnb;
         SocOutTh.hostname = hostname;
-
-
     }
 
     public static boolean connect() {
@@ -38,7 +35,6 @@ public class SocOutTh extends Thread {
             return false;
         }
     }
-
 
     /**
      * receives textmessage from the standard input and send it to the server
@@ -62,6 +58,4 @@ public class SocOutTh extends Thread {
             running = false;
         }*/
     }
-
-
 }

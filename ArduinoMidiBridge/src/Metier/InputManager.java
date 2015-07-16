@@ -9,7 +9,7 @@ import java.util.Vector;
  */
 public class InputManager {
     private static final int MAX_INPUT = 16;
-    private static Vector<ArduinoChan> arduinoInVector = new Vector(16);
+    private static Vector<ArduinoChan> arduinoInVector = new Vector<>(16);
     private static int activeNumber;
 
     /**
@@ -27,7 +27,7 @@ public class InputManager {
     /**
      * Change the number of active channels
      *
-     * @param newNumber
+     * @param newNumber number of active channels
      */
     protected static void chooseChanNb(int newNumber) {
         if (newNumber != activeNumber) {
@@ -42,7 +42,8 @@ public class InputManager {
 
     /**
      * Set the debounce value for an arduinoInput
-     * @param inputNumber The input to modify
+     *
+     * @param inputNumber   The input to modify
      * @param debounceValue the new time of debounce
      */
     protected static void setDebounceOne(int inputNumber, int debounceValue) {
@@ -53,7 +54,8 @@ public class InputManager {
 
     /**
      * Set the threshold value for an arduinoInput
-     * @param inputNumber The input to modify
+     *
+     * @param inputNumber    The input to modify
      * @param thresholdValue the new threshold
      */
     protected static void setThresholdOne(int inputNumber, int thresholdValue) {
@@ -64,6 +66,7 @@ public class InputManager {
 
     /**
      * Set the value of debounce for every input
+     *
      * @param debounceValue the new time of debounce
      */
     protected static void setDebounceAll(int debounceValue) {
@@ -74,6 +77,7 @@ public class InputManager {
 
     /**
      * Set the threshold value for every input
+     *
      * @param thresholdValue the new value of threshold
      */
     protected static void setThresholdAll(int thresholdValue) {
@@ -85,8 +89,9 @@ public class InputManager {
 
     /**
      * Getter for an arduino channel object from its input number
-     * @param chanNumber
-     * @return
+     *
+     * @param chanNumber channel number
+     * @return matching ArduinoChan object
      */
     protected static ArduinoChan getArduinoChan(int chanNumber) {
         return arduinoInVector.get(chanNumber);
@@ -94,7 +99,8 @@ public class InputManager {
 
     /**
      * Getter for every arduino channel object
-     * @return
+     *
+     * @return vector of all the arduinoChan
      */
     protected static Vector<ArduinoChan> getArduinoInVector() {
         return arduinoInVector;
@@ -128,6 +134,7 @@ public class InputManager {
 
     /**
      * Get the number of active channel
+     *
      * @return the number of active channel in this setup
      */
     public static int getActiveNumber() {
@@ -139,7 +146,7 @@ public class InputManager {
      */
     public static void reset() {
         try {
-            Thread.sleep(50);
+            Thread.sleep(20);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -149,16 +156,13 @@ public class InputManager {
             int number = a.getNumber();
             ArduinoInData.setDebounceTime(number, debounce);
             try {
-                Thread.sleep(50);
+                Thread.sleep(20);
 
                 ArduinoInData.setNoiseGate(number, threshold);
-                Thread.sleep(50);
+                Thread.sleep(20);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
     }
 }
-
-
-

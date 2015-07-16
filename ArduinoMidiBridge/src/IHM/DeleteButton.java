@@ -22,7 +22,7 @@ public class DeleteButton extends JButton {
      * @param ancestorFrom The frame to repaint after the deletion
      * @param sensorNumber Number of the Sensor to remove from the List
      */
-    public DeleteButton(SensorRow toDelete, JPanel from, JFrame ancestorFrom, JLabel sensorNumber ) {
+    public DeleteButton(SensorRow toDelete, JPanel from, JFrame ancestorFrom, JLabel sensorNumber) {
         super("Supprimer");
         this.toDelete = toDelete;
         Color BUTTON_COLOR = OperatingWindows.BUTTON_COLOR;
@@ -33,9 +33,9 @@ public class DeleteButton extends JButton {
         this.setBorder(RAISED_BORDER);
         this.setPreferredSize(new Dimension(70, 35));
 
-
         this.addActionListener(e -> new Thread(new Runnable() {
             int nb;
+
             @Override
             public void run() {
                 Services.deleteSensor(toDelete.getMidiPort());
@@ -56,10 +56,10 @@ public class DeleteButton extends JButton {
 
     /**
      * Convert the deleteButton's information into a String
+     *
      * @return The deleteButton's information.
      */
-    public String toString(){
+    public String toString() {
         return "Bouton supprimer de la ligne " + this.toDelete.getName();
-           }
-
+    }
 }

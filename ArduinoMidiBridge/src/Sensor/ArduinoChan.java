@@ -37,10 +37,11 @@ public class ArduinoChan {
 
     /**
      * Constructor of an arduinoChan
-     * @param number The arduino input number
-     * @param debounce Debounce time in ms
+     *
+     * @param number    The arduino input number
+     * @param debounce  Debounce time in ms
      * @param threshold Noise threshold for this input
-     * @param enable status of the sensor
+     * @param enable    status of the sensor
      */
     public ArduinoChan(int number, int debounce, int threshold, boolean enable) {
         this.number = number;
@@ -51,6 +52,7 @@ public class ArduinoChan {
 
     /**
      * getter for the channel number
+     *
      * @return the channel number
      */
     public int getNumber() {
@@ -59,6 +61,7 @@ public class ArduinoChan {
 
     /**
      * getter for the debounce time
+     *
      * @return debounce time in ms
      */
     public int getDebounce() {
@@ -67,6 +70,7 @@ public class ArduinoChan {
 
     /**
      * setter for the debounce time
+     *
      * @param debounce debounce time in ms
      */
     public void setDebounce(int debounce) {
@@ -75,6 +79,7 @@ public class ArduinoChan {
 
     /**
      * getter for the noise threshold
+     *
      * @return the noise threshold
      */
     public int getThreshold() {
@@ -83,6 +88,7 @@ public class ArduinoChan {
 
     /**
      * setter for the noise threshold
+     *
      * @param threshold the new threshold value
      */
     public void setThreshold(int threshold) {
@@ -91,6 +97,7 @@ public class ArduinoChan {
 
     /**
      * getter for the channel status
+     *
      * @return true if the input is enabled
      */
     public boolean isEnable() {
@@ -99,6 +106,7 @@ public class ArduinoChan {
 
     /**
      * Set the status of the input channel
+     *
      * @param enable true for enable the input
      */
     public void setEnable(boolean enable) {

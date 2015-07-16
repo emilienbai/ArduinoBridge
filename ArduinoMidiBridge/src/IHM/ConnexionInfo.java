@@ -19,7 +19,6 @@ public class ConnexionInfo extends JFrame {
         super("Connexion au serveur");
         this.setLocationRelativeTo(null);
         this.setResizable(false);
-        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
@@ -95,12 +94,7 @@ public class ConnexionInfo extends JFrame {
         this.setVisible(true);
     }
 
-
     public static void main(String[] args) {
-
         new ConnexionInfo();
-
     }
-
-
 }

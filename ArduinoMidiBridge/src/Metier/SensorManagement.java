@@ -1,6 +1,6 @@
 package Metier;
 
-import Sensor.Sensor;
+import Sensor.MidiSensor;
 
 import javax.sound.midi.Receiver;
 import java.util.ArrayList;
@@ -13,33 +13,36 @@ import java.util.Map;
  * Created by Emilien Bai (emilien.bai@insa-lyon.fr)on 06/2015.
  */
 public class SensorManagement {
-    private static Hashtable<Integer, Sensor> sensorList = new Hashtable<>();
-    private static List<Sensor> soloedSensors = new ArrayList<>();
+    private static Hashtable<Integer, MidiSensor> sensorList = new Hashtable<>();
+    private static List<MidiSensor> soloedSensors = new ArrayList<>();
 
 
     /**
      * Add a sensor to the active list
+     *
      * @param s the sensor to add
      */
-    public static void addSensor(Sensor s) {
+    public static void addSensor(MidiSensor s) {
         sensorList.put(s.getMidiPort(), s);
     }
 
     /**
      * delete a sensor from the list
+     *
      * @param midiPort the midiPort to remove
      */
-    public static void deleteSensor(int midiPort){
+    public static void deleteSensor(int midiPort) {
         sensorList.remove(midiPort);
     }
 
     /**
      * find the sensors concerned and send midi messages for each
+     *
      * @param sensorNumber - the arduino input channel
-     * @param value - the incoming value
+     * @param value        - the incoming value
      */
     public static void sendMidiMessage(int sensorNumber, int value) {
-        for (Map.Entry<Integer, Sensor> e : sensorList.entrySet()) {
+        for (Map.Entry<Integer, MidiSensor> e : sensorList.entrySet()) {
             if (e.getValue().getArduinoIn() == sensorNumber) {
                 e.getValue().sendMidiMessage(value);
             }
@@ -49,6 +52,7 @@ public class SensorManagement {
 
     /**
      * This function send a litte midi impulsion
+     *
      * @param midiPort the port where to send the impulsion
      */
     public static void sendMidiImpulsion(int midiPort) {
@@ -57,52 +61,57 @@ public class SensorManagement {
 
     /**
      * Change the max range of a midi port -> Sensor
+     *
      * @param midiPort the midi port matching with the sensor to modify
      * @param newValue the new value for the maximum midi out
      */
-    public static void changeMaxRange(int midiPort, int newValue){
+    public static void changeMaxRange(int midiPort, int newValue) {
         sensorList.get(midiPort).setMaxRange(newValue);
     }
 
     /**
      * Change the min range of a midi port -> Sensor
+     *
      * @param midiPort the midi port matching with the sensor to modify
      * @param newValue the new value for the maximum midi out
      */
-    public static void changeMinRange(int midiPort, int newValue){
+    public static void changeMinRange(int midiPort, int newValue) {
         sensorList.get(midiPort).setMinRange(newValue);
     }
 
     /**
      * Change the preamplifier for a midi port -> Sensor
+     *
      * @param midiPort the midi port matching with the sensor to modify
      * @param newValue the new value for the maximum midi out
      */
-    public static void changePreamplifier(int midiPort, int newValue){
+    public static void changePreamplifier(int midiPort, int newValue) {
         sensorList.get(midiPort).setPreamplifier(newValue);
     }
 
     /**
      * Mute a midi port
+     *
      * @param midiPort midi port to mute
      */
-    public static void mute (int midiPort){
+    public static void mute(int midiPort) {
         sensorList.get(midiPort).mute();
     }
 
     /**
      * Un-mute a midi port
+     *
      * @param midiPort midi port to un-mute
      */
-    public static void unmute (int midiPort){
+    public static void unmute(int midiPort) {
         sensorList.get(midiPort).unMute();
     }
 
     /**
      * mute all the midi ports
      */
-    public static void muteAll (){
-        for (Map.Entry<Integer, Sensor> e : sensorList.entrySet()) {
+    public static void muteAll() {
+        for (Map.Entry<Integer, MidiSensor> e : sensorList.entrySet()) {
             e.getValue().setIsMutedAll(true);
         }
     }
@@ -110,19 +119,20 @@ public class SensorManagement {
     /**
      * un-mute all the midi ports
      */
-    public static void unMuteAll(){
-        for (Map.Entry<Integer, Sensor> e : sensorList.entrySet()) {
+    public static void unMuteAll() {
+        for (Map.Entry<Integer, MidiSensor> e : sensorList.entrySet()) {
             e.getValue().setIsMutedAll(false);
         }
     }
 
     /**
      * solo one midi port
+     *
      * @param midiPort midi port to solo
      */
     public static void solo(int midiPort) {
-        for (Map.Entry<Integer, Sensor> e : sensorList.entrySet()) {
-            Sensor s = e.getValue();
+        for (Map.Entry<Integer, MidiSensor> e : sensorList.entrySet()) {
+            MidiSensor s = e.getValue();
             if (s.getMidiPort() == midiPort) {
                 s.setIsSoloed(true);
                 soloedSensors.add(s);
@@ -134,14 +144,15 @@ public class SensorManagement {
 
     /**
      * unsolo one midi channel
+     *
      * @param midiPort the midi port to unSolo
      */
-    public static void unSolo (int midiPort){
-        Sensor s = sensorList.get(midiPort);
+    public static void unSolo(int midiPort) {
+        MidiSensor s = sensorList.get(midiPort);
         s.setIsSoloed(false);
         soloedSensors.remove(s);
-        if (soloedSensors.isEmpty()){
-            for (Map.Entry<Integer, Sensor> e : sensorList.entrySet()) {
+        if (soloedSensors.isEmpty()) {
+            for (Map.Entry<Integer, MidiSensor> e : sensorList.entrySet()) {
                 e.getValue().setIsMutedBySolo(false);
             }
         }
@@ -162,25 +173,27 @@ public class SensorManagement {
     /**
      * In case the user wants to start a new session of the app
      */
-    public static void newSetup(){
+    public static void newSetup() {
         sensorList.clear();
         soloedSensors = new ArrayList<>();
     }
 
     /**
      * get the output value of a sensor
+     *
      * @param midiPort the midi port we want
      * @return the output value
      */
-    public static int getOutputValue(int midiPort){
+    public static int getOutputValue(int midiPort) {
         return sensorList.get(midiPort).getOutputValue();
     }
+
     /**
      * change receiver for all the sensors
      */
-    public static void changeReceiver(){
+    public static void changeReceiver() {
         Receiver r = MidiManager.getMidiReceiver();
-        for (Map.Entry<Integer, Sensor> e : sensorList.entrySet()) {
+        for (Map.Entry<Integer, MidiSensor> e : sensorList.entrySet()) {
             e.getValue().setmidiReceiver(r);
         }
     }
@@ -190,16 +203,17 @@ public class SensorManagement {
      *
      * @return the list of sensor
      */
-    public static Hashtable<Integer, Sensor> getSensorList() {
+    public static Hashtable<Integer, MidiSensor> getSensorList() {
         return sensorList;
     }
 
 
     /**
      * Load an existing List of Sensors
+     *
      * @param newSensorList, the sensor list to load
      */
-    public static void loadSetup(Hashtable<Integer, Sensor> newSensorList) {
+    public static void loadSetup(Hashtable<Integer, MidiSensor> newSensorList) {
         newSetup();
         sensorList = newSensorList;
     }
@@ -220,6 +234,4 @@ public class SensorManagement {
     protected static int getNoiseThreshold(int midiPort) {
         return sensorList.get(midiPort).getNoiseThreshold();
     }
-
-
 }

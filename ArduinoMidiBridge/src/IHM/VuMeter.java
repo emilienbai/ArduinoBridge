@@ -10,11 +10,12 @@ import java.awt.*;
 /**
  * A changing color Progress Bar
  */
-public class VuMeter extends JProgressBar{
+public class VuMeter extends JProgressBar {
     private final Color OK_COLOR = new Color(66, 174, 59);
     private final Color WARNING_COLOR = new Color(209, 96, 9);
     private final Color ALERT_COLOR = new Color(200, 34, 25);
-    public VuMeter(int orient, int min, int max){
+
+    public VuMeter(int orient, int min, int max) {
         super(orient, min, max);
     }
 
@@ -48,6 +49,4 @@ public class VuMeter extends JProgressBar{
         }
     }
 
-    }
-
-
+}

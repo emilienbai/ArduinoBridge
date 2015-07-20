@@ -39,7 +39,7 @@ public class SocInTh extends Thread {
 
             while (!finished && line != null) {
                 line = socIn.readLine(); //receive message from server
-                Services.sendMidiMessage(line);
+                Services.sendMessage(line);
             }
         } catch (IOException e) {
             System.err.println("Error in SocInTh");

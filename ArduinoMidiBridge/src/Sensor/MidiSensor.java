@@ -11,19 +11,10 @@ import java.util.Date;
 /**
  * @author emilien Bai
  */
-public class MidiSensor {
+public class MidiSensor extends Sensor {
 
-    final static int MAX_FROM_SENSOR = 1024;
     final static int MAX_VELOCITY = 127;
 
-    /**
-     * Name given to the sensor
-     */
-    private String name;
-    /**
-     * Match with the port on which the sensor is connected
-     */
-    private int arduinoIn;
     /**
      * Midi note matching with a midi port
      */
@@ -33,62 +24,10 @@ public class MidiSensor {
      */
     private Receiver midiReceiver;
     /**
-     * minimum midi value sent in messages
-     */
-    private int minRange;
-    /**
-     * maximum midi value sent in messages
-     */
-    private int maxRange;
-    /**
-     * multiplication factor to reduce or amplify sensor
-     * sensibility
-     */
-    private int preamplifier;
-    /**
-     * Muted state of the sensor
-     */
-    private boolean isMuted;
-    /**
-     * Soloed state of the sensor
-     */
-    private boolean isSoloed;
-    /**
-     * Muted by mute all button
-     */
-    private boolean isMutedAll;
-    /**
-     * Muted cause of solo Button
-     */
-    private boolean isMutedBySolo;
-    /**
-     * last outputValue
-     */
-    private int outputValue;
-    /**
      * a keyboard shortcut matching with the sensor
      */
     private char shortcut;
-    /**
-     * how sensor does act : fader - toggle button - momentary button
-     */
-    private int mode;
-    /**
-     * Last action of the toggle button
-     */
-    private boolean lastWasOn;
-    /**
-     * Noise threshold for toggle or momentary
-     */
-    private int noiseThreshold;
-    /**
-     * Debounce time for toggle or momentary
-     */
-    private int debounceTime;
-    /**
-     * Date of the last impulsion
-     */
-    private Date lastChange;
+
 
     /**
      * @param name         Name of the sensor
@@ -99,25 +38,7 @@ public class MidiSensor {
      */
     public MidiSensor(String name, int arduinoIn, int midiPort, char shortcut,
                       Receiver midiReceiver) {
-        this.name = name;
-        this.arduinoIn = arduinoIn;
-        this.midiPort = midiPort;
-        this.shortcut = shortcut;
-        this.midiReceiver = midiReceiver;
-        this.minRange = 0;
-        this.maxRange = 127;
-        this.preamplifier = 100;
-        this.isMuted = false;
-        this.isSoloed = false;
-        this.isMutedAll = false;
-        this.isMutedBySolo = false;
-        this.mode = Sensor.FADER;
-        this.lastWasOn = false;
-        this.noiseThreshold = 0;
-        this.debounceTime = 0;
-        this.outputValue = 0;
-        this.lastChange = new Date();
-
+        this(name, arduinoIn, midiPort, shortcut, midiReceiver, 0, 127, 100, Sensor.FADER, 0, 0);
     }
 
     /**
@@ -130,29 +51,18 @@ public class MidiSensor {
      * @param midiReceiver where to send the midi informations
      * @param minRange     Minimal output midi value for this sensor
      * @param maxRange     Maximal output midi value for this sensor
-     * @param preamplifier factor of mutliplication
+     * @param preamplifier factor of multiplication in percent
+     * @param mode mode of action
+     * @param noiseThreshold threshold specific for toggle or momentary mode
+     * @param debounceTime time of debounce specific for toggle or momentary mode
      */
     public MidiSensor(String name, int arduinoIn, int midiPort, char shortcut,
                       Receiver midiReceiver, int minRange,
                       int maxRange, int preamplifier, int mode, int noiseThreshold, int debounceTime) {
-        this.name = name;
-        this.arduinoIn = arduinoIn;
+        super(name, arduinoIn, minRange, maxRange, preamplifier, mode, noiseThreshold, debounceTime);
         this.midiPort = midiPort;
         this.midiReceiver = midiReceiver;
         this.shortcut = shortcut;
-        this.minRange = minRange;
-        this.maxRange = maxRange;
-        this.preamplifier = preamplifier;
-        this.isMuted = false;
-        this.isSoloed = false;
-        this.isMutedAll = false;
-        this.isMutedBySolo = false;
-        this.lastWasOn = false;
-        this.outputValue = 0;
-        this.mode = mode;
-        this.noiseThreshold = noiseThreshold;
-        this.debounceTime = debounceTime;
-        this.lastChange = new Date();
     }
 
     /**
@@ -163,7 +73,7 @@ public class MidiSensor {
     public void sendMidiMessage(int dataFromSensor) {
         if ((!isMuted && !isMutedBySolo && !isMutedAll) || (isSoloed && !isMutedAll)) {
             Date now = new Date();
-            if (mode == Sensor.TOGGLE) {
+            if (mode == TOGGLE) {
                 if (dataFromSensor > noiseThreshold && (now.getTime() - lastChange.getTime()) > debounceTime) {
                     lastChange = now;
                     ShortMessage msg = new ShortMessage();
@@ -186,31 +96,23 @@ public class MidiSensor {
                     }
                     this.midiReceiver.send(msg, -1);
                 }
-            } else if (mode == Sensor.MOMENTARY) {
+            } else if (mode == MOMENTARY) {
                 if (dataFromSensor > noiseThreshold && (now.getTime() - lastChange.getTime()) > debounceTime) {
                     lastChange = now;
-                    ShortMessage msg = new ShortMessage();
-                    if (!lastWasOn) {
-                        try {
-                            msg.setMessage(ShortMessage.NOTE_ON, this.midiPort, MAX_VELOCITY);
-                            lastWasOn = true;
-                            this.outputValue = MAX_VELOCITY;
-                        } catch (InvalidMidiDataException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    this.midiReceiver.send(msg, -1);
-                } else if (dataFromSensor <= noiseThreshold) {
-                    lastChange = now;
-                    ShortMessage msg = new ShortMessage();
+                    ShortMessage msg1 = new ShortMessage();
+                    ShortMessage msg2 = new ShortMessage();
                     try {
-                        msg.setMessage(ShortMessage.NOTE_OFF, this.midiPort, 0);
-                        lastWasOn = false;
-                        this.outputValue = 0;
+                        msg1.setMessage(ShortMessage.NOTE_ON, this.midiPort, MAX_VELOCITY);
+                        msg2.setMessage(ShortMessage.NOTE_OFF, this.midiPort, 0);
+                        this.outputValue = MAX_VELOCITY;
                     } catch (InvalidMidiDataException e) {
                         e.printStackTrace();
                     }
+                    this.midiReceiver.send(msg1, -1);
+                    this.midiReceiver.send(msg2, -1);
+                    this.outputValue = 0;
                 }
+
             } else {
                 int velocity; //velocity of the message to send;
                 velocity = calculate(dataFromSensor);
@@ -227,25 +129,6 @@ public class MidiSensor {
         }
     }
 
-    /**
-     * @param data value incoming from the sensor
-     * @return result, a rescaled value between min and max range
-     */
-    private int calculate(int data) {
-        float result;
-        result = (this.preamplifier * data) / 100;
-        //apply the premaplifier modification
-        result = result / MAX_FROM_SENSOR;
-        //rescale the value to maximum 1
-        result = result * (this.maxRange - this.minRange) + this.minRange;
-        //rescale with min and max range value
-        if (result <= this.maxRange) {
-            return (int) result;
-        } else {
-            return this.maxRange;
-        }
-        //when the preamp is saturating the output
-    }
 
     public void sendImpulsion() {
         ShortMessage msg = new ShortMessage();
@@ -289,21 +172,6 @@ public class MidiSensor {
         this.isMuted = true;
     }
 
-    /**
-     * Un-mute this sensor
-     */
-    public void unMute() {
-        this.isMuted = false;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public int getArduinoIn() {
-        return arduinoIn;
-    }
-
     public int getMidiPort() {
         return midiPort;
     }
@@ -312,22 +180,13 @@ public class MidiSensor {
         this.midiReceiver = midiReceiver;
     }
 
-    public int getMinRange() {
-        return minRange;
-    }
-
     public void setMinRange(int minRange) {
-        if (minRange >= 0 && minRange <= 127 && minRange <= this.maxRange) {
+        if (minRange >= 0 && minRange <= MAX_VELOCITY && minRange <= this.maxRange) {
             //if a valid data is given
             this.minRange = minRange;
         } else {
             this.minRange = 0;
         }
-
-    }
-
-    public int getMaxRange() {
-        return maxRange;
     }
 
     public void setMaxRange(int maxRange) {
@@ -338,11 +197,7 @@ public class MidiSensor {
         }
     }
 
-    public int getPreamplifier() {
-        return preamplifier;
-    }
-
-    public void setPreamplifier(int preamplifier) {
+    public void setPreamplifier(float preamplifier) {
         if (preamplifier >= 0) {
             this.preamplifier = preamplifier;
         } else {
@@ -350,59 +205,8 @@ public class MidiSensor {
         }
     }
 
-    public void setIsSoloed(boolean isSoloed) {
-        this.isSoloed = isSoloed;
-    }
-
-    public int getOutputValue() {
-        return outputValue;
-    }
-
-    public void setIsMutedAll(boolean isMutedAll) {
-        this.isMutedAll = isMutedAll;
-    }
-
-    public void setIsMutedBySolo(boolean isMutedBySolo) {
-        this.isMutedBySolo = isMutedBySolo;
-    }
-
     public char getShortcut() {
         return shortcut;
     }
 
-    public int getMode() {
-        return mode;
-    }
-
-    public void setMode(int mode) {
-        this.mode = mode;
-    }
-
-    public int getNoiseThreshold() {
-        return noiseThreshold;
-    }
-
-    public void setNoiseThreshold(int noiseThreshold) {
-        this.noiseThreshold = noiseThreshold;
-    }
-
-    public int getDebounceTime() {
-        return debounceTime;
-    }
-
-    public void setDebounceTime(int debounceTime) {
-        this.debounceTime = debounceTime;
-    }
-
-    @Override
-    public String toString() {
-        return "Sensor{" +
-                "name = '" + name + '\'' +
-                ", arduinoIn = " + arduinoIn +
-                ", midiPort = " + midiPort +
-                ",  minRange =" + minRange +
-                ", maxRange = " + maxRange +
-                ", preamplifer = " + preamplifier + "" +
-                ", mode = " + mode + "}";
-    }
 }

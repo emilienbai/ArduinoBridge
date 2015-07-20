@@ -1,6 +1,9 @@
 package IHM;
 
-import Metier.*;
+import Metier.ArduinoInData;
+import Metier.InputManager;
+import Metier.MidiManager;
+import Metier.Services;
 import Sensor.ArduinoChan;
 import Sensor.MidiSensor;
 
@@ -597,11 +600,11 @@ public class OperatingWindows extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 new Thread(() -> {
                     if (!isMutedAll) {
-                        SensorManagement.muteAll();
+                        Services.midiMuteAll();
                         isMutedAll = true;
                         SwingUtilities.invokeLater(() -> muteAllButton.setBackground(MUTE_COLOR));
                     } else {
-                        SensorManagement.unMuteAll();
+                        Services.midiUnMuteAll();
                         isMutedAll = false;
                         SwingUtilities.invokeLater(() -> muteAllButton.setBackground(BUTTON_COLOR));
                     }
@@ -721,7 +724,7 @@ public class OperatingWindows extends JFrame {
                     }
                     if (!used) {
                         //we create the sensor in the services
-                        Services.addSensor(newName, newArduChan, newMidiPort, shortcut);
+                        Services.addMidiSensor(newName, newArduChan, newMidiPort, shortcut);
                         //we create the matching sensorRow
                         SensorRow sensorRow = new SensorRow(newName, newArduChan, newMidiPort, shortcut);
                         availableMidiPort.removeElement(newMidiPort);
@@ -866,7 +869,7 @@ public class OperatingWindows extends JFrame {
                             if (s.getArduinoChannel() == sensorNumber) {
                                 int input = Integer.parseInt(splitted[i + 1]);
                                 s.setIncomingSignal(input); //Setting the in value
-                                int output = SensorManagement.getOutputValue(s.getMidiPort());
+                                int output = Services.getMidiOutputValue(s.getMidiPort());
                                 s.setOutputValue(output);
                             }
                         }
@@ -937,7 +940,7 @@ public class OperatingWindows extends JFrame {
         newItem.setForeground(FOREGROUND_COLOR);
 
         newItem.addActionListener(e -> new Thread(() -> {
-            SensorManagement.newSetup();
+            Services.newSetup();
             saveFile = null;
             SwingUtilities.invokeLater(() -> {
                 cleanAction();
@@ -1134,7 +1137,7 @@ public class OperatingWindows extends JFrame {
     private void loadSetup() {
         new Thread(() -> {
             SwingUtilities.invokeLater(OperatingWindows.this::cleanAction);
-            java.util.Hashtable<Integer, MidiSensor> sensorList = SensorManagement.getSensorList();
+            java.util.Hashtable<Integer, MidiSensor> sensorList = Services.getMidiTable();
             Vector<ArduinoChan> arduinoChanVector = Services.getArduinoChanVector();
             MidiSensor s;
             for (Map.Entry<Integer, MidiSensor> e : sensorList.entrySet()) {

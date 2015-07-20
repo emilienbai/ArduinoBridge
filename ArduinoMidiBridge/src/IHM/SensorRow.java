@@ -1,6 +1,5 @@
 package IHM;
 
-import Metier.SensorManagement;
 import Metier.Services;
 import Sensor.MidiSensor;
 import Sensor.Sensor;
@@ -166,7 +165,7 @@ class SensorRow extends JPanel {
 
         preamplifierSlider.addChangeListener(e -> new Thread(() -> {
             int newValue = preamplifierSlider.getValue();
-            SensorManagement.changePreamplifier(midiPort, newValue);
+            Services.changeMidiPreamplifier(midiPort, newValue);
             SwingUtilities.invokeLater(() -> preamplifierValue.setText(String.valueOf(newValue)));
         }).start());
 
@@ -192,7 +191,7 @@ class SensorRow extends JPanel {
                     if (key == KeyEvent.VK_ENTER) {
                         int newValue = Integer.parseInt(preamplifierValue.getText());
                         if (newValue > 0) {
-                            SensorManagement.changePreamplifier(midiPort, newValue);
+                            Services.changeMidiPreamplifier(midiPort, newValue);
                         }
                         SwingUtilities.invokeLater(() -> {
                             if (newValue <= preamplifierSlider.getMaximum()) {
@@ -387,14 +386,14 @@ class SensorRow extends JPanel {
 
         muteButton.addActionListener(e -> new Thread(() -> {
             if (muteState) {
-                SensorManagement.unmute(midiPort);
+                Services.midiUnMute(midiPort);
                 muteState = false;
                 SwingUtilities.invokeLater(() -> {
                     muteButton.setBackground(BUTTON_COLOR);
                     muteButton.setBorder(RAISED_BORDER);
                 });
             } else {
-                SensorManagement.mute(midiPort);
+                Services.midiMute(midiPort);
                 muteState = true;
                 SwingUtilities.invokeLater(() -> {
                     muteButton.setBackground(MUTE_COLOR);
@@ -416,14 +415,14 @@ class SensorRow extends JPanel {
 
         soloButton.addActionListener(e -> new Thread(() -> {
             if (soloState) {
-                SensorManagement.unSolo(midiPort);
+                Services.midiUnSolo(midiPort);
                 soloState = false;
                 SwingUtilities.invokeLater(() -> {
                     soloButton.setBackground(BUTTON_COLOR);
                     soloButton.setBorder(RAISED_BORDER);
                 });
             } else {
-                SensorManagement.solo(midiPort);
+                Services.midiSolo(midiPort);
                 soloState = true;
                 SwingUtilities.invokeLater(() -> {
                     soloButton.setBackground(SOLO_COLOR);
@@ -504,7 +503,7 @@ class SensorRow extends JPanel {
     }
 
     public SensorRow(MidiSensor s) {
-        this(s.getName(), s.getArduinoIn(), s.getMidiPort(), s.getMinRange(), s.getMaxRange(), s.getPreamplifier(), s.getShortcut(), s.getMode(), s.getNoiseThreshold(), s.getDebounceTime());
+        this(s.getName(), s.getArduinoIn(), s.getMidiPort(), s.getMinRange(), s.getMaxRange(), ((int) s.getPreamplifier()), s.getShortcut(), s.getMode(), s.getNoiseThreshold(), s.getDebounceTime());
     }
 
 
@@ -535,23 +534,23 @@ class SensorRow extends JPanel {
     public void maxThreshModification(int newValue) {
         if (SensorRow.this.mode == Sensor.FADER) {
             if (newValue <= 127 && newValue >= minOutVal) {
-                Services.changeMaxRange(midiPort, newValue);
+                Services.changeMidiMaxRange(midiPort, newValue);
                 maxOutVal = newValue;
             } else if (newValue > 127) {
-                Services.changeMinRange(midiPort, 127);
+                Services.changeMidiMinRange(midiPort, 127);
                 minOutVal = 127;
                 SwingUtilities.invokeLater(() -> maxOutValue.setText("127"));
             } else {
-                SensorManagement.changeMinRange(midiPort, minOutVal);
+                Services.changeMidiMinRange(midiPort, minOutVal);
                 maxOutVal = minOutVal;
                 SwingUtilities.invokeLater(() -> maxOutValue.setText(String.valueOf(minOutVal)));
             }
         } else {
             if (newValue > 0) {
-                Services.setLineThreshold(midiPort, newValue);
+                Services.setMidiLineThreshold(midiPort, newValue);
                 noiseThreshold = newValue;
             } else {
-                Services.setLineThreshold(midiPort, 0);
+                Services.setMidiLineThreshold(midiPort, 0);
                 noiseThreshold = 0;
                 SwingUtilities.invokeLater(() -> maxOutValue.setText("0"));
             }
@@ -562,23 +561,23 @@ class SensorRow extends JPanel {
     public void minDebModification(int newValue) {
         if (SensorRow.this.mode == Sensor.FADER) {
             if (newValue >= 0 && newValue <= maxOutVal) {
-                SensorManagement.changeMinRange(midiPort, newValue);
+                Services.changeMidiMinRange(midiPort, newValue);
                 minOutVal = newValue;
             } else if (newValue < 0) {
-                SensorManagement.changeMinRange(midiPort, 0);
+                Services.changeMidiMinRange(midiPort, 0);
                 minOutVal = 0;
                 SwingUtilities.invokeLater(() -> minOutValue.setText("000"));
             } else {
-                SensorManagement.changeMinRange(midiPort, maxOutVal);
+                Services.changeMidiMinRange(midiPort, maxOutVal);
                 minOutVal = maxOutVal;
                 SwingUtilities.invokeLater(() -> minOutValue.setText(String.valueOf(maxOutVal)));
             }
         } else {
             if (newValue > 0) {
-                Services.setLineDebounce(midiPort, newValue);
+                Services.setMidiLineDebounce(midiPort, newValue);
                 debounceTime = newValue;
             } else {
-                Services.setLineDebounce(midiPort, 0);
+                Services.setMidiLineDebounce(midiPort, 0);
                 debounceTime = 0;
                 SwingUtilities.invokeLater(() -> minOutValue.setText("0"));
             }
@@ -593,34 +592,34 @@ class SensorRow extends JPanel {
     private void changeMode(int mode) {
         this.mode = mode;
         if (mode == Sensor.FADER) {
-            Services.setMode(midiPort, Sensor.FADER);
+            Services.setMidiMode(midiPort, Sensor.FADER);
             SwingUtilities.invokeLater(() -> {
                 toggleButton.setText("Fader");
                 toggleButton.setBackground(OperatingWindows.FADER_COLOR);
                 maxLabel.setText("Max :");
                 minLabel.setText("Min :");
-                maxOutValue.setText(String.valueOf(Services.getMaxRange(midiPort)));
-                minOutValue.setText(String.valueOf(Services.getMinRange(midiPort)));
+                maxOutValue.setText(String.valueOf(Services.getMidiMaxRange(midiPort)));
+                minOutValue.setText(String.valueOf(Services.getMidiMinRange(midiPort)));
             });
         } else if (mode == Sensor.MOMENTARY) {
-            Services.setMode(midiPort, Sensor.MOMENTARY);
+            Services.setMidiMode(midiPort, Sensor.MOMENTARY);
             SwingUtilities.invokeLater(() -> {
                 toggleButton.setText("Momentary");
                 toggleButton.setBackground(OperatingWindows.MOMENTARY_COLOR);
                 maxLabel.setText("Seuil :");
                 minLabel.setText("Debounce :");
-                maxOutValue.setText(String.valueOf(Services.getLineThreshold(midiPort)));
-                minOutValue.setText(String.valueOf(Services.getLineDebounce(midiPort)));
+                maxOutValue.setText(String.valueOf(Services.getMidiLineThreshold(midiPort)));
+                minOutValue.setText(String.valueOf(Services.getMidiLineDebounce(midiPort)));
             });
         } else if (mode == Sensor.TOGGLE) {
-            Services.setMode(midiPort, Sensor.TOGGLE);
+            Services.setMidiMode(midiPort, Sensor.TOGGLE);
             SwingUtilities.invokeLater(() -> {
                 toggleButton.setText("Toggle");
                 toggleButton.setBackground(OperatingWindows.TOGGLE_COLOR);
                 maxLabel.setText("Seuil :");
                 minLabel.setText("Debounce :");
-                maxOutValue.setText(String.valueOf(Services.getLineThreshold(midiPort)));
-                minOutValue.setText(String.valueOf(Services.getLineDebounce(midiPort)));
+                maxOutValue.setText(String.valueOf(Services.getMidiLineThreshold(midiPort)));
+                minOutValue.setText(String.valueOf(Services.getMidiLineDebounce(midiPort)));
             });
         }
         repaint();

@@ -2,7 +2,6 @@ package IHM;
 
 import Metier.ArduinoInData;
 import Metier.MidiManager;
-import Metier.SensorManagement;
 import Metier.Services;
 
 import javax.sound.midi.MidiDevice;
@@ -381,7 +380,7 @@ public class MidiDeviceChoice extends JFrame {
         okButton.addActionListener(e -> {
             if ((midiConnected && arduinoConnected) || (midiConnected && networkConnected) || (midiConnected && editionConnected)) {//If a valid midi device is
                 // choosen and arduino or network is ok -> we set midi receiver
-                new Thread(SensorManagement::changeReceiver).start();
+                new Thread(Services::changeMidiReceiver).start();
                 dispose();
                 if (connectionToSet || editionConnected) {
                     new OperatingWindows(!networkConnected && !editionConnected); //if  not connected, the application is a server

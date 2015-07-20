@@ -7,6 +7,7 @@ import Network.Server;
 import Network.SocOutTh;
 import Sensor.ArduinoChan;
 import Sensor.MidiSensor;
+import Sensor.OSCSensor;
 import com.jgoodies.common.base.SystemUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -32,15 +33,21 @@ public class Services {
     private static boolean clientEnabled = false;
 
     /**
-     * Add a sensor
+     * Add a midi sensor
      *
      * @param name      name of the sensor
      * @param arduinoIn match with the analog input on the arduino
      * @param midiPort  midiPort where to send data
+     * @param shortcut  key to press to send an impulsion
      */
-    public static void addSensor(String name, int arduinoIn, int midiPort, char shortcut) {
+    public static void addMidiSensor(String name, int arduinoIn, int midiPort, char shortcut) {
         MidiSensor s = new MidiSensor(name, arduinoIn, midiPort, shortcut, MidiManager.getMidiReceiver());
-        SensorManagement.addSensor(s);
+        MidiSensorManager.addSensor(s);
+    }
+
+    public static void addOscSensor(String name, int arduinoIn, String oscAddress, int mode) {
+        OSCSensor s = new OSCSensor(name, arduinoIn, oscAddress, mode, OSCManager.getOscPortOut());
+        OSCSensorManager.addOscSensor(s);
     }
 
     /**
@@ -48,8 +55,17 @@ public class Services {
      *
      * @param midiPort the midiPort to remove
      */
-    public static void deleteSensor(int midiPort) {
-        SensorManagement.deleteSensor(midiPort);
+    public static void deleteMidiSensor(int midiPort) {
+        MidiSensorManager.deleteSensor(midiPort);
+    }
+
+    /**
+     * Delete an osc sensor from the table
+     *
+     * @param address address of the sensor to delete
+     */
+    public static void deleteOscSensor(String address) {
+        OSCSensorManager.deleteOscSensor(address);
     }
 
     /**
@@ -57,7 +73,7 @@ public class Services {
      *
      * @param instructions string formed arduinoChan-data-arduinoChan-data...
      */
-    public static void sendMidiMessage(String instructions) {
+    public static void sendMessage(String instructions) {
         if (instructions.startsWith("-")) {
             arduiLog += instructions + "\n";
             OperatingWindows.refreshLogs(arduiLog);
@@ -72,8 +88,8 @@ public class Services {
                 for (int i = 0; i < splitted.length; i += 2) {
                     sensorNumber = Integer.parseInt(splitted[i]);
                     value = Integer.parseInt(splitted[i + 1]);
-                    SensorManagement.sendMidiMessage(sensorNumber, value);
-
+                    MidiSensorManager.sendMidiMessage(sensorNumber, value);
+                    OSCSensorManager.sendOscMessage(sensorNumber, value);
                 }
             }
             OperatingWindows.refreshInterface(instructions);
@@ -82,22 +98,198 @@ public class Services {
 
     }
 
-    public static void changeMaxRange(int midiPort, int maxRange) {
-        SensorManagement.changeMaxRange(midiPort, maxRange);
+    /**
+     * Change maximal output value for a midi line
+     *
+     * @param midiPort midiPort to modify
+     * @param newValue new max value to apply
+     */
+    public static void changeMidiMaxRange(int midiPort, int newValue) {
+        MidiSensorManager.changeMaxRange(midiPort, newValue);
     }
 
-    public static int getMaxRange(int midiPort) {
-        return SensorManagement.getMaxRange(midiPort);
+    /**
+     * Change maximal output for an osc line
+     *
+     * @param address  the osc address to set
+     * @param newValue new max value to apply
+     */
+    public static void changeOscMaxRange(String address, int newValue) {
+        OSCSensorManager.changeMaxRange(address, newValue);
     }
 
-    public static void changeMinRange(int midiPort, int minRange) {
-        SensorManagement.changeMinRange(midiPort, minRange);
+    /**
+     * Get the maximal output for a midi line
+     *
+     * @param midiPort midi port we want to know about
+     * @return maximal output valu of the concerned midi port
+     */
+    public static int getMidiMaxRange(int midiPort) {
+        return MidiSensorManager.getMaxRange(midiPort);
     }
 
-    public static int getMinRange(int midiPort) {
-        return SensorManagement.getMinRange(midiPort);
+    /**
+     * Getter for the maximum output value of an osc address
+     *
+     * @param address address we want to know about
+     * @return the maximum output value for this
+     */
+    public static int getOscMaxRange(String address) {
+        return OSCSensorManager.getMaxRange(address);
     }
 
+    /**
+     * Change minimal output value for a midi line
+     *
+     * @param midiPort midiPort to modify
+     * @param newValue new max value to apply
+     */
+    public static void changeMidiMinRange(int midiPort, int newValue) {
+        MidiSensorManager.changeMinRange(midiPort, newValue);
+    }
+
+    /**
+     * Change the minimum output value for an osc address
+     *
+     * @param address  address to modify
+     * @param newValue new value for the minimum range
+     */
+    public static void changeOscMinRange(String address, int newValue) {
+        OSCSensorManager.changeMinRange(address, newValue);
+    }
+
+    /**
+     * Getter for the minimum range of a midiPort
+     *
+     * @param midiPort the midi port we want to know about
+     * @return the minimal range we want
+     */
+    public static int getMidiMinRange(int midiPort) {
+        return MidiSensorManager.getMinRange(midiPort);
+    }
+
+    /**
+     * Getter for the minimum output value of an osc address
+     *
+     * @param address address we want to know about
+     * @return the minimum output value for this
+     */
+    public static int getOscMinRange(String address) {
+        return OSCSensorManager.getMinRange(address);
+    }
+
+    /**
+     * Change the preamplifier for a midi port -> Sensor
+     *
+     * @param midiPort the midi port matching with the sensor to modify
+     * @param newValue the new value for the maximum midi out
+     */
+    public static void changeMidiPreamplifier(int midiPort, int newValue) {
+        MidiSensorManager.changePreamplifier(midiPort, newValue);
+    }
+
+    /**
+     * Change the preamplifier for an osc Address
+     *
+     * @param address  address to modify
+     * @param newValue new value of the preamplifier
+     */
+    public static void changeOscPreamplifier(String address, int newValue) {
+        OSCSensorManager.changePreamplifier(address, newValue);
+    }
+
+    /**
+     * Mute a midi Port
+     *
+     * @param midiPort midi port to mute
+     */
+    public static void midiMute(int midiPort) {
+        MidiSensorManager.mute(midiPort);
+    }
+
+    /**
+     * Mute an osc address
+     *
+     * @param address the address to mute
+     */
+    public static void oscMute(String address) {
+        OSCSensorManager.mute(address);
+    }
+
+    /**
+     * Un-mute a midi port
+     *
+     * @param midiPort midi port to un-mute
+     */
+    public static void midiUnMute(int midiPort) {
+        MidiSensorManager.unMute(midiPort);
+    }
+
+    /**
+     * Un-Mute an osc address
+     *
+     * @param address address to un-mute
+     */
+    public static void oscUnMute(String address) {
+        OSCSensorManager.unMute(address);
+    }
+
+    /**
+     * Mute all the midi port
+     */
+    public static void midiMuteAll() {
+        MidiSensorManager.muteAll();
+    }
+
+    /**
+     * Mute all the Osc addresses
+     */
+    public static void oscMuteAll() {
+        OSCSensorManager.muteAll();
+    }
+
+    /**
+     * un-mute all the midi ports
+     */
+    public static void midiUnMuteAll() {
+        MidiSensorManager.unMuteAll();
+    }
+
+    /**
+     * Solo a midi port
+     *
+     * @param midiPort the midi port to solo
+     */
+    public static void midiSolo(int midiPort) {
+        MidiSensorManager.solo(midiPort);
+    }
+
+    /**
+     * Solo an osc address
+     *
+     * @param address the address to mute
+     */
+    public static void oscSolo(String address) {
+        OSCSensorManager.solo(address);
+    }
+
+    /**
+     * unsolo a midi channel
+     *
+     * @param midiPort the midi port to unSolo
+     */
+    public static void midiUnSolo(int midiPort) {
+        MidiSensorManager.unSolo(midiPort);
+    }
+
+    /**
+     * Un-Solo an osc address
+     *
+     * @param address the osc address to Un-Solo
+     */
+    public static void oscUnSolo(String address) {
+        OSCSensorManager.unSolo(address);
+    }
 
     /**
      * This function send a litte midi impulsion
@@ -105,30 +297,161 @@ public class Services {
      * @param midiPort the port where to send the impulsion
      */
     public static void sendMidiImpulsion(int midiPort) {
-        SensorManagement.sendMidiImpulsion(midiPort);
+        MidiSensorManager.sendMidiImpulsion(midiPort);
+    }
+
+    /**
+     * Set the mode of action of a midi port
+     *
+     * @param midiPort midi port to set
+     * @param mode     mode of action
+     */
+    public static void setMidiMode(int midiPort, int mode) {
+        MidiSensorManager.setMode(midiPort, mode);
+    }
+
+    /**
+     * Set a noise threshold for a midi port acting like a momentary or toggle button
+     *
+     * @param midiPort  the midi port to modify
+     * @param threshold new noise threshold
+     */
+    public static void setMidiLineThreshold(int midiPort, int threshold) {
+        MidiSensorManager.setLineThreshold(midiPort, threshold);
+    }
+
+    /**
+     * Set a noise threshold for an osc acting like a momentary or toggle button
+     *
+     * @param address   the osc address to modify
+     * @param threshold new noise threshold
+     */
+    public static void setOscLineThreshold(String address, int threshold) {
+        OSCSensorManager.setLineThreshold(address, threshold);
+    }
+
+    /**
+     * Getter for the noise threshold of a midi port
+     *
+     * @param midiPort the midi port we want to know about
+     * @return the noise threshold of this midi port
+     */
+    public static int getMidiLineThreshold(int midiPort) {
+        return MidiSensorManager.getNoiseThreshold(midiPort);
+    }
+
+    /**
+     * Getter for the noise threshold of an osc address
+     *
+     * @param address the osc address we want to know about
+     * @return the noise threshold of this osc address
+     */
+    public static int getOscLineThreshold(String address) {
+        return OSCSensorManager.getLineThreshold(address);
+    }
+
+    /**
+     * Set a time of for a midi port acting like a momentary or toggle button
+     *
+     * @param midiPort the midi port to modify
+     * @param debounce new time of debounce
+     */
+    public static void setMidiLineDebounce(int midiPort, int debounce) {
+        MidiSensorManager.setLineDebounce(midiPort, debounce);
+    }
+
+    /**
+     * Set a time debounce of for an osc address acting like a momentary or toggle button
+     *
+     * @param address  the osc address
+     * @param debounce new time of debounce
+     */
+    public static void setOscLineDebounce(String address, int debounce) {
+        OSCSensorManager.setLineDebounce(address, debounce);
     }
 
 
-    public static void setMode(int midiPort, int mode) {
-        SensorManagement.setMode(midiPort, mode);
+    /**
+     * Getter for the debounce time of a midi port
+     *
+     * @param midiPort the midi port we want to know about
+     * @return the time debounce of this port
+     */
+    public static int getMidiLineDebounce(int midiPort) {
+        return MidiSensorManager.getDebounceTime(midiPort);
     }
 
-    public static void setLineThreshold(int midiPort, int threshold) {
-        SensorManagement.setLineThreshold(midiPort, threshold);
+    /**
+     * Getter for the debounce time for an osc address
+     *
+     * @param address the osc address we want to know about
+     * @return the debounce time of the osc address
+     */
+    public static int getOscLineDebounce(String address) {
+        return OSCSensorManager.getLineDebounce(address);
     }
 
-    public static int getLineThreshold(int midiPort) {
-        return SensorManagement.getNoiseThreshold(midiPort);
+
+    /**
+     * get the output value of a sensor
+     *
+     * @param midiPort the midi port we want
+     * @return the output value
+     */
+    public static int getMidiOutputValue(int midiPort) {
+        return MidiSensorManager.getOutputValue(midiPort);
     }
 
-    public static void setLineDebounce(int midiPort, int debounce) {
-        SensorManagement.setLineDebounce(midiPort, debounce);
+    public static int getoscOutputValue(String address) {
+        return OSCSensorManager.getOutputValue(address);
     }
 
-    public static int getLineDebounce(int midiPort) {
-        return SensorManagement.getDebounceTime(midiPort);
+    /**
+     * To start a new Session of the application
+     */
+    public static void newSetup() {
+        MidiSensorManager.newSetup();
+        OSCSensorManager.newSetup();
     }
 
+    /**
+     * change receiver for all the sensors
+     */
+    public static void changeMidiReceiver() {
+        MidiSensorManager.changeReceiver();
+    }
+
+    /**
+     * Change osc port out for all the sensors
+     */
+    public static void changeOscPortOut() {
+        OSCSensorManager.changeOscPortOut();
+    }
+
+    /**
+     * Getter for the sensor list
+     *
+     * @return the list of sensor
+     */
+    public static Hashtable<Integer, MidiSensor> getMidiTable() {
+        return MidiSensorManager.getSensorList();
+    }
+
+    /**
+     * Getter for the sensor table
+     *
+     * @return the sensor table
+     */
+    public static Hashtable<String, OSCSensor> getOSCTable() {
+        return OSCSensorManager.getOscSensorTable();
+    }
+
+
+    /******************************************************************************************************************/
+    /**                                                                                                              **/
+    /**************************************************ARDUINO INPUTS**************************************************/
+    /**                                                                                                              **/
+    /******************************************************************************************************************/
     /**
      * Set the debounce time in second for a sensor
      *
@@ -261,10 +584,10 @@ public class Services {
      * Reset procedure for the arduino
      */
     public static void resetArduino() {
-        SensorManagement.muteAll();
+        MidiSensorManager.muteAll();
         ArduinoInData.resetArduino();
         InputManager.reset();
-        SensorManagement.unMuteAll();
+        MidiSensorManager.unMuteAll();
     }
 
     public static void closeApplication() {
@@ -314,7 +637,7 @@ public class Services {
      * @return true if it worked
      */
     public static boolean saveSetup(File saveFile) {
-        Hashtable<Integer, MidiSensor> sensorList = SensorManagement.getSensorList();
+        Hashtable<Integer, MidiSensor> sensorList = MidiSensorManager.getSensorList();
         Vector<ArduinoChan> arduinoInVector = InputManager.getArduinoInVector();
         MidiSensor s;
         try {
@@ -441,13 +764,13 @@ public class Services {
                     Element el = (Element) nl.item(i);
 
                     //get the Employee object
-                    MidiSensor s = getSensor(el);
+                    MidiSensor s = getMidiSensor(el);
                     //add it to list
                     sensorList.put(s.getMidiPort(), s);
                 }
             }
-            SensorManagement.loadSetup(sensorList);
-
+            MidiSensorManager.loadSetup(sensorList);
+            
             nl = docEle.getElementsByTagName("input");
             if (nl.getLength() > 0) {
                 for (int i = 0; i < nl.getLength(); i++) {
@@ -470,7 +793,7 @@ public class Services {
      * @param sensEl the xml element to analyse
      * @return the matching sensor
      */
-    private static MidiSensor getSensor(Element sensEl) {
+    private static MidiSensor getMidiSensor(Element sensEl) {
 
         //for each <sensor> element get text or int values of
         //name, arduinoIn, midiPort, minRange, maxRange, preamplifier
@@ -508,12 +831,6 @@ public class Services {
 
     }
 
-    /**
-     * I take a xml element and the tag name, look for the tag and get
-     * the text content
-     * i.e for <employee><name>John</name></employee> xml snippet if
-     * the Element points to employee node and tagName is 'name' I will return John
-     */
     private static String getTextValue(Element ele, String tagName) {
         String textVal = null;
         NodeList nl = ele.getElementsByTagName(tagName);

@@ -38,7 +38,7 @@ public class DeleteButton extends JButton {
 
             @Override
             public void run() {
-                Services.deleteSensor(toDelete.getMidiPort());
+                Services.deleteMidiSensor(toDelete.getMidiPort());
                 nb = Integer.parseInt(sensorNumber.getText());
                 nb--;
                 SwingUtilities.invokeLater(() -> {

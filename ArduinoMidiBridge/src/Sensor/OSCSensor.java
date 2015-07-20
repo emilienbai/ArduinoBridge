@@ -133,7 +133,7 @@ public class OSCSensor extends Sensor {
     public void sendOSCMessage(int dataFromSensor) {
         if ((!isMuted && !isMutedBySolo && !isMutedAll) || (isSoloed && !isMutedAll)) {
             Date now = new Date();
-            OSCMessage toSend;
+            OSCMessage toSend = null;
             List<Object> args = new ArrayList<>();
             switch (mode) {
                 case TOGGLE:
@@ -150,12 +150,6 @@ public class OSCSensor extends Sensor {
                             toSend = new OSCMessage(oscAddress, args);
                             lastWasOn = true;
                         }
-                        try {
-                            oscPortOut.send(toSend);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            System.err.println("Echec à  l'envoi du message osc");
-                        }
                     }
                     break;
                 case MOMENTARY:
@@ -164,12 +158,6 @@ public class OSCSensor extends Sensor {
                         args.add(OSC_ON);
                         outputValue = OSC_ON;
                         toSend = new OSCMessage(oscAddress, args);
-                        try {
-                            oscPortOut.send(toSend);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            System.err.println("Echec à  l'envoi du message osc");
-                        }
                     }
                     break;
                 case FADER:
@@ -177,12 +165,6 @@ public class OSCSensor extends Sensor {
                     args.add(value);
                     outputValue = value;
                     toSend = new OSCMessage(oscAddress, args);
-                    try {
-                        oscPortOut.send(toSend);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        System.err.println("Echec à  l'envoi du message osc");
-                    }
                     break;
                 case ALTERNATE:
                     if (dataFromSensor > noiseThreshold && (now.getTime() - lastChange.getTime()) > debounceTime) {
@@ -198,15 +180,63 @@ public class OSCSensor extends Sensor {
                             toSend = new OSCMessage(oscAddress, args);
                             lastWasOn = true;
                         }
-                        try {
-                            oscPortOut.send(toSend);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            System.err.println("Echec à  l'envoi du message osc");
-                        }
                     }
                     break;
             }
+
+            try {
+                oscPortOut.send(toSend);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void sendTestMessage() {
+        OSCMessage toSend = null;
+        List<Object> args = new ArrayList<>();
+
+        switch (this.mode) {
+            case FADER:
+                args.add(100);
+                toSend = new OSCMessage(oscAddress, args);
+                break;
+            case TOGGLE:
+                if (lastWasOn) {
+                    args.add(OSC_OFF);
+                    outputValue = OSC_OFF;
+                    toSend = new OSCMessage(oscAddress, args);
+                    lastWasOn = false;
+                } else {
+                    args.add(OSC_ON);
+                    outputValue = OSC_ON;
+                    toSend = new OSCMessage(oscAddress, args);
+                    lastWasOn = true;
+                }
+                break;
+            case MOMENTARY:
+                args.add(OSC_ON);
+                outputValue = OSC_ON;
+                toSend = new OSCMessage(oscAddress, args);
+                break;
+            case ALTERNATE:
+                if (lastWasOn) {
+                    args.add(OSC_ON);
+                    outputValue = OSC_ON;
+                    toSend = new OSCMessage(oscAddressBis, args);
+                    lastWasOn = false;
+                } else {
+                    args.add(OSC_ON);
+                    outputValue = OSC_ON;
+                    toSend = new OSCMessage(oscAddress, args);
+                    lastWasOn = true;
+                }
+                break;
+        }
+        try {
+            oscPortOut.send(toSend);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

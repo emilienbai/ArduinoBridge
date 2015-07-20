@@ -301,6 +301,14 @@ public class Services {
     }
 
     /**
+     * Send an osc Message to test if it work with the receiver
+     *
+     * @param address the address where to send the message
+     */
+    public static void sendOscTestMessage(String address) {
+        OSCSensorManager.sendTestMessage(address);
+    }
+    /**
      * Set the mode of action of a midi port
      *
      * @param midiPort midi port to set
@@ -770,7 +778,7 @@ public class Services {
                 }
             }
             MidiSensorManager.loadSetup(sensorList);
-            
+
             nl = docEle.getElementsByTagName("input");
             if (nl.getLength() > 0) {
                 for (int i = 0; i < nl.getLength(); i++) {

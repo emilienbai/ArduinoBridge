@@ -19,7 +19,6 @@ public class ConnexionInfo extends JFrame {
         super("Connexion au serveur");
         this.setLocationRelativeTo(null);
         this.setResizable(false);
-        this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
         JPanel mainPanel = new JPanel(new GridLayout(3, 2, 10, 10));

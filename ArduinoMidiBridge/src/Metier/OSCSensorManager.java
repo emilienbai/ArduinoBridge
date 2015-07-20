@@ -48,6 +48,15 @@ public class OSCSensorManager {
     }
 
     /**
+     * Send an osc Message to test if it work with the receiver
+     *
+     * @param address the address where to send the message
+     */
+    protected static void sendTestMessage(String address) {
+        oscSensorTable.get(address).sendTestMessage();
+    }
+
+    /**
      * Change the maximum output value for an osc address
      *
      * @param address  address to modify

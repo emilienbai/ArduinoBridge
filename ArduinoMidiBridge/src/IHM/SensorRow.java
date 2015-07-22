@@ -22,7 +22,6 @@ public abstract class SensorRow extends JPanel {
     protected JTextField preamplifierValue;
     protected JTextField minOutValue;
     protected JTextField maxOutValue;
-    protected VuMeter outputValue;
     protected JButton muteButton;
     protected JButton soloButton;
     protected JButton impulseButton;
@@ -296,15 +295,8 @@ public abstract class SensorRow extends JPanel {
         this.add(outLabel, constraint);
 
 
-        /**********Output Value**********/
-        outputValue = new VuMeter(SwingConstants.HORIZONTAL, 0, 127);
-        outputValue.setPreferredSize(new Dimension(80, 13));
-        outputValue.setMaximumSize(new Dimension(300, 15));
-        outputValue.setBorder(OperatingWindows.ETCHED_BORDER);
-        changeColor(outputValue);
-        constraint.weightx = 1;
-        constraint.gridx = constraint.gridx + 1;
-        this.add(outputValue, constraint);
+        /***OutPutValue**/
+        constraint.gridx++;
 
         /**********Mute Button**********/
         muteButton = new JButton("Mute");
@@ -408,13 +400,6 @@ public abstract class SensorRow extends JPanel {
         return name;
     }
 
-    public void setDeleteButton(DeleteButton db) {
-        deleteButton = db;
-        ++constraint.gridx;
-        constraint.gridy = 0;
-        constraint.gridheight = 2;
-        this.add(deleteButton, constraint);
-    }
 
     /**
      * Set the value of the input vu-meter
@@ -440,6 +425,8 @@ public abstract class SensorRow extends JPanel {
     protected abstract void maxThreshModification(int newValue);
 
     protected abstract void minDebModification(int newValue);
+
+    protected abstract void setOutputValue(int outValue);
 
     protected abstract int getType();
 

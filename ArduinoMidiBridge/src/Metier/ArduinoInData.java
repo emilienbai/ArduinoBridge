@@ -261,7 +261,7 @@ public class ArduinoInData implements SerialPortEventListener {
                 } else {
                     new Thread(() -> {
                         Services.sendMessage(inputLine);
-                        OperatingWindows.refreshInterface(inputLine);
+                        //OperatingWindows.refreshInterface(inputLine);
                     }).start();
                 }
 

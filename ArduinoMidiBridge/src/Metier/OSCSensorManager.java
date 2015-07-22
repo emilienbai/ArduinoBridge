@@ -133,6 +133,12 @@ public class OSCSensorManager {
         }
     }
 
+    public static void unMuteAll() {
+        for (Map.Entry<String, OSCSensor> e : oscSensorTable.entrySet()) {
+            e.getValue().setIsMutedAll(false);
+        }
+    }
+
     /**
      * Solo an osc address
      *
@@ -252,4 +258,6 @@ public class OSCSensorManager {
         newSetup();
         oscSensorTable = newSensorTable;
     }
+
+
 }

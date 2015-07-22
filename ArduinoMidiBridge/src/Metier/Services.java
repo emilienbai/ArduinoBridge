@@ -31,6 +31,7 @@ public class Services {
     private static String arduiLog = "Logs :\n";
     private static boolean serverEnabled = false;
     private static boolean clientEnabled = false;
+    private static boolean oscEnabled = false;
 
     /**
      * Add a midi sensor
@@ -47,6 +48,11 @@ public class Services {
 
     public static void addOscSensor(String name, int arduinoIn, String oscAddress, int mode) {
         OSCSensor s = new OSCSensor(name, arduinoIn, oscAddress, mode, OSCManager.getOscPortOut());
+        OSCSensorManager.addOscSensor(s);
+    }
+
+    public static void addOscSensor(String name, int arduinoIn, String oscAddress, String oscAddressBis, int mode) {
+        OSCSensor s = new OSCSensor(name, arduinoIn, oscAddress, oscAddressBis, mode, OSCManager.getOscPortOut());
         OSCSensorManager.addOscSensor(s);
     }
 
@@ -129,16 +135,6 @@ public class Services {
     }
 
     /**
-     * Getter for the maximum output value of an osc address
-     *
-     * @param address address we want to know about
-     * @return the maximum output value for this
-     */
-    public static int getOscMaxRange(String address) {
-        return OSCSensorManager.getMaxRange(address);
-    }
-
-    /**
      * Change minimal output value for a midi line
      *
      * @param midiPort midiPort to modify
@@ -168,15 +164,6 @@ public class Services {
         return MidiSensorManager.getMinRange(midiPort);
     }
 
-    /**
-     * Getter for the minimum output value of an osc address
-     *
-     * @param address address we want to know about
-     * @return the minimum output value for this
-     */
-    public static int getOscMinRange(String address) {
-        return OSCSensorManager.getMinRange(address);
-    }
 
     /**
      * Change the preamplifier for a midi port -> Sensor
@@ -237,22 +224,45 @@ public class Services {
     /**
      * Mute all the midi port
      */
-    public static void midiMuteAll() {
+    private static void midiMuteAll() {
         MidiSensorManager.muteAll();
     }
 
     /**
      * Mute all the Osc addresses
      */
-    public static void oscMuteAll() {
+    private static void oscMuteAll() {
         OSCSensorManager.muteAll();
     }
 
     /**
      * un-mute all the midi ports
      */
-    public static void midiUnMuteAll() {
+    private static void midiUnMuteAll() {
         MidiSensorManager.unMuteAll();
+    }
+
+    /**
+     * un-mute all the osc Ports
+     */
+    private static void oscUnMuteAll() {
+        OSCSensorManager.unMuteAll();
+    }
+
+    /**
+     * Mute all
+     */
+    public static void muteAll() {
+        midiMuteAll();
+        oscMuteAll();
+    }
+
+    /**
+     * Un Mute all
+     */
+    public static void unMuteAll() {
+        midiUnMuteAll();
+        oscUnMuteAll();
     }
 
     /**
@@ -349,16 +359,6 @@ public class Services {
     }
 
     /**
-     * Getter for the noise threshold of an osc address
-     *
-     * @param address the osc address we want to know about
-     * @return the noise threshold of this osc address
-     */
-    public static int getOscLineThreshold(String address) {
-        return OSCSensorManager.getLineThreshold(address);
-    }
-
-    /**
      * Set a time of for a midi port acting like a momentary or toggle button
      *
      * @param midiPort the midi port to modify
@@ -388,17 +388,6 @@ public class Services {
     public static int getMidiLineDebounce(int midiPort) {
         return MidiSensorManager.getDebounceTime(midiPort);
     }
-
-    /**
-     * Getter for the debounce time for an osc address
-     *
-     * @param address the osc address we want to know about
-     * @return the debounce time of the osc address
-     */
-    public static int getOscLineDebounce(String address) {
-        return OSCSensorManager.getLineDebounce(address);
-    }
-
 
     /**
      * get the output value of a sensor
@@ -638,6 +627,70 @@ public class Services {
     }
 
 
+    /******************************************************************************************************************/
+    /**                                                                                                              **/
+    /*****************************************************OSC**********************************************************/
+    /**                                                                                                              **/
+    /******************************************************************************************************************/
+
+    /**
+     * Launch the osc server
+     *
+     * @param address the address where to send Osc messages
+     * @param port    the port to use
+     * @return true if the server started
+     */
+    public static boolean launchOscServer(String address, int port) {
+        if (OSCManager.chooseOSCParams(address, port)) {
+            oscEnabled = true;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Close the connection with the Osc server
+     */
+    public static void closeOscServer() {
+        OSCManager.exit();
+        oscEnabled = false;
+    }
+
+    /**
+     * Getter for the currently used address for Osc communication
+     *
+     * @return the currently used ip address
+     */
+    public static String getOscAddress() {
+        return OSCManager.getAddress();
+    }
+
+    /**
+     * Getter for the currently used port for Osc communication
+     *
+     * @return the currently used port
+     */
+    public static int getOscPort() {
+        return OSCManager.getPort();
+    }
+
+    /**
+     * Getter for the status of the Osc server
+     *
+     * @return true if the server is launched
+     */
+    public static boolean getOscStatus() {
+        return oscEnabled;
+    }
+
+
+    /******************************************************************************************************************/
+    /**                                                                                                              **/
+    /**************************************************Save/Load*******************************************************/
+    /**                                                                                                              **/
+    /******************************************************************************************************************/
+
     /**
      * Save a sensorList and input configuration in a xml file
      *
@@ -645,20 +698,24 @@ public class Services {
      * @return true if it worked
      */
     public static boolean saveSetup(File saveFile) {
-        Hashtable<Integer, MidiSensor> sensorList = MidiSensorManager.getSensorList();
+        Hashtable<Integer, MidiSensor> midiSensorList = Services.getMidiTable();
+        Hashtable<String, OSCSensor> oscSensorHashtable = Services.getOSCTable();
         Vector<ArduinoChan> arduinoInVector = InputManager.getArduinoInVector();
-        MidiSensor s;
+
+        MidiSensor ms;
+        OSCSensor os;
         try {
             BufferedWriter file = new BufferedWriter(new FileWriter(saveFile));
             file.write("<?xml version=\"1.0\"?>");
             file.newLine();
             file.write("<!DOCTYPE save [");
             file.newLine();
-            file.write("<!ELEMENT save (sensor+, input+)>");
+            file.write("<!ELEMENT save (midiSensor+, oscSensor+, input+)>");
             file.newLine();
-            file.write("<!ATTLIST save sensorNumber CDATA \"0\">");
+            file.write("<!ATTLIST save midiSensorNumber CDATA \"0\">");
             file.newLine();
-            file.write("<!ELEMENT sensor (name, arduinoIn, midiPort, shortcut, minRange, maxRange, preamplifier, mode, noiseThreshold, debounceTime)>");
+            /*****************************Midi Sensor**************************/
+            file.write("<!ELEMENT midiSensor (name, arduinoIn, midiPort, shortcut, minRange, maxRange, preamplifier, mode, noiseThreshold, debounceTime)>");
             file.write("<!ELEMENT name (#PCDATA)>");
             file.newLine();
             file.write("<!ELEMENT arduinoIn (#PCDATA)>");
@@ -677,6 +734,26 @@ public class Services {
             file.newLine();
             file.write("<!ELEMENT debounceTime (#PCDATA)>");
             file.newLine();
+            /*****************************Osc Sensor**************************/
+            file.write("<!ELEMENT oscSensor (name, arduinoIn, oscAddress, minRange, maxRange, preamplifier, mode, noiseThreshold, debounceTime)>");
+            file.newLine();
+            file.write("<!ELEMENT name (#PCDATA)>");
+            file.newLine();
+            file.write("<!ELEMENT arduinoIn (#PCDATA)>");
+            file.newLine();
+            file.write("<!ELEMENT oscAddresss (#PCDATA)>");
+            file.newLine();
+            file.write("<!ELEMENT minRange (#PCDATA)>");
+            file.newLine();
+            file.write("<!ELEMENT maxRange (#PCDATA)>");
+            file.newLine();
+            file.write("<!ELEMENT preamplifier (#PCDATA)>");
+            file.newLine();
+            file.write("<!ELEMENT noiseThreshold (#PCDATA)>");
+            file.newLine();
+            file.write("<!ELEMENT debounceTime (#PCDATA)>");
+            file.newLine();
+            /*****************************Arduino Input**************************/
             file.write("<!ELEMENT input (number, debounce, threshold, enable)>");
             file.newLine();
             file.write("<!ELEMENT number (#PCDATA)>");
@@ -689,33 +766,58 @@ public class Services {
             file.newLine();
             file.write("]>");
             file.newLine();
-            file.write("<save sensorNumber = \"" + sensorList.size() + "\">");
+            file.write("<save midiSensorNumber = \"" + midiSensorList.size() + "\">");
             file.newLine();
-            for (Map.Entry<Integer, MidiSensor> e : sensorList.entrySet()) {
-                s = e.getValue();
-                file.write("    <sensor>");
+            for (Map.Entry<Integer, MidiSensor> e : midiSensorList.entrySet()) {
+                ms = e.getValue();
+                file.write("    <midiSensor>");
                 file.newLine();
-                file.write("        <name>" + s.getName() + "</name>");
+                file.write("        <name>" + ms.getName() + "</name>");
                 file.newLine();
-                file.write("        <arduinoIn>" + s.getArduinoIn() + "</arduinoIn>");
+                file.write("        <arduinoIn>" + ms.getArduinoIn() + "</arduinoIn>");
                 file.newLine();
-                file.write("        <midiPort>" + s.getMidiPort() + "</midiPort>");
+                file.write("        <midiPort>" + ms.getMidiPort() + "</midiPort>");
                 file.newLine();
-                file.write("        <shortcut>" + s.getShortcut() + "</shortcut>");
+                file.write("        <shortcut>" + ms.getShortcut() + "</shortcut>");
                 file.newLine();
-                file.write("        <minRange>" + s.getMinRange() + "</minRange>");
+                file.write("        <minRange>" + ms.getMinRange() + "</minRange>");
                 file.newLine();
-                file.write("        <maxRange>" + s.getMaxRange() + "</maxRange>");
+                file.write("        <maxRange>" + ms.getMaxRange() + "</maxRange>");
                 file.newLine();
-                file.write("        <preamplifier>" + s.getPreamplifier() + "</preamplifier>");
+                file.write("        <preamplifier>" + ms.getPreamplifier() + "</preamplifier>");
                 file.newLine();
-                file.write("        <mode>" + s.getMode() + "</mode>");
+                file.write("        <mode>" + ms.getMode() + "</mode>");
                 file.newLine();
-                file.write("        <noiseThreshold>" + s.getNoiseThreshold() + "</noiseThreshold>");
+                file.write("        <noiseThreshold>" + ms.getNoiseThreshold() + "</noiseThreshold>");
                 file.newLine();
-                file.write("        <debounceTime>" + s.getDebounceTime() + "</debounceTime>");
+                file.write("        <debounceTime>" + ms.getDebounceTime() + "</debounceTime>");
                 file.newLine();
-                file.write("    </sensor>");
+                file.write("    </midiSensor>");
+                file.newLine();
+            }
+            for (Map.Entry<String, OSCSensor> e : oscSensorHashtable.entrySet()) {
+                os = e.getValue();
+                file.write("    <oscSensor>");
+                file.newLine();
+                file.write("        <name>" + os.getName() + "</name>");
+                file.newLine();
+                file.write("        <arduinoIn>" + os.getArduinoIn() + "</arduinoIn>");
+                file.newLine();
+                file.write("        <oscAddress>" + os.getOscAddress() + "</oscAddress>");
+                file.newLine();
+                file.write("        <minRange>" + os.getMinRange() + "</minRange>");
+                file.newLine();
+                file.write("        <maxRange>" + os.getMaxRange() + "</maxRange>");
+                file.newLine();
+                file.write("        <preamplifier>" + os.getPreamplifier() + "</preamplifier>");
+                file.newLine();
+                file.write("        <mode>" + os.getMode() + "</mode>");
+                file.newLine();
+                file.write("        <noiseThreshold>" + os.getNoiseThreshold() + "</noiseThreshold>");
+                file.newLine();
+                file.write("        <debounceTime>" + os.getDebounceTime() + "</debounceTime>");
+                file.newLine();
+                file.write("    </oscSensor>");
                 file.newLine();
             }
             for (ArduinoChan a : arduinoInVector) {
@@ -747,7 +849,8 @@ public class Services {
      * @return the result of the loading
      */
     public static boolean loadSetup(File toLoad) {
-        Hashtable<Integer, MidiSensor> sensorList = new Hashtable<>();
+        Hashtable<Integer, MidiSensor> midiSensorList = new Hashtable<>();
+        Hashtable<String, OSCSensor> oscSensorHashtable = new Hashtable<>();
         Vector<ArduinoChan> arduinoInVector = new Vector<>();
         Document dom;
         //get the factory
@@ -764,7 +867,9 @@ public class Services {
             Element docEle = dom.getDocumentElement();
 
             //get a nodelist of elements
-            NodeList nl = docEle.getElementsByTagName("sensor");
+
+            /**********MIDI********/
+            NodeList nl = docEle.getElementsByTagName("midiSensor");
             if (nl.getLength() > 0) {
                 for (int i = 0; i < nl.getLength(); i++) {
 
@@ -774,11 +879,27 @@ public class Services {
                     //get the Employee object
                     MidiSensor s = getMidiSensor(el);
                     //add it to list
-                    sensorList.put(s.getMidiPort(), s);
+                    midiSensorList.put(s.getMidiPort(), s);
                 }
             }
-            MidiSensorManager.loadSetup(sensorList);
+            MidiSensorManager.loadSetup(midiSensorList);
 
+            /**********OSC*********/
+            nl = docEle.getElementsByTagName("oscSensor");
+            if (nl.getLength() > 0) {
+                for (int i = 0; i < nl.getLength(); i++) {
+
+                    //get the sensor element
+                    Element el = (Element) nl.item(i);
+
+                    //get the Employee object
+                    OSCSensor s = getOscSensor(el);
+                    //add it to list
+                    oscSensorHashtable.put(s.getOscAddress(), s);
+                }
+            }
+            OSCSensorManager.loadSetup(oscSensorHashtable);
+            /*********INPUT********/
             nl = docEle.getElementsByTagName("input");
             if (nl.getLength() > 0) {
                 for (int i = 0; i < nl.getLength(); i++) {
@@ -796,14 +917,33 @@ public class Services {
     }
 
     /**
-     * Create sensor from a xml element
+     * Create OSCSensor from a xml element
+     *
+     * @param el the xml element to analyse
+     * @return the matching OSCSensor
+     */
+    private static OSCSensor getOscSensor(Element el) {
+        String name = getTextValue(el, "name");
+        int arduinoIn = getIntValue(el, "arduinoIn");
+        String oscAddress = getTextValue(el, "oscAddress");
+        int minRange = getIntValue(el, "minRange");
+        int maxRange = getIntValue(el, "maxRange");
+        int preamplifier = getIntValue(el, "preamplifier");
+        int mode = getIntValue(el, "mode");
+        int noiseThreshold = getIntValue(el, "noiseThreshold");
+        int debounceTime = getIntValue(el, "debounceTime");
+        return new OSCSensor(name, arduinoIn, oscAddress, minRange, maxRange, preamplifier, mode, noiseThreshold, debounceTime, OSCManager.getOscPortOut());
+    }
+
+    /**
+     * Create midiSensor from a xml element
      *
      * @param sensEl the xml element to analyse
-     * @return the matching sensor
+     * @return the matching MidiSensor
      */
     private static MidiSensor getMidiSensor(Element sensEl) {
 
-        //for each <sensor> element get text or int values of
+        //for each <midiSensor> element get text or int values of
         //name, arduinoIn, midiPort, minRange, maxRange, preamplifier
         String name = getTextValue(sensEl, "name");
         int arduinoIn = getIntValue(sensEl, "arduinoIn");
@@ -817,7 +957,7 @@ public class Services {
         int noiseThreshold = getIntValue(sensEl, "noiseThreshold");
         int debounceTime = getIntValue(sensEl, "debounceTime");
         return new MidiSensor(name, arduinoIn, midiPort, shortChar, MidiManager.getMidiReceiver(), minRange, maxRange, preamplifier, mode, noiseThreshold, debounceTime);
-        /*Return the new sensor*/
+        /*Return the new midiSensor*/
     }
 
     /**
@@ -861,5 +1001,4 @@ public class Services {
     public static Vector<ArduinoChan> getArduinoChanVector() {
         return InputManager.getArduinoInVector();
     }
-
 }

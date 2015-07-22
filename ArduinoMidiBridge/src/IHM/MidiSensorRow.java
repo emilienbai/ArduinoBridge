@@ -16,6 +16,7 @@ class MidiSensorRow extends SensorRow {
 
     private int midiPort;
     private char shortcut;
+    private VuMeter outputValue;
 
 
     /**
@@ -83,6 +84,16 @@ class MidiSensorRow extends SensorRow {
             }
         });
 
+        /**********Output Value**********/
+        outputValue = new VuMeter(SwingConstants.HORIZONTAL, 0, 127);
+        outputValue.setPreferredSize(new Dimension(80, 13));
+        outputValue.setMaximumSize(new Dimension(300, 15));
+        outputValue.setBorder(OperatingWindows.ETCHED_BORDER);
+        changeColor(outputValue);
+        constraint.weightx = 1;
+        constraint.gridx = 11;
+        this.add(outputValue, constraint);
+
         /**********Impulse Button**********/
         impulseButton.addActionListener(e -> new Thread(() -> {
             SwingUtilities.invokeLater(() -> impulseButton.setBackground(OperatingWindows.IMPULSE_COLOR));
@@ -130,8 +141,6 @@ class MidiSensorRow extends SensorRow {
         JFrame frame = new JFrame("Hello World");
         JPanel panel = new JPanel();
         MidiSensorRow sensorRow = new MidiSensorRow("On peut essayer de mettre un titre super long ", 12, 42, 'a');
-        DeleteButton db = new DeleteButton(sensorRow);
-        sensorRow.setDeleteButton(db);
         panel.add(sensorRow);
         frame.add(panel);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -157,17 +166,18 @@ class MidiSensorRow extends SensorRow {
         }
     }
 
+    @Override
     protected void maxThreshModification(int newValue) {
         if (MidiSensorRow.this.mode == Sensor.FADER) {
             if (newValue <= 127 && newValue >= minOutVal) {
                 Services.changeMidiMaxRange(midiPort, newValue);
                 maxOutVal = newValue;
             } else if (newValue > 127) {
-                Services.changeMidiMinRange(midiPort, 127);
-                minOutVal = 127;
+                Services.changeMidiMaxRange(midiPort, 127);
+                maxOutVal = 127;
                 SwingUtilities.invokeLater(() -> maxOutValue.setText("127"));
             } else {
-                Services.changeMidiMinRange(midiPort, minOutVal);
+                Services.changeMidiMaxRange(midiPort, minOutVal);
                 maxOutVal = minOutVal;
                 SwingUtilities.invokeLater(() -> maxOutValue.setText(String.valueOf(minOutVal)));
             }
@@ -181,9 +191,9 @@ class MidiSensorRow extends SensorRow {
                 SwingUtilities.invokeLater(() -> maxOutValue.setText("0"));
             }
         }
-
     }
 
+    @Override
     protected void minDebModification(int newValue) {
         if (MidiSensorRow.this.mode == Sensor.FADER) {
             if (newValue >= 0 && newValue <= maxOutVal) {
@@ -192,7 +202,7 @@ class MidiSensorRow extends SensorRow {
             } else if (newValue < 0) {
                 Services.changeMidiMinRange(midiPort, 0);
                 minOutVal = 0;
-                SwingUtilities.invokeLater(() -> minOutValue.setText("000"));
+                SwingUtilities.invokeLater(() -> minOutValue.setText("0"));
             } else {
                 Services.changeMidiMinRange(midiPort, maxOutVal);
                 minOutVal = maxOutVal;
@@ -270,7 +280,7 @@ class MidiSensorRow extends SensorRow {
     public void setOutputValue(int outValue) {
         SwingUtilities.invokeLater(() -> {
             outputValue.setValue(outValue);
-            MidiSensorRow.this.repaint();
+            repaint();
         });
     }
 

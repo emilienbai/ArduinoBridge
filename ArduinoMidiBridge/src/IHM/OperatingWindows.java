@@ -6,6 +6,8 @@ import Metier.MidiManager;
 import Metier.Services;
 import Sensor.ArduinoChan;
 import Sensor.MidiSensor;
+import Sensor.OSCSensor;
+import Sensor.Sensor;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -17,6 +19,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
 
@@ -40,7 +43,6 @@ public class OperatingWindows extends JFrame {
     public static final Color MOMENTARY_COLOR = new Color(23, 122, 32);
     public static final Color ALTERNATE_COLOR = new Color(116, 61, 33);
 
-
     /*****************************
      * BORDERS
      *********************************/
@@ -51,22 +53,28 @@ public class OperatingWindows extends JFrame {
     private static final String SAVE_EXTENSION = ".xml";
     private static final int DEFAULT_THRESHOLD = 100;
     private static final int DEFAULT_DEBOUNCE = 200;
+    private static final int MIDI_INDEX = 0;
+    private static final int OSC_INDEX = 1;
 
     /*************************
      * Attributes
      *********************************/
     private static JPanel centerMidiPanel;
+    private static JPanel centerOscPanel;
     private static JMenuBar menuBar;
     private static Vector<Integer> availableMidiPort = new Vector<>();
     private static boolean isMutedAll;
     private static java.util.List<MidiSensorRow> sensorRowList = new ArrayList<>();
+    private static java.util.List<OscSensorRow> oscSensorRowList = new ArrayList<>();
     private static VuMeter selectedSensorVuMeter;
     private static JTextArea logsArea;
     private static int selectedSensor = 0;
     private static boolean built = false; //is the window built?
     private static boolean shortcutEnable = true;
     private static JMenuItem clientSettingItem;
-    private static GridBagConstraints centerConstraint;
+    private static GridBagConstraints centerMidiConstraint;
+    private static GridBagConstraints centerOscConstraint;
+    private static JTabbedPane centerTabbedPanel;
     private JTextArea debounceOneText;
     private JTextArea thresholdOneTextArea;
     private JLabel sensorStatus;
@@ -106,7 +114,6 @@ public class OperatingWindows extends JFrame {
         JPanel mainPanel = new JPanel(mainLayout);
         mainPanel.setBackground(BACKGROUND_COLOR);
         mainPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-
 
         /******************************************/
         /****************Top Panel*****************/
@@ -288,9 +295,11 @@ public class OperatingWindows extends JFrame {
         }).start());
 
         topConstraint.weightx = 0;
+
         /*******5th Column, Separator**************/
         JSeparator sep = new JSeparator(SwingConstants.VERTICAL);
         sep.setPreferredSize(new Dimension(1, 80));
+        topConstraint.gridx++;
         topPanel.add(sep, topConstraint);
         topConstraint.weightx = 1;
 
@@ -459,7 +468,6 @@ public class OperatingWindows extends JFrame {
         topConstraint.gridwidth = 3;
         topPanel.add(scrollLogs, topConstraint);
 
-
         /*******10th Column, reset button***********/
         JButton resetButton = new JButton("Reset Arduino");
         resetButton.setBackground(BUTTON_COLOR);
@@ -483,10 +491,9 @@ public class OperatingWindows extends JFrame {
         /******************************************/
         /**************Center Panel****************/
         /******************************************/
-        JTabbedPane centerTabbedPanel = new JTabbedPane();
+        centerTabbedPanel = new JTabbedPane();
         centerTabbedPanel.setBackground(BACKGROUND_COLOR);
         centerTabbedPanel.setForeground(NAME_COLOR);
-
 
         mainConstraint.fill = GridBagConstraints.BOTH;
         mainConstraint.weighty = 50;
@@ -494,24 +501,38 @@ public class OperatingWindows extends JFrame {
         mainConstraint.gridy = mainConstraint.gridy + 1;
         mainConstraint.gridx = 0;
 
-
-        GridBagLayout centerLayout = new GridBagLayout();
-        centerConstraint = new GridBagConstraints();
-        centerConstraint.fill = GridBagConstraints.HORIZONTAL;
-        centerMidiPanel = new JPanel(centerLayout);
+        /**MIDI**/
+        centerMidiConstraint = new GridBagConstraints();
+        centerMidiConstraint.fill = GridBagConstraints.HORIZONTAL;
+        centerMidiConstraint.weightx = 1;
+        centerMidiConstraint.gridx = 0;
+        centerMidiPanel = new JPanel(new GridBagLayout());
         centerMidiPanel.setBackground(BACKGROUND_COLOR);
         centerMidiPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
         JScrollPane centerMidiPanelScroll = new JScrollPane(centerMidiPanel);
-        centerMidiPanelScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        centerMidiPanelScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         centerMidiPanelScroll.setBackground(BACKGROUND_COLOR);
         centerMidiPanelScroll.setForeground(FOREGROUND_COLOR);
 
+        /**OSC**/
+        centerOscConstraint = new GridBagConstraints();
+        centerOscConstraint.fill = GridBagConstraints.HORIZONTAL;
+        centerOscConstraint.weightx = 1;
+        centerOscConstraint.gridx = 0;
+        centerOscPanel = new JPanel(new GridBagLayout());
+        centerOscPanel.setBackground(BACKGROUND_COLOR);
+        centerOscPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-        centerTabbedPanel.addTab("Midi", centerMidiPanelScroll);
+        JScrollPane centerOscPanelScroll = new JScrollPane(centerOscPanel);
+        centerOscPanelScroll.setBackground(BACKGROUND_COLOR);
+        centerOscPanelScroll.setForeground(FOREGROUND_COLOR);
+
+        centerTabbedPanel.add(centerMidiPanelScroll, MIDI_INDEX);
+        centerTabbedPanel.setTitleAt(MIDI_INDEX, "Midi");
+        centerTabbedPanel.add(centerOscPanelScroll, OSC_INDEX);
+        centerTabbedPanel.setTitleAt(OSC_INDEX, "Osc");
+        centerTabbedPanel.setEnabledAt(OSC_INDEX, false);
         mainPanel.add(centerTabbedPanel, mainConstraint);
-
 
         /******************************************/
         /**************Bottom Panel****************/
@@ -566,23 +587,17 @@ public class OperatingWindows extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 new Thread(() -> {
                     if (!isMutedAll) {
-                        Services.midiMuteAll();
+                        Services.muteAll();
                         isMutedAll = true;
                         SwingUtilities.invokeLater(() -> muteAllButton.setBackground(MUTE_COLOR));
                     } else {
-                        Services.midiUnMuteAll();
+                        Services.unMuteAll();
                         isMutedAll = false;
                         SwingUtilities.invokeLater(() -> muteAllButton.setBackground(BUTTON_COLOR));
                     }
                 }).start();
             }
         });
-
-
-
-
-
-
 
         /*****************AddSensor****************/
         JButton addSensorButton = new JButton("Ajouter un capteur");
@@ -591,11 +606,21 @@ public class OperatingWindows extends JFrame {
         addSensorButton.setBorder(RAISED_BORDER);
         addSensorButton.setPreferredSize(new Dimension(150, 40));
         bottomPanel.add(addSensorButton);
-        //todo change with tab focus
+
         addSensorButton.addActionListener(e -> new Thread(() -> {
-            if (!NewMidiSensor.isOpen()) {
-                new NewMidiSensor(availableMidiPort, this);
+            switch (centerTabbedPanel.getSelectedIndex()) {
+                case MIDI_INDEX:
+                    if (!NewMidiSensor.isOpen()) {
+                        new NewMidiSensor(availableMidiPort, this);
+                    }
+                    break;
+                case OSC_INDEX:
+                    if (!NewOscSensor.isOpen()) {
+                        new NewOscSensor(this);
+                    }
+                    break;
             }
+
 
         }).start());
 
@@ -606,15 +631,6 @@ public class OperatingWindows extends JFrame {
         InputManager.init();
         built = true;
     }
-
-
-    public static void main(String[] args) {
-        JFrame frame = new OperatingWindows(true);
-        frame.pack();
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.setVisible(true);
-    }
-
 
     public static void addMidiSensor(String newName, int newArduChan, int newMidiPort) {
         //Check if every needed information is here
@@ -644,22 +660,33 @@ public class OperatingWindows extends JFrame {
                 sensorRowList.add(sensorRow);
 
                 //constraints for the grid bag layout
-                centerConstraint.gridy = centerConstraint.gridy + 1;
-                centerConstraint.gridx = 0;
-                centerConstraint.weightx = 2;
+                centerMidiConstraint.gridy = centerMidiConstraint.gridy + 1;
 
-                SwingUtilities.invokeLater(() -> {
-                    centerMidiPanel.add(sensorRow, centerConstraint);
 
-                    centerMidiPanel.repaint();
-                });
+                SwingUtilities.invokeLater(() -> centerMidiPanel.add(sensorRow, centerMidiConstraint));
             } else {
                 JOptionPane.showMessageDialog(null, "<html><center>Raccourci déjà" +
                                 " utilisé</center></html>", "Avertissement",
                         JOptionPane.WARNING_MESSAGE);
             }
         }
+    }
 
+    public static void addOscSensor(String name, int arduIn, String address, String addressBis, int mode) {
+        OscSensorRow oscSensorRow;
+        if (mode == Sensor.ALTERNATE) {
+            oscSensorRow = new OscSensorRow(name, arduIn, address, addressBis, mode);
+            Services.addOscSensor(name, arduIn, address, addressBis, mode);
+            oscSensorRowList.add(oscSensorRow);
+        } else {
+            oscSensorRow = new OscSensorRow(name, arduIn, address, mode);
+            Services.addOscSensor(name, arduIn, address, mode);
+            oscSensorRowList.add(oscSensorRow);
+        }
+        centerOscConstraint.gridy++;
+        centerMidiConstraint.gridx = 0;
+
+        SwingUtilities.invokeLater(() -> centerOscPanel.add(oscSensorRow, centerOscConstraint));
     }
 
     /**
@@ -679,7 +706,11 @@ public class OperatingWindows extends JFrame {
 
     public static void removeFromOscSensorList(SensorRow toDelete) {
         Services.deleteOscSensor((String) toDelete.getKey());
-        //todo implement method
+        oscSensorRowList.remove(toDelete);
+        SwingUtilities.invokeLater(() -> {
+            centerOscPanel.remove(toDelete);
+            centerOscPanel.repaint();
+        });
     }
 
     /**
@@ -693,9 +724,7 @@ public class OperatingWindows extends JFrame {
             Services.sendMidiImpulsion(s.getMidiPort());
             SwingUtilities.invokeLater(() -> s.setImpulseColor(BUTTON_COLOR));
         }).start();
-
     }
-
 
     /**
      * Update every Vu-Meter on the interface
@@ -713,12 +742,23 @@ public class OperatingWindows extends JFrame {
                         if (sensorNumber == selectedSensor) {
                             selectedSensorVuMeter.setValue(Integer.parseInt(splitted[i + 1]));
                         }
-                        for (MidiSensorRow s : sensorRowList) {
-                            if (s.getArduinoChannel() == sensorNumber) {
-                                int input = Integer.parseInt(splitted[i + 1]);
-                                s.setIncomingSignal(input); //Setting the in value
-                                int output = Services.getMidiOutputValue(s.getMidiPort());
-                                s.setOutputValue(output);
+                        if (centerTabbedPanel.getSelectedIndex() == MIDI_INDEX) {
+                            for (MidiSensorRow s : sensorRowList) {
+                                if (s.getArduinoChannel() == sensorNumber) {
+                                    int input = Integer.parseInt(splitted[i + 1]);
+                                    s.setIncomingSignal(input); //Setting the in value
+                                    int output = Services.getMidiOutputValue(s.getMidiPort());
+                                    s.setOutputValue(output);
+                                }
+                            }
+                        } else if (centerTabbedPanel.getSelectedIndex() == OSC_INDEX) {
+                            for (OscSensorRow s : oscSensorRowList) {
+                                if (s.getArduinoChannel() == sensorNumber) {
+                                    int input = Integer.parseInt(splitted[i + 1]);
+                                    s.setIncomingSignal(input);
+                                    int output = Services.getoscOutputValue(s.getAddress());
+                                    s.setOutputValue(output);
+                                }
                             }
                         }
                     } catch (NumberFormatException e) {
@@ -756,11 +796,24 @@ public class OperatingWindows extends JFrame {
         clientSettingItem.setEnabled(true);
     }
 
+    protected static void setOscStatus(boolean status) {
+        centerTabbedPanel.setEnabledAt(OSC_INDEX, status);
+        //centerTabbedPanel.setSelectedIndex(MIDI_INDEX);
+    }
+
+    public static void main(String[] args) {
+        JFrame frame = new OperatingWindows(true);
+        frame.pack();
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+    }
+
     /**
      * Display a warning about the content
      */
     private void numberFormatWarning() {
-        JOptionPane.showMessageDialog(OperatingWindows.this, "Veuillez entrer un nombre", "Avertissement", JOptionPane.WARNING_MESSAGE);
+        JOptionPane.showMessageDialog(OperatingWindows.this, "Veuillez entrer un nombre",
+                "Avertissement", JOptionPane.WARNING_MESSAGE);
     }
 
     /**
@@ -789,6 +842,7 @@ public class OperatingWindows extends JFrame {
 
         newItem.addActionListener(e -> new Thread(() -> {
             Services.newSetup();
+            initMidiPort();
             saveFile = null;
             SwingUtilities.invokeLater(() -> {
                 cleanAction();
@@ -825,6 +879,7 @@ public class OperatingWindows extends JFrame {
             if (userSelection == JFileChooser.APPROVE_OPTION) {
                 saveFile = openChooser.getSelectedFile();
                 if (Services.loadSetup(saveFile)) {
+                    initMidiPort();
                     saveItem.setEnabled(true);
                     OperatingWindows.this.loadSetup();
                 } else {
@@ -835,7 +890,6 @@ public class OperatingWindows extends JFrame {
                 }
             }
         });
-
 
         /**************/
         /**SaveAsItem**/
@@ -873,7 +927,6 @@ public class OperatingWindows extends JFrame {
                     JOptionPane.showMessageDialog(OperatingWindows.this,
                             "<html><center>Erreur lors de l'enregistrement du fichier</center></html>",
                             "Erreur", JOptionPane.ERROR_MESSAGE);
-
                 }
             }
         });
@@ -903,13 +956,11 @@ public class OperatingWindows extends JFrame {
             System.exit(0);
         }).start());
 
-
         /**Edition**/
         JMenu editMenu = new JMenu("Edition");
         menuBar.add(editMenu);
         editMenu.setBackground(BACKGROUND_COLOR);
         editMenu.setForeground(FOREGROUND_COLOR);
-
 
         /**MidiSetting Item**/
         JMenuItem midiSettingItem = new JMenuItem("Paramètres midi");
@@ -918,6 +969,18 @@ public class OperatingWindows extends JFrame {
         midiSettingItem.setForeground(FOREGROUND_COLOR);
 
         midiSettingItem.addActionListener(e -> new MidiDeviceChoice(false));
+
+        /**OscSettings Item**/
+        JMenuItem oscSettingItem = new JMenuItem("Paramètres OSC");
+        editMenu.add(oscSettingItem);
+        oscSettingItem.setBackground(BACKGROUND_COLOR);
+        oscSettingItem.setForeground(FOREGROUND_COLOR);
+
+        oscSettingItem.addActionListener(e -> {
+            if (!OscSettings.isOpen()) {
+                new OscSettings(Services.getOscStatus());
+            }
+        });
 
         /**ServerSetting Item**/
         JMenuItem serverSettingItem = new JMenuItem("Paramètres serveur");
@@ -934,7 +997,6 @@ public class OperatingWindows extends JFrame {
                 serverSettings = new ServerSettings();
             }
         });
-
 
         /**ClientSetting Item**/
         clientSettingItem = new JMenuItem("Paramètres client");
@@ -958,7 +1020,6 @@ public class OperatingWindows extends JFrame {
         menuBar.add(helpMenu);
         helpMenu.setBackground(BACKGROUND_COLOR);
         helpMenu.setForeground(FOREGROUND_COLOR);
-
 
         //getHelp Item
         JMenuItem getHelpItem = new JMenuItem("Obtenir de l'aide");
@@ -986,30 +1047,32 @@ public class OperatingWindows extends JFrame {
         new Thread(() -> {
             SwingUtilities.invokeLater(OperatingWindows.this::cleanAction);
             java.util.Hashtable<Integer, MidiSensor> sensorList = Services.getMidiTable();
+            Hashtable<String, OSCSensor> oscSensorHashtable = Services.getOSCTable();
             Vector<ArduinoChan> arduinoChanVector = Services.getArduinoChanVector();
-            MidiSensor s;
+            MidiSensor ms;
             for (Map.Entry<Integer, MidiSensor> e : sensorList.entrySet()) {
-                s = e.getValue();
-                MidiSensorRow sr = new MidiSensorRow(s);
+                ms = e.getValue();
+                MidiSensorRow sr = new MidiSensorRow(ms);
                 sensorRowList.add(sr);
-                availableMidiPort.removeElement(s.getMidiPort());
-                DeleteButton db = new DeleteButton(sr);
-                sr.setDeleteButton(db);
+                availableMidiPort.removeElement(ms.getMidiPort());
                 //constraints for the grid bag layout
-                centerConstraint.gridy = centerConstraint.gridy + 1;
-                centerConstraint.gridx = 0;
-                centerConstraint.weightx = 1;
-                SwingUtilities.invokeLater(() -> {
-                    centerMidiPanel.add(sr, centerConstraint);
-                    centerConstraint.gridx = 1;
-                    centerConstraint.weightx = 0;
-
-                });
+                centerMidiConstraint.gridy = centerMidiConstraint.gridy + 1;
+                centerMidiConstraint.gridx = 0;
+                SwingUtilities.invokeLater(() -> centerMidiPanel.add(sr, centerMidiConstraint));
             }
+
+            OSCSensor os;
+            for (Map.Entry<String, OSCSensor> e : oscSensorHashtable.entrySet()) {
+                os = e.getValue();
+                OscSensorRow sr = new OscSensorRow(os);
+                oscSensorRowList.add(sr);
+                centerOscConstraint.gridy++;
+                SwingUtilities.invokeLater(() -> centerOscPanel.add(sr, centerOscConstraint));
+            }
+
             String debounce = String.valueOf(arduinoChanVector.get(selectedSensor).getDebounce());
             String threshold = String.valueOf(arduinoChanVector.get(selectedSensor).getThreshold());
             int activeNumber = Services.getActiveNumber();
-
 
             SwingUtilities.invokeLater(() -> {
                 debounceOneText.setText(debounce);
@@ -1028,10 +1091,15 @@ public class OperatingWindows extends JFrame {
     private void cleanAction() {
         sensorRowList.forEach(centerMidiPanel::remove);
         sensorRowList.clear();
-        centerConstraint.gridy = 1;
-        repaint();
-    }
+        centerMidiConstraint.gridy = 0;
 
+        oscSensorRowList.forEach(centerOscPanel::remove);
+        oscSensorRowList.clear();
+        centerOscConstraint.gridy = 0;
+
+        repaint();
+        pack();
+    }
 
     /**
      * Keyboard Listener

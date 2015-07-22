@@ -197,7 +197,7 @@ public class MidiSensor extends Sensor {
         }
     }
 
-    public void setPreamplifier(float preamplifier) {
+    public void setPreamplifier(int preamplifier) {
         if (preamplifier >= 0) {
             this.preamplifier = preamplifier;
         } else {

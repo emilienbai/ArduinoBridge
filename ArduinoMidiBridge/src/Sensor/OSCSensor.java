@@ -28,6 +28,7 @@ public class OSCSensor extends Sensor {
      * Port where to send osc messages
      */
     private OSCPortOut oscPortOut;
+
     /**
      * Secondary message to send in alternate mode
      */
@@ -58,6 +59,11 @@ public class OSCSensor extends Sensor {
 
     public OSCSensor(String name, int arduinoIn, String oscAddress, int mode, OSCPortOut oscPortOut) {
         this(name, arduinoIn, oscAddress, 0, 100, 100, mode, 0, 0, oscPortOut);
+    }
+
+    public OSCSensor(String name, int arduinoIn, String oscAddress, String oscAddressBis, int mode, OSCPortOut oscPortOut) {
+        this(name, arduinoIn, oscAddress, mode, oscPortOut);
+        this.oscAddressBis = oscAddressBis;
     }
 
     public static void main(String[] args) {
@@ -171,7 +177,7 @@ public class OSCSensor extends Sensor {
                         lastChange = now;
                         if (lastWasOn) {
                             args.add(OSC_ON);
-                            outputValue = OSC_ON;
+                            outputValue = OSC_OFF;
                             toSend = new OSCMessage(oscAddressBis, args);
                             lastWasOn = false;
                         } else {
@@ -185,7 +191,12 @@ public class OSCSensor extends Sensor {
             }
 
             try {
-                oscPortOut.send(toSend);
+                if (toSend != null) {
+                    oscPortOut.send(toSend);
+                }
+                if (mode == MOMENTARY) {
+                    outputValue = 0;
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -250,5 +261,9 @@ public class OSCSensor extends Sensor {
 
     public String getOscAddress() {
         return oscAddress;
+    }
+
+    public String getOscAddressBis() {
+        return oscAddressBis;
     }
 }

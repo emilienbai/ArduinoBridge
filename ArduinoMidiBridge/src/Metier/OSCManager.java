@@ -11,6 +11,8 @@ import java.net.UnknownHostException;
  */
 public class OSCManager {
     private static OSCPortOut oscPortOut;
+    private static String address = "127.0.0.1";
+    private static int port = 12345;
 
     /**
      * Choose the OSC Setup you want to use for this session
@@ -19,12 +21,14 @@ public class OSCManager {
      * @param port    the sending port to use
      * @return true if the connexion has been established
      */
-    public static boolean chooseOSCParams(String address, int port) {
+    protected static boolean chooseOSCParams(String address, int port) {
         if (oscPortOut != null) {
             oscPortOut.close();
         }
         try {
             oscPortOut = new OSCPortOut(InetAddress.getByName(address), port);
+            OSCManager.address = address;
+            OSCManager.port = port;
             return true;
         } catch (SocketException | UnknownHostException e) {
             e.printStackTrace();
@@ -38,16 +42,35 @@ public class OSCManager {
      *
      * @return the currently used osc port Out
      */
-    public static OSCPortOut getOscPortOut() {
+    protected static OSCPortOut getOscPortOut() {
         return oscPortOut;
     }
+
 
     /**
      * Close the oscPort
      */
-    public static void exit() {
+    protected static void exit() {
         if (oscPortOut != null) {
             oscPortOut.close();
         }
+    }
+
+    /**
+     * Getter for the currently used address
+     *
+     * @return the currently used ip address
+     */
+    protected static String getAddress() {
+        return address;
+    }
+
+    /**
+     * Getter for the currently used port
+     *
+     * @return the currently used port
+     */
+    protected static int getPort() {
+        return port;
     }
 }

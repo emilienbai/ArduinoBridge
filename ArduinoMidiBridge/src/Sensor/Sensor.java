@@ -32,7 +32,7 @@ public abstract class Sensor {
      * multiplication factor to reduce or amplify sensor
      * sensibility
      */
-    protected float preamplifier;
+    protected int preamplifier;
     /**
      * Muted state of the sensor
      */
@@ -162,11 +162,11 @@ public abstract class Sensor {
         }
     }
 
-    public float getPreamplifier() {
+    public int getPreamplifier() {
         return preamplifier;
     }
 
-    public void setPreamplifier(float preamplifier) {
+    public void setPreamplifier(int preamplifier) {
         this.preamplifier = preamplifier;
     }
 

@@ -1,15 +1,15 @@
-package IHM;
+package IHM.Addition;
 
+import IHM.OperatingWindows;
 import Sensor.Sensor;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 /**
  * Created by Emilien Bai (emilien.bai@insa-lyon.fr) on 07/2015.
+ * Project : ArduinoMidiBridge
  */
 public class NewOscSensor extends JFrame {
     private static boolean open;
@@ -19,7 +19,7 @@ public class NewOscSensor extends JFrame {
         this.setLocationRelativeTo(null);
         this.setResizable(false);
         this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-        open = false;
+        open = true;
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
         changeColor(mainPanel);
@@ -126,7 +126,6 @@ public class NewOscSensor extends JFrame {
         constraints.gridx = 2;
         mainPanel.add(modeCombo, constraints);
 
-
         modeCombo.addActionListener(e -> {
             int mode = modeCombo.getSelectedIndex();
             if (mode == Sensor.ALTERNATE) {
@@ -171,45 +170,42 @@ public class NewOscSensor extends JFrame {
         constraints.gridx = 2;
         mainPanel.add(okButton, constraints);
 
-        okButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        String name = nameField.getText();
-                        int arduinoIn = (int) arduinoInCombo.getSelectedItem();
-                        String address = addressField.getText();
-                        String addressBis = addressBisField.getText();
-                        int mode = modeCombo.getSelectedIndex();
-                        if (!name.equals("") && !address.equals("")
-                                && !(addressBis.equals("") && mode == Sensor.ALTERNATE)) {
-                            OperatingWindows.addOscSensor(name, arduinoIn, address, addressBis, mode);
-                            toPack.pack();
-                            dispose();
-                        } else {
-                            String message;
-                            if (name == null || name.equals("")) {
-                                message = "Veuillez renseigner un nom pour cette ligne";
-                            } else if (address == null || address.equals("")) {
-                                message = "veuillez renseigner une adresse osc pour cette ligne";
-                            } else {
-                                message = "veuillez renseigner une adresse osc secondaire pour cette ligne";
-                            }
-                            JOptionPane.showMessageDialog(null, message, " Erreur ", JOptionPane.ERROR_MESSAGE);
-                        }
-
-                    }
-                }).start();
-
+        okButton.addActionListener(e -> new Thread(() -> {
+            String name = nameField.getText();
+            int arduinoIn = (int) arduinoInCombo.getSelectedItem();
+            String address = addressField.getText();
+            String addressBis = addressBisField.getText();
+            int mode = modeCombo.getSelectedIndex();
+            if (!name.equals("") && !address.equals("")
+                    && !(addressBis.equals("") && mode == Sensor.ALTERNATE)) {
+                OperatingWindows.addOscSensor(name, arduinoIn, address, addressBis, mode);
+                toPack.pack();
+                open = false;
+                dispose();
+            } else {
+                String message;
+                if (name.equals("")) {
+                    message = "Veuillez renseigner un nom pour cette ligne";
+                } else if (address == null || address.equals("")) {
+                    message = "veuillez renseigner une adresse osc pour cette ligne";
+                } else {
+                    message = "veuillez renseigner une adresse osc secondaire pour cette ligne";
+                }
+                JOptionPane.showMessageDialog(null, message, " Erreur ", JOptionPane.ERROR_MESSAGE);
             }
-        });
+
+        }).start());
 
         this.add(mainPanel);
         this.pack();
         this.setVisible(true);
     }
 
+    /**
+     * Is an instance of this Frame already open
+     *
+     * @return true if already opened
+     */
     public static boolean isOpen() {
         return open;
     }
@@ -219,6 +215,11 @@ public class NewOscSensor extends JFrame {
         new NewOscSensor(f);
     }
 
+    /**
+     * Change the color of the component
+     *
+     * @param comp the Jcomponent to modify
+     */
     private void changeColor(JComponent comp) {
         comp.setBackground(OperatingWindows.BACKGROUND_COLOR);
         comp.setForeground(OperatingWindows.FOREGROUND_COLOR);

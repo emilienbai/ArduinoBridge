@@ -35,8 +35,7 @@ public class ClientThread
     ClientThread(Socket s) throws IOException {
         this.clientSocket = s;
         socOut = new PrintStream(clientSocket.getOutputStream());
-        Server.addClient(socOut); // ajout du prinstream
-        // correspondant à la liste
+        Server.addClient(socOut); // ajout du prinstream correspondant à la liste
         running = true;
     }
 

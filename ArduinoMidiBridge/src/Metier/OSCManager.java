@@ -8,6 +8,7 @@ import java.net.UnknownHostException;
 
 /**
  * Created by Emilien Bai (emilien.bai@insa-lyon.fr) on 07/2015.
+ * Project : ArduinoMidiBridge
  */
 public class OSCManager {
     private static OSCPortOut oscPortOut;
@@ -45,7 +46,6 @@ public class OSCManager {
     protected static OSCPortOut getOscPortOut() {
         return oscPortOut;
     }
-
 
     /**
      * Close the oscPort

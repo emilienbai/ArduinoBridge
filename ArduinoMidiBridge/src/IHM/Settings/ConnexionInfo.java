@@ -1,5 +1,6 @@
-package IHM;
+package IHM.Settings;
 
+import IHM.OperatingWindows;
 import Metier.Services;
 
 import javax.swing.*;
@@ -15,6 +16,9 @@ import java.awt.*;
  */
 public class ConnexionInfo extends JFrame {
 
+    /**
+     * Constructor for a client connexion information
+     */
     public ConnexionInfo() {
         super("Connexion au serveur");
         this.setLocationRelativeTo(null);

@@ -10,6 +10,7 @@ import java.util.Map;
 
 /**
  * Created by Emilien Bai (emilien.bai@insa-lyon.fr) on 07/2015.
+ * Project : ArduinoMidiBridge
  */
 public class OSCSensorManager {
     private static Hashtable<String, OSCSensor> oscSensorTable = new Hashtable<>();
@@ -133,6 +134,9 @@ public class OSCSensorManager {
         }
     }
 
+    /**
+     * Mute all the Osc addresses
+     */
     public static void unMuteAll() {
         for (Map.Entry<String, OSCSensor> e : oscSensorTable.entrySet()) {
             e.getValue().setIsMutedAll(false);
@@ -258,6 +262,4 @@ public class OSCSensorManager {
         newSetup();
         oscSensorTable = newSensorTable;
     }
-
-
 }

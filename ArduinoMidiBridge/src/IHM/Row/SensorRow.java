@@ -1,5 +1,6 @@
-package IHM;
+package IHM.Row;
 
+import IHM.OperatingWindows;
 import Sensor.Sensor;
 
 import javax.swing.*;
@@ -11,6 +12,7 @@ import java.awt.event.KeyListener;
 
 /**
  * Created by Emilien Bai (emilien.bai@insa-lyon.fr) on 07/2015.
+ * Project : ArduinoMidiBridge
  */
 public abstract class SensorRow extends JPanel {
     protected static final int MIDI = 0;
@@ -159,6 +161,7 @@ public abstract class SensorRow extends JPanel {
             maxLabel = new JLabel("Seuil :");
             maxOutValue = new JTextField(String.valueOf(this.noiseThreshold));
         }
+        maxLabel.setPreferredSize(new Dimension(85, 20));
         changeColor(maxLabel);
         ++constraint.gridx;
         constraint.gridheight = 1;
@@ -228,6 +231,7 @@ public abstract class SensorRow extends JPanel {
             minLabel = new JLabel("Debounce :");
             minOutValue = new JTextField(String.valueOf(this.debounceTime));
         }
+        minLabel.setPreferredSize(new Dimension(85, 20));
         changeColor(minLabel);
         --constraint.gridx;
         constraint.gridy = 1;
@@ -307,9 +311,7 @@ public abstract class SensorRow extends JPanel {
         constraint.gridx = constraint.gridx + 1;
         this.add(muteButton, constraint);
 
-        muteButton.addActionListener(e -> new Thread(() -> {
-            mute();
-        }).start());
+        muteButton.addActionListener(e -> new Thread(this::mute).start());
 
         /**********SoloButton**********/
         soloButton = new JButton("Solo");
@@ -320,9 +322,7 @@ public abstract class SensorRow extends JPanel {
         constraint.gridx++;
         this.add(soloButton, constraint);
 
-        soloButton.addActionListener(e -> new Thread(() -> {
-            solo();
-        }).start());
+        soloButton.addActionListener(e -> new Thread(this::solo).start());
 
         /**********Impulse Button**********/
         impulseButton = new JButton("Test");
@@ -350,7 +350,7 @@ public abstract class SensorRow extends JPanel {
         }
         toggleButton.setForeground(OperatingWindows.FOREGROUND_COLOR);
         toggleButton.setBorder(OperatingWindows.RAISED_BORDER);
-        toggleButton.setPreferredSize(new Dimension(70, 35));
+        toggleButton.setPreferredSize(new Dimension(90, 35));
 
         constraint.gridx++;
         constraint.weighty = 2;

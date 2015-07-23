@@ -1,5 +1,6 @@
-package IHM;
+package IHM.Settings;
 
+import IHM.OperatingWindows;
 import Metier.ArduinoInData;
 import Metier.MidiManager;
 import Metier.Services;
@@ -22,7 +23,7 @@ public class MidiDeviceChoice extends JFrame {
     public static final int ARDUINO_CONNECTION = 0;
     public static final int NETWORK_CONNECTION = 1;
     public static final int EDITION_CONNECTION = 2;
-    private static JComboBox arduinoCom;
+    private static JComboBox<String> arduinoCom;
     private static JLabel arduinoLabel;
     private static JButton arduinoCheck;
     private static JButton clientConnexion;
@@ -34,7 +35,7 @@ public class MidiDeviceChoice extends JFrame {
     private JButton okButton;
     private JButton reloadButton;
     private JButton quitButton;
-    private JList deviceList;
+    private JList<MidiDevice.Info> deviceList;
     private JProgressBar reloadProgress;
     private JLabel deviceDescription;
     private MidiDevice.Info choosenDevice = null;
@@ -105,7 +106,10 @@ public class MidiDeviceChoice extends JFrame {
         /*******************/
         /***ComPort Combo***/
         /*******************/
-        arduinoCom = new JComboBox(Services.findSerial());
+        arduinoCom = new JComboBox<>();
+        for (String s : Services.findSerial()) {
+            arduinoCom.addItem(s);
+        }
         arduinoCom.setBackground(OperatingWindows.BACKGROUND_COLOR);
         arduinoCom.setForeground(OperatingWindows.FOREGROUND_COLOR);
         arduinoCom.setEditable(true);
@@ -157,7 +161,8 @@ public class MidiDeviceChoice extends JFrame {
                         break;
                 }
                 if (errorMessage[0] != null) {
-                    JOptionPane.showMessageDialog(MidiDeviceChoice.this, errorMessage[0], "Erreur", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(MidiDeviceChoice.this, errorMessage[0],
+                            "Erreur", JOptionPane.ERROR_MESSAGE);
                 }
             }).start();
         });
@@ -198,7 +203,6 @@ public class MidiDeviceChoice extends JFrame {
         topConstraint.weightx = 0;
         topPanel.add(Box.createHorizontalStrut(10), topConstraint);
 
-
         /********************/
         /******Separator*****/
         /********************/
@@ -230,10 +234,9 @@ public class MidiDeviceChoice extends JFrame {
             }
         });
 
-
         /**********************************************************/
         /*********************JScroll Pane List********************/
-        deviceList = new JList();
+        deviceList = new JList<>();
         deviceList.setBackground(OperatingWindows.BACKGROUND_COLOR);
         deviceList.setForeground(OperatingWindows.FOREGROUND_COLOR);
         JScrollPane scrollList = new JScrollPane(deviceList);
@@ -247,16 +250,14 @@ public class MidiDeviceChoice extends JFrame {
         mainPanel.add(scrollList, mainConstraint);
 
         deviceList.addListSelectionListener(e -> new Thread(() -> {
-                    choosenDevice = (MidiDevice.Info) deviceList.getSelectedValue();
+                    choosenDevice = deviceList.getSelectedValue();
                     String description = choosenDevice.getDescription();
                     String vendor = choosenDevice.getVendor();
                     midiConnected = MidiManager.chooseMidiDevice(choosenDevice);
                     SwingUtilities.invokeLater(() -> deviceDescription.setText("<html>Description : " + description + "<br>"
                             + "Vendeur : " + vendor + "</html>"));
                 }).start()
-
         );
-
 
         /*****Details Panel*****/
         JPanel deviceDetails = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -273,7 +274,6 @@ public class MidiDeviceChoice extends JFrame {
         deviceDescription.setBackground(OperatingWindows.BACKGROUND_COLOR);
         deviceDescription.setForeground(OperatingWindows.FOREGROUND_COLOR);
         deviceDetails.add(deviceDescription);
-
 
         /*****Bottom Pannel*****/
         JPanel bottomPanel = new JPanel(new GridBagLayout());
@@ -333,7 +333,6 @@ public class MidiDeviceChoice extends JFrame {
         bottomConstraint.weightx = 1;
         bottomConstraint.gridwidth = 5;
         bottomPanel.add(reloadProgress, bottomConstraint);
-
 
         bottomConstraint.gridx = 2;
         bottomConstraint.gridwidth = 1;
@@ -418,10 +417,13 @@ public class MidiDeviceChoice extends JFrame {
                 okButton.setVisible(true);
             });
         }).start();
-
-
     }
 
+    /**
+     * Method called when the ok button is clicked
+     *
+     * @param meanOfConnection the mean of connection to use
+     */
     public static void connect(int meanOfConnection) {
         SwingUtilities.invokeLater(() -> {
             arduinoCom.setVisible(false);
@@ -443,10 +445,8 @@ public class MidiDeviceChoice extends JFrame {
                     arduinoLabel.setText(("Connexion en mode édition"));
                     editionConnected = true;
             }
-
         });
     }
-
 
     public static void main(String[] args) {
         JFrame frame = new MidiDeviceChoice(true);

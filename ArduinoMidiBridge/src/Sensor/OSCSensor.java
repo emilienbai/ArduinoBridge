@@ -4,15 +4,13 @@ import com.illposed.osc.OSCMessage;
 import com.illposed.osc.OSCPortOut;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 /**
  * Created by Emilien Bai (emilien.bai@insa-lyon.fr) on 07/2015.
+ * Project : ArduinoMidiBridge
  */
 public class OSCSensor extends Sensor {
 
@@ -49,7 +47,6 @@ public class OSCSensor extends Sensor {
      * @param debounceTime   time of debounce specific for toggle, alternate or momentary mode
      * @param oscPortOut     port where to send osc messages
      */
-
     public OSCSensor(String name, int arduinoIn, String oscAddress, int minRange, int maxRange, int preamplifier,
                      int mode, int noiseThreshold, int debounceTime, OSCPortOut oscPortOut) {
         super(name, arduinoIn, minRange, maxRange, preamplifier, mode, noiseThreshold, debounceTime);
@@ -57,85 +54,39 @@ public class OSCSensor extends Sensor {
         this.oscPortOut = oscPortOut;
     }
 
+    /**
+     * Constructor for an Osc Sensor with limited parameters
+     *
+     * @param name       Name of the sensor
+     * @param arduinoIn  arduino analog input matching with the sensor
+     * @param oscAddress Shape of the Messages to send
+     * @param mode       mode of action
+     * @param oscPortOut port where to send osc messages
+     */
     public OSCSensor(String name, int arduinoIn, String oscAddress, int mode, OSCPortOut oscPortOut) {
         this(name, arduinoIn, oscAddress, 0, 100, 100, mode, 0, 0, oscPortOut);
     }
 
+    /**
+     * Construtor for an Osc sensor in alternate mode
+     *
+     * @param name          Name of the sensor
+     * @param arduinoIn     arduino analog input matching with the sensor
+     * @param oscAddress    Shape of the Messages to send
+     * @param oscAddressBis Secondary shape of the messages sent
+     * @param mode          mode of action
+     * @param oscPortOut    port where to send osc messages
+     */
     public OSCSensor(String name, int arduinoIn, String oscAddress, String oscAddressBis, int mode, OSCPortOut oscPortOut) {
         this(name, arduinoIn, oscAddress, mode, oscPortOut);
         this.oscAddressBis = oscAddressBis;
     }
 
-    public static void main(String[] args) {
-        OSCPortOut oscPortOut = null;
-        try {
-            oscPortOut = new OSCPortOut(InetAddress.getByName("192.168.1.34"), 9000);
-        } catch (SocketException | UnknownHostException e) {
-            e.printStackTrace();
-        }
-
-        OSCSensor oscSensor1 = new OSCSensor("Nouveau", 0, "/print", FADER, oscPortOut);
-
-        System.out.println("Marche 855");
-        oscSensor1.sendOSCMessage(855);
-        System.out.println("Marche 0");
-        oscSensor1.sendOSCMessage(0);
-        System.out.println("Marche 1023");
-        oscSensor1.sendOSCMessage(1023);
-
-
-        oscSensor1 = new OSCSensor("Nouveau", 0, "/print", MOMENTARY, oscPortOut);
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        System.out.println("Marche 1");
-        oscSensor1.sendOSCMessage(200);
-
-        oscSensor1.setDebounceTime(200);
-        oscSensor1.setNoiseThreshold(400);
-
-        System.out.println("Marche pas");
-        oscSensor1.sendOSCMessage(1000);
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        System.out.println("Marche 200");
-        oscSensor1.sendOSCMessage(200);
-        System.out.println("Marche 1");
-        oscSensor1.sendOSCMessage(600);
-
-        oscSensor1 = new OSCSensor("Nouveau", 0, "/print", ALTERNATE, oscPortOut);
-        oscSensor1.setOscAdressBis("/motor");
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        oscSensor1.sendOSCMessage(200);
-
-        try {
-            Thread.sleep(200);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        oscSensor1.sendOSCMessage(500);
-
-        try {
-            Thread.sleep(50);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        oscSensor1.sendOSCMessage(600);
-
-    }
-
+    /**
+     * Send an Osc Message to the osc address
+     *
+     * @param dataFromSensor data received from the arduino
+     */
     public void sendOSCMessage(int dataFromSensor) {
         if ((!isMuted && !isMutedBySolo && !isMutedAll) || (isSoloed && !isMutedAll)) {
             Date now = new Date();
@@ -203,6 +154,9 @@ public class OSCSensor extends Sensor {
         }
     }
 
+    /**
+     * Send a test message on the OSC address
+     */
     public void sendTestMessage() {
         OSCMessage toSend = null;
         List<Object> args = new ArrayList<>();
@@ -245,24 +199,37 @@ public class OSCSensor extends Sensor {
                 break;
         }
         try {
-            oscPortOut.send(toSend);
+            if (toSend != null) {
+                oscPortOut.send(toSend);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Set the port to use to send Osc Messages
+     *
+     * @param oscPortOut the port to use to send osc messages
+     */
     public void setOscPortOut(OSCPortOut oscPortOut) {
         this.oscPortOut = oscPortOut;
     }
 
-    public void setOscAdressBis(String oscAdressBis) {
-        this.oscAddressBis = oscAdressBis;
-    }
-
+    /**
+     * Get the Osc address of the sensor
+     *
+     * @return the osc address of the sensor
+     */
     public String getOscAddress() {
         return oscAddress;
     }
 
+    /**
+     * Get the Secondary Osc address of the sensor
+     *
+     * @return the secondary osc address of the sensor
+     */
     public String getOscAddressBis() {
         return oscAddressBis;
     }

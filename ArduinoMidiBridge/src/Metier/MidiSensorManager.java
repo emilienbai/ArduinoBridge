@@ -16,7 +16,6 @@ public class MidiSensorManager {
     private static Hashtable<Integer, MidiSensor> sensorList = new Hashtable<>();
     private static List<MidiSensor> soloedSensors = new ArrayList<>();
 
-
     /**
      * Add a sensor to the active list
      *
@@ -39,7 +38,7 @@ public class MidiSensorManager {
      * find the sensors concerned and send midi messages for each
      *
      * @param arduinoIn - the arduino input channel
-     * @param value        - the incoming value
+     * @param value     - the incoming value
      */
     public static void sendMidiMessage(int arduinoIn, int value) {
         for (Map.Entry<Integer, MidiSensor> e : sensorList.entrySet()) {
@@ -48,7 +47,6 @@ public class MidiSensorManager {
             }
         }
     }
-
 
     /**
      * This function send a litte midi impulsion
@@ -71,6 +69,7 @@ public class MidiSensorManager {
 
     /**
      * Getter for the maximum output for a midiPort
+     *
      * @param midiPort the midi port we want to know about
      * @return the maximal range we want
      */
@@ -90,6 +89,7 @@ public class MidiSensorManager {
 
     /**
      * Getter for the minimum range of a midiPort
+     *
      * @param midiPort the midi port we want to know about
      * @return the minimal range we want
      */
@@ -188,7 +188,8 @@ public class MidiSensorManager {
 
     /**
      * Set a noise threshold for a midi port acting like a momentary or toggle button
-     * @param midiPort the midi port to modify
+     *
+     * @param midiPort  the midi port to modify
      * @param threshold new noise threshold
      */
     protected static void setLineThreshold(int midiPort, int threshold) {
@@ -207,6 +208,7 @@ public class MidiSensorManager {
 
     /**
      * Set a time debounce of for a midi port acting like a momentary or toggle button
+     *
      * @param midiPort the midi port to modify
      * @param debounce new time of debounce
      */
@@ -223,7 +225,6 @@ public class MidiSensorManager {
     protected static int getDebounceTime(int midiPort) {
         return sensorList.get(midiPort).getDebounceTime();
     }
-
 
     /**
      * In case the user wants to start a new session of the app
@@ -262,7 +263,6 @@ public class MidiSensorManager {
         return sensorList;
     }
 
-
     /**
      * Load an existing List of Sensors
      *
@@ -272,5 +272,4 @@ public class MidiSensorManager {
         newSetup();
         sensorList = newSensorList;
     }
-
 }

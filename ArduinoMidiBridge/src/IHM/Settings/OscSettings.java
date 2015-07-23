@@ -1,5 +1,6 @@
-package IHM;
+package IHM.Settings;
 
+import IHM.OperatingWindows;
 import Metier.Services;
 
 import javax.swing.*;
@@ -38,7 +39,6 @@ public class OscSettings extends JFrame {
         changeColor(ipLabel);
 
         mainPanel.add(ipLabel, constraints);
-
 
         /**IPField**/
         JTextField ipField = new JTextField(Services.getOscAddress());
@@ -145,6 +145,11 @@ public class OscSettings extends JFrame {
         }).start());
     }
 
+    /**
+     * Getter for the status of this instance of Frame
+     *
+     * @return true if an OscSettings frame is already open
+     */
     public static boolean isOpen() {
         return open;
     }
@@ -153,6 +158,11 @@ public class OscSettings extends JFrame {
         new OscSettings(true);
     }
 
+    /**
+     * Change the color of a component
+     *
+     * @param comp the JComponent to modify
+     */
     private void changeColor(JComponent comp) {
         comp.setBackground(OperatingWindows.BACKGROUND_COLOR);
         comp.setForeground(OperatingWindows.FOREGROUND_COLOR);

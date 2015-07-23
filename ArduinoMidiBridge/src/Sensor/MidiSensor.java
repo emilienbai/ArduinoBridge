@@ -44,17 +44,17 @@ public class MidiSensor extends Sensor {
     /**
      * Constructor of a Sensor Object
      *
-     * @param name         name of the sensor
-     * @param arduinoIn    arduino analog input matching with the sensor
-     * @param midiPort     midi port to use
-     * @param shortcut     shortcut matching with the sensor Object
-     * @param midiReceiver where to send the midi informations
-     * @param minRange     Minimal output midi value for this sensor
-     * @param maxRange     Maximal output midi value for this sensor
-     * @param preamplifier factor of multiplication in percent
-     * @param mode mode of action
+     * @param name           name of the sensor
+     * @param arduinoIn      arduino analog input matching with the sensor
+     * @param midiPort       midi port to use
+     * @param shortcut       shortcut matching with the sensor Object
+     * @param midiReceiver   where to send the midi informations
+     * @param minRange       Minimal output midi value for this sensor
+     * @param maxRange       Maximal output midi value for this sensor
+     * @param preamplifier   factor of multiplication in percent
+     * @param mode           mode of action
      * @param noiseThreshold threshold specific for toggle or momentary mode
-     * @param debounceTime time of debounce specific for toggle or momentary mode
+     * @param debounceTime   time of debounce specific for toggle or momentary mode
      */
     public MidiSensor(String name, int arduinoIn, int midiPort, char shortcut,
                       Receiver midiReceiver, int minRange,
@@ -129,7 +129,9 @@ public class MidiSensor extends Sensor {
         }
     }
 
-
+    /**
+     * Send a midi impulsion for 2 second on the selected midi port
+     */
     public void sendImpulsion() {
         ShortMessage msg = new ShortMessage();
         try {
@@ -172,14 +174,30 @@ public class MidiSensor extends Sensor {
         this.isMuted = true;
     }
 
+    /**
+     * Getter for the midi port used to send messages
+     *
+     * @return the midi port
+     */
     public int getMidiPort() {
         return midiPort;
     }
 
+    /**
+     * Set the midi receiver for the Midi Sensor
+     *
+     * @param midiReceiver the new Midi Receiver
+     */
     public void setmidiReceiver(Receiver midiReceiver) {
         this.midiReceiver = midiReceiver;
     }
 
+
+    /**
+     * Set the minimum range for this midi sensor
+     *
+     * @param minRange the new MinRange
+     */
     public void setMinRange(int minRange) {
         if (minRange >= 0 && minRange <= MAX_VELOCITY && minRange <= this.maxRange) {
             //if a valid data is given
@@ -189,6 +207,11 @@ public class MidiSensor extends Sensor {
         }
     }
 
+    /**
+     * Set the maximum range for this midi sensor
+     *
+     * @param maxRange the new MaxRange
+     */
     public void setMaxRange(int maxRange) {
         if (maxRange >= 0 && maxRange <= 127 && maxRange >= this.minRange) {
             this.maxRange = maxRange;
@@ -197,16 +220,25 @@ public class MidiSensor extends Sensor {
         }
     }
 
+    /**
+     * Set the preamplifier value for the midi sensor
+     *
+     * @param preamplifier the new preamplifier value
+     */
     public void setPreamplifier(int preamplifier) {
         if (preamplifier >= 0) {
             this.preamplifier = preamplifier;
         } else {
-            this.preamplifier = 100;
+            this.preamplifier = 0;
         }
     }
 
+    /**
+     * Getter for the shortcut for this midi channel
+     *
+     * @return the shortcut for this midi sensor
+     */
     public char getShortcut() {
         return shortcut;
     }
-
 }

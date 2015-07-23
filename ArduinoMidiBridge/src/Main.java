@@ -1,4 +1,4 @@
-package IHM;
+import IHM.Settings.MidiDeviceChoice;
 
 /**
  * Created by Emilien Bai (emilien.bai@insa-lyon.fr)on 06/2015.

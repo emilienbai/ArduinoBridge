@@ -37,6 +37,9 @@ public class ArduinoInData implements SerialPortEventListener {
      * Default bits per second for COM port.
      */
     private static final int DATA_RATE = 230400;
+    /**
+     * The Serial port used to communicate with the arduino
+     */
     private static SerialPort serialPort;
     /**
      * Log from the arduino
@@ -147,12 +150,16 @@ public class ArduinoInData implements SerialPortEventListener {
         return sendAsciiString(s);
     }
 
-
+    /**
+     * Set the calibration time for the sensors
+     *
+     * @param newCalibrationTime the time of calibration in second
+     * @return true if the message have been sent
+     */
     protected static boolean setCalibrationTime(int newCalibrationTime) {
         String s = "caltm " + newCalibrationTime + "\n";
         return sendAsciiString(s);
     }
-
 
     /**
      * Send a command String on the arduino serial port

@@ -19,9 +19,13 @@ public class SocOutTh extends Thread {
         SocOutTh.hostname = hostname;
     }
 
+    /**
+     * Connect the Output Thread to the server
+     *
+     * @return true if connected
+     */
     public static boolean connect() {
         stdIn = new BufferedReader(new InputStreamReader(System.in));
-
         try {
             Socket echoSocket = new Socket(hostname, port);
             BufferedReader socIn = new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
@@ -36,26 +40,4 @@ public class SocOutTh extends Thread {
         }
     }
 
-    /**
-     * receives textmessage from the standard input and send it to the server
-     **/
-    public void run() {
-        try {
-            String line;
-            while (running) {
-                line = stdIn.readLine();
-                //read the standard input
-                socOut.println(line);
-                //send it to server addind the client name in first place
-                if (SIT.GetFinished()) {
-                    break;
-                }
-            }
-
-        } catch (IOException e) {
-            System.err.println("Error in SocOutTh");
-        }/*catch (InterruptedException e){
-            running = false;
-        }*/
-    }
 }

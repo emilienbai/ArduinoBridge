@@ -1,4 +1,4 @@
-package IHM;
+package IHM.Row;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,6 +15,13 @@ public class VuMeter extends JProgressBar {
     private final Color WARNING_COLOR = new Color(209, 96, 9);
     private final Color ALERT_COLOR = new Color(200, 34, 25);
 
+    /**
+     * Constructor for a Vu-Meter
+     *
+     * @param orient Orientation of the Vu-Meter
+     * @param min    Minimum value of the Vu-Meter
+     * @param max    Maximum value of the Vu-Meter
+     */
     public VuMeter(int orient, int min, int max) {
         super(orient, min, max);
     }
@@ -48,5 +55,4 @@ public class VuMeter extends JProgressBar {
             this.setForeground(ALERT_COLOR);
         }
     }
-
 }

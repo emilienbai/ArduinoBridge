@@ -1,4 +1,6 @@
-package IHM;
+package IHM.Addition;
+
+import IHM.OperatingWindows;
 
 import javax.swing.*;
 import javax.swing.border.MatteBorder;
@@ -23,8 +25,8 @@ public class KeyChooser extends JFrame {
         mainPanel.setLayout(new GridBagLayout());
         GridBagConstraints constraints = new GridBagConstraints();
         this.setUndecorated(true);
-        this.setLocationRelativeTo(null);
         this.setPreferredSize(new Dimension(400, 70));
+        this.setLocationRelativeTo(null);
         this.add(mainPanel);
 
         /** JLabel containing instructions **/
@@ -78,10 +80,20 @@ public class KeyChooser extends JFrame {
         System.out.println(kc.getKeyEvent().getKeyChar());
     }
 
+    /**
+     * Getter for the KeyEvent of the class
+     *
+     * @return the keyEvent
+     */
     public KeyEvent getKeyEvent() {
         return keyEvent;
     }
 
+    /**
+     * Setter for the KeyEvent of the class
+     *
+     * @param keyEvent the KeyEvent to set
+     */
     public void setKeyEvent(KeyEvent keyEvent) {
         this.keyEvent = keyEvent;
     }

@@ -20,7 +20,5 @@ public class Filter {
                 filename.startsWith("ttyUSB") ||
                 filename.startsWith("tty.usbmodem") ||
                 filename.startsWith("tty.usbserial"))));
-
     }
-
 }

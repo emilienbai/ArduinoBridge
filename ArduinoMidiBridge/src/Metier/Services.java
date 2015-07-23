@@ -1,8 +1,8 @@
 package Metier;
 
-import IHM.MidiDeviceChoice;
 import IHM.OperatingWindows;
-import IHM.ServerSettings;
+import IHM.Settings.MidiDeviceChoice;
+import IHM.Settings.ServerSettings;
 import Network.Server;
 import Network.SocOutTh;
 import Sensor.ArduinoChan;
@@ -33,6 +33,12 @@ public class Services {
     private static boolean clientEnabled = false;
     private static boolean oscEnabled = false;
 
+    /******************************************************************************************************************/
+    /**                                                                                                              **/
+    /*****************************************************SENSORS******************************************************/
+    /**                                                                                                              **/
+    /******************************************************************************************************************/
+
     /**
      * Add a midi sensor
      *
@@ -46,11 +52,28 @@ public class Services {
         MidiSensorManager.addSensor(s);
     }
 
+    /**
+     * Add a basic osc sensor
+     *
+     * @param name       name of the sensor
+     * @param arduinoIn  match with the analog input on the arduino
+     * @param oscAddress osc address where to send the data
+     * @param mode       mode of action of the sensor
+     */
     public static void addOscSensor(String name, int arduinoIn, String oscAddress, int mode) {
         OSCSensor s = new OSCSensor(name, arduinoIn, oscAddress, mode, OSCManager.getOscPortOut());
         OSCSensorManager.addOscSensor(s);
     }
 
+    /**
+     * Add an alternate Osc sensor
+     *
+     * @param name          name of the sensor
+     * @param arduinoIn     match with the analog input on the arduino
+     * @param oscAddress    osc address where to send the data
+     * @param oscAddressBis secondary osc address where to send data
+     * @param mode          mode of action of the sensor
+     */
     public static void addOscSensor(String name, int arduinoIn, String oscAddress, String oscAddressBis, int mode) {
         OSCSensor s = new OSCSensor(name, arduinoIn, oscAddress, oscAddressBis, mode, OSCManager.getOscPortOut());
         OSCSensorManager.addOscSensor(s);
@@ -99,9 +122,7 @@ public class Services {
                 }
             }
             OperatingWindows.refreshInterface(instructions);
-
         }
-
     }
 
     /**
@@ -318,6 +339,7 @@ public class Services {
     public static void sendOscTestMessage(String address) {
         OSCSensorManager.sendTestMessage(address);
     }
+
     /**
      * Set the mode of action of a midi port
      *
@@ -377,7 +399,6 @@ public class Services {
     public static void setOscLineDebounce(String address, int debounce) {
         OSCSensorManager.setLineDebounce(address, debounce);
     }
-
 
     /**
      * Getter for the debounce time of a midi port
@@ -573,10 +594,6 @@ public class Services {
         return availableSerial;
     }
 
-    public static void fillServerSettings(String logs) {
-        ServerSettings.fillInfo(logs);
-    }
-
     /**
      * Reset procedure for the arduino
      */
@@ -587,25 +604,59 @@ public class Services {
         MidiSensorManager.unMuteAll();
     }
 
-    public static void closeApplication() {
-        MidiManager.exit();
-        ArduinoInData.close();
-        if (serverEnabled) {
-            Server.close();
-        }
-        System.exit(0);
+    /**
+     * Getter for all the arduino channel
+     *
+     * @return the vector of arduinoChan used in the current configuration
+     */
+    public static Vector<ArduinoChan> getArduinoChanVector() {
+        return InputManager.getArduinoInVector();
     }
 
+    /******************************************************************************************************************/
+    /**                                                                                                              **/
+    /*************************************************SERVER SETTINGS**************************************************/
+    /**                                                                                                              **/
+    /******************************************************************************************************************/
+
+    /**
+     * Fill the server settings frame logs
+     *
+     * @param logs String used to fille the server logs
+     */
+    public static void fillServerSettings(String logs) {
+        ServerSettings.fillInfo(logs);
+    }
+
+    /**
+     * Enable the server
+     */
     public static void enableServer() {
         new Thread(Server::run).start();
         serverEnabled = true;
     }
 
+    /**
+     * Disable the server
+     */
     public static void disableServer() {
         Server.close();
         serverEnabled = false;
     }
 
+    /******************************************************************************************************************/
+    /**                                                                                                              **/
+    /***************************************************CLIENT*********************************************************/
+    /**                                                                                                              **/
+    /******************************************************************************************************************/
+
+    /**
+     * Connect a client to a server
+     *
+     * @param hostname   Name or ip address of the server
+     * @param portNumber Port Number to use with the server
+     * @return true if the connexion have been established
+     */
     public static boolean connectClient(String hostname, int portNumber) {
         SocOutTh sot = new SocOutTh(hostname, portNumber);
         if (SocOutTh.connect()) {
@@ -617,11 +668,19 @@ public class Services {
         return false;
     }
 
+    /**
+     * Function called if the connection with the server have been lost
+     */
     public static void signalDisconnection() {
         OperatingWindows.signalDisconnection();
         clientEnabled = false;
     }
 
+    /**
+     * Getter for the client status of the application
+     *
+     * @return true if the application is a client
+     */
     public static boolean isClient() {
         return clientEnabled;
     }
@@ -979,6 +1038,13 @@ public class Services {
 
     }
 
+    /**
+     * Get the string content between two xml tags
+     *
+     * @param ele     the xml element where to search
+     * @param tagName the tag name
+     * @return the content between the tag
+     */
     private static String getTextValue(Element ele, String tagName) {
         String textVal = null;
         NodeList nl = ele.getElementsByTagName(tagName);
@@ -986,7 +1052,6 @@ public class Services {
             Element el = (Element) nl.item(0);
             textVal = el.getFirstChild().getNodeValue();
         }
-
         return textVal;
     }
 
@@ -998,7 +1063,15 @@ public class Services {
         return Integer.parseInt(getTextValue(ele, tagName));
     }
 
-    public static Vector<ArduinoChan> getArduinoChanVector() {
-        return InputManager.getArduinoInVector();
+    /**
+     * Properly close the application
+     */
+    public static void closeApplication() {
+        MidiManager.exit();
+        ArduinoInData.close();
+        if (serverEnabled) {
+            Server.close();
+        }
+        System.exit(0);
     }
 }

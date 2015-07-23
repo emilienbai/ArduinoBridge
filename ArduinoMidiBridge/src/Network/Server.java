@@ -26,21 +26,36 @@ public class Server {
 
 
     private static ServerSocket listenSocket;
-    ;
     private static boolean running = false;
     private static String logs = "";
 
 
+    /**
+     * Add a client to the server list
+     *
+     * @param toAdd the client to add
+     */
     public static void addClient(PrintStream toAdd) {
         connectedClient.add(toAdd);
     }
 
+    /**
+     * Remove a client to the server list
+     *
+     * @param toRemove the client to remove
+     */
     public static void removeClient(PrintStream toRemove) {
         connectedClient.remove(toRemove);
         System.out.println("Un client est parti : " + toRemove.toString());
 
     }
 
+    /**
+     * Open the server
+     *
+     * @param portNumber the port to tuse for communication
+     * @return true if launched
+     */
     public static boolean connect(int portNumber) {
         try {
             listenSocket = new ServerSocket(portNumber); //port
@@ -55,6 +70,9 @@ public class Server {
         }
     }
 
+    /**
+     * Close the server
+     */
     public static void close() {
         running = false;
         try {
@@ -87,6 +105,13 @@ public class Server {
         }
     }
 
+    /**
+     * Handle the disconnection of a client
+     *
+     * @param ct     the clientThread to remove from the list
+     * @param ip     The ip of the disconnected client
+     * @param socOut the client to remove
+     */
     public static void clientDisconnection(ClientThread ct, InetAddress ip, PrintStream socOut) {
         clientThreadsList.remove(ct);
         connectedClient.remove(socOut);
@@ -94,10 +119,20 @@ public class Server {
         addLogs("Disconnection from ip :" + ip);
     }
 
+    /**
+     * Getter for the running status of the server
+     *
+     * @return true if the server is online
+     */
     public static boolean isRunning() {
         return running;
     }
 
+    /**
+     * Getter for the machine Ip
+     *
+     * @return the machine Ip
+     */
     public static String getIP() {
         Enumeration en = null;
         try {
@@ -122,11 +157,21 @@ public class Server {
         return "Adress not found";
     }
 
+    /**
+     * Add logs to the server
+     *
+     * @param toAdd the new logs to add
+     */
     protected static void addLogs(String toAdd) {
         logs = logs + toAdd + "\n";
         Services.fillServerSettings(logs);
     }
 
+    /**
+     * Send data to all the connected client
+     *
+     * @param data String to send to the clients
+     */
     public static void sendData(String data) {
         if (!connectedClient.isEmpty()) {
             for (PrintStream p : connectedClient) {

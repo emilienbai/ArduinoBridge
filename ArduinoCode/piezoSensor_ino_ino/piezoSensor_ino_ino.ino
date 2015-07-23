@@ -1,3 +1,5 @@
+#define   wdt_disable()
+
 // Constants
 #define nSensors 16
 #define loopDelay 2
@@ -31,6 +33,7 @@ String commands[commandSize];
 int c;
 boolean commandComplete = false;
 int activeSensorNumber;
+int count;
 
 void setup() {
   Serial.begin(230400);  // Such serial, many wow
@@ -39,6 +42,7 @@ void setup() {
   c=0;
   activeSensorNumber = nSensors;
   int i;
+  count = 0;
 }
 
 void listenSerial(){
@@ -258,6 +262,12 @@ void loop() {
     if(!signal.equals("")){
       signal+="\n";
       Serial.print(signal);
+      count = 0;
+    } else if (count == 1000){
+      Serial.print("\n");
+      count =0;
+    } else {
+      count++;
     }
     // -------------
   }

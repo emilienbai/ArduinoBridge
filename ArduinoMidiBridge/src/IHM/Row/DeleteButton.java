@@ -1,4 +1,6 @@
-package IHM;
+package IHM.Row;
+
+import IHM.OperatingWindows;
 
 import javax.swing.*;
 import java.awt.*;
@@ -9,7 +11,6 @@ import java.awt.*;
 
 
 public class DeleteButton extends JButton {
-    private SensorRow toDelete;
 
     /**
      * Constructor for a deletion Button, which remove a MidiSensorRow
@@ -18,11 +19,10 @@ public class DeleteButton extends JButton {
      */
     public DeleteButton(SensorRow toDelete) {
         super("Supprimer");
-        this.toDelete = toDelete;
         this.setBackground(OperatingWindows.BUTTON_COLOR);
         this.setForeground(OperatingWindows.FOREGROUND_COLOR);
         this.setBorder(OperatingWindows.RAISED_BORDER);
-        this.setPreferredSize(new Dimension(70, 35));
+        this.setPreferredSize(new Dimension(95, 35));
 
         this.addActionListener(e -> new Thread(() -> {
             if (toDelete.getType() == SensorRow.MIDI) {
@@ -32,5 +32,4 @@ public class DeleteButton extends JButton {
             }
         }).start());
     }
-
 }

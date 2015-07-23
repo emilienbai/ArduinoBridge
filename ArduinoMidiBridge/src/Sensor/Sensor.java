@@ -4,6 +4,7 @@ import java.util.Date;
 
 /**
  * Created by Emilien Bai (emilien.bai@insa-lyon.fr) on 07/2015.
+ * Project : ArduinoMidiBridge
  */
 public abstract class Sensor {
 
@@ -74,7 +75,18 @@ public abstract class Sensor {
      */
     protected int outputValue;
 
-
+    /**
+     * Constructor for a Sensor object
+     *
+     * @param name           Name of the sensor
+     * @param arduinoIn      The arduino Input of the sensor
+     * @param minRange       the minimal output value of the sensor
+     * @param maxRange       the maximal output value of the sensor
+     * @param preamplifier   the preamplifier value of the sensor in percent
+     * @param mode           mode of action of the sensor
+     * @param noiseThreshold the noise threshold for momentary, alternate or toggle mode
+     * @param debounceTime   the time of debounce for momentary, alternate or toggle ode
+     */
     public Sensor(String name, int arduinoIn, int minRange, int maxRange, int preamplifier, int mode, int noiseThreshold, int debounceTime) {
         this.name = name;
         this.arduinoIn = arduinoIn;
@@ -107,10 +119,12 @@ public abstract class Sensor {
         //rescale the value to maximum 1
         result = result * (this.maxRange - this.minRange) + this.minRange;
         //rescale with min and max range value
-        if (result <= this.maxRange) {
+        if (result <= this.maxRange && result >= this.minRange) {
             return (int) result;
-        } else {
+        } else if (result > maxRange) {
             return this.maxRange;
+        } else {
+            return this.minRange;
         }
         //when the preamp is saturating the output
     }

@@ -1,4 +1,6 @@
-package IHM;
+package IHM.Addition;
+
+import IHM.OperatingWindows;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -7,6 +9,7 @@ import java.util.Vector;
 
 /**
  * Created by Emilien Bai (emilien.bai@insa-lyon.fr) on 07/2015.
+ * Project : ArduinoMidiBridge
  */
 public class NewMidiSensor extends JFrame {
     private static boolean open = false;
@@ -16,7 +19,7 @@ public class NewMidiSensor extends JFrame {
         this.setLocationRelativeTo(null);
         this.setResizable(false);
         this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-        open = false;
+        open = true;
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
         changeColor(mainPanel);

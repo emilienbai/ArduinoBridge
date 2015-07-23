@@ -1,5 +1,6 @@
-package IHM;
+package IHM.Row;
 
+import IHM.OperatingWindows;
 import Metier.Services;
 import Sensor.MidiSensor;
 import Sensor.Sensor;
@@ -12,12 +13,11 @@ import java.awt.event.KeyListener;
 /**
  * Created by Emilien Bai (emilien.bai@insa-lyon.fr)on 06/2015.
  */
-class MidiSensorRow extends SensorRow {
+public class MidiSensorRow extends SensorRow {
 
     private int midiPort;
     private char shortcut;
     private VuMeter outputValue;
-
 
     /**
      * Create a JPanel containing all the element of a sensorRow
@@ -29,6 +29,9 @@ class MidiSensorRow extends SensorRow {
      * @param maxRange     Value of the maximum midi Message
      * @param preamplifier Factor of multiplication
      * @param shortcut     Keyboard Shortcut used to send an impulsion
+     * @param mode         The mode of the sensor
+     * @param noiseThreshold    a noise threshold for toggle and momentary mode
+     * @param debounceTime      a time of debounce for toggle and momentary mode
      */
     public MidiSensorRow(String name, int arduChan, int midiPort, int minRange, int maxRange, int preamplifier,
                          char shortcut, int mode, int noiseThreshold, int debounceTime) {
@@ -132,10 +135,14 @@ class MidiSensorRow extends SensorRow {
         this(name, arduChan, midiPort, 0, 127, 100, shortcut, Sensor.FADER, 0, 0);
     }
 
+    /**
+     * Constructor from an existing midiSensor
+     *
+     * @param s The midiSensor on which the sensorRow is based
+     */
     public MidiSensorRow(MidiSensor s) {
-        this(s.getName(), s.getArduinoIn(), s.getMidiPort(), s.getMinRange(), s.getMaxRange(), ((int) s.getPreamplifier()), s.getShortcut(), s.getMode(), s.getNoiseThreshold(), s.getDebounceTime());
+        this(s.getName(), s.getArduinoIn(), s.getMidiPort(), s.getMinRange(), s.getMaxRange(), s.getPreamplifier(), s.getShortcut(), s.getMode(), s.getNoiseThreshold(), s.getDebounceTime());
     }
-
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("Hello World");
@@ -148,6 +155,10 @@ class MidiSensorRow extends SensorRow {
         frame.setVisible(true);
     }
 
+    /**
+     * Action done when the mute button is clicked
+     */
+    @Override
     protected void mute() {
         super.mute();
         if (muteState) {
@@ -157,6 +168,10 @@ class MidiSensorRow extends SensorRow {
         }
     }
 
+    /**
+     * Action done when the solo button is clicked
+     */
+    @Override
     protected void solo() {
         super.solo();
         if (soloState) {
@@ -166,6 +181,11 @@ class MidiSensorRow extends SensorRow {
         }
     }
 
+    /**
+     * Method called when there is a modification in the maximum field
+     *
+     * @param newValue the modified value
+     */
     @Override
     protected void maxThreshModification(int newValue) {
         if (MidiSensorRow.this.mode == Sensor.FADER) {
@@ -193,6 +213,11 @@ class MidiSensorRow extends SensorRow {
         }
     }
 
+    /**
+     * Method called when there is a modification in the minimum field
+     *
+     * @param newValue the modified value
+     */
     @Override
     protected void minDebModification(int newValue) {
         if (MidiSensorRow.this.mode == Sensor.FADER) {
@@ -221,12 +246,21 @@ class MidiSensorRow extends SensorRow {
 
     }
 
+    /**
+     * Getter for the type of the sensorRow
+     *
+     * @return the type of SensorRow
+     */
     @Override
     protected int getType() {
         return MIDI;
     }
 
-
+    /**
+     * Method called when the mode button is clicked
+     *
+     * @param mode the new mode to adopt for the SensorRow
+     */
     private void changeMode(int mode) {
         this.mode = mode;
         if (mode == Sensor.FADER) {
@@ -262,15 +296,6 @@ class MidiSensorRow extends SensorRow {
         }
         repaint();
     }
-
-    public void setDeleteButton(DeleteButton db) {
-        deleteButton = db;
-        ++constraint.gridx;
-        constraint.gridy = 0;
-        constraint.gridheight = 2;
-        this.add(deleteButton, constraint);
-    }
-
 
     /**
      * Set the value of the output vu-meter
@@ -310,5 +335,4 @@ class MidiSensorRow extends SensorRow {
     public void setImpulseColor(Color c) {
         impulseButton.setBackground(c);
     }
-
 }

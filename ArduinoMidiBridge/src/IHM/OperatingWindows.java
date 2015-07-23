@@ -1,5 +1,16 @@
 package IHM;
 
+import IHM.Addition.KeyChooser;
+import IHM.Addition.NewMidiSensor;
+import IHM.Addition.NewOscSensor;
+import IHM.Row.MidiSensorRow;
+import IHM.Row.OscSensorRow;
+import IHM.Row.SensorRow;
+import IHM.Row.VuMeter;
+import IHM.Settings.ConnexionInfo;
+import IHM.Settings.MidiDeviceChoice;
+import IHM.Settings.OscSettings;
+import IHM.Settings.ServerSettings;
 import Metier.ArduinoInData;
 import Metier.InputManager;
 import Metier.MidiManager;
@@ -30,14 +41,14 @@ public class OperatingWindows extends JFrame {
     /*********************************************************************/
     /******************************COLORS*********************************/
     /*********************************************************************/
-    public static final Color BACKGROUND_COLOR = new Color(21, 21, 35);
-    public static final Color BUTTON_COLOR = new Color(0, 0, 64);
-    public static final Color FOREGROUND_COLOR = new Color(126, 145, 185);
+    public static final Color BACKGROUND_COLOR = new Color(31, 31, 38);
+    public static final Color BUTTON_COLOR = new Color(25, 25, 30);
+    public static final Color FOREGROUND_COLOR = new Color(218, 227, 226);
     public static final Color MUTE_COLOR = new Color(174, 36, 33);
     public static final Color SOLO_COLOR = new Color(169, 162, 0);
     public static final Color IMPULSE_COLOR = new Color(45, 121, 36);
-    public static final Color NAME_COLOR = new Color(221, 101, 4);
-    public static final Color DISABLED_COLOR = new Color(96, 50, 137);
+    public static final Color NAME_COLOR = new Color(237, 99, 0);
+    public static final Color DISABLED_COLOR = new Color(41, 23, 59);
     public static final Color TOGGLE_COLOR = new Color(122, 66, 132);
     public static final Color FADER_COLOR = new Color(42, 55, 167);
     public static final Color MOMENTARY_COLOR = new Color(23, 122, 32);
@@ -69,7 +80,7 @@ public class OperatingWindows extends JFrame {
     private static VuMeter selectedSensorVuMeter;
     private static JTextArea logsArea;
     private static int selectedSensor = 0;
-    private static boolean built = false; //is the window built?
+    private static boolean built = false;
     private static boolean shortcutEnable = true;
     private static JMenuItem clientSettingItem;
     private static GridBagConstraints centerMidiConstraint;
@@ -146,7 +157,7 @@ public class OperatingWindows extends JFrame {
         topConstraint.gridx = 0;
         topConstraint.weighty = 1;
         topConstraint.weightx = 0;
-
+        topConstraint.gridy = 0;
         ++topConstraint.gridx;
         topConstraint.gridheight = 3;
         topPanel.add(selectedSensorVuMeter, topConstraint);
@@ -157,7 +168,6 @@ public class OperatingWindows extends JFrame {
         sensorNumber.setForeground(FOREGROUND_COLOR);
         sensorNumber.setHorizontalAlignment(JLabel.CENTER);
         topConstraint.gridx = topConstraint.gridx + 1;
-        topConstraint.gridy = 0;
         topConstraint.gridheight = 1;
         topConstraint.weightx = 1;
         topPanel.add(sensorNumber, topConstraint);
@@ -192,7 +202,6 @@ public class OperatingWindows extends JFrame {
                     });
 
                 }).start();
-
             }
         });
 
@@ -203,7 +212,6 @@ public class OperatingWindows extends JFrame {
         sensorStatus.setHorizontalAlignment(JLabel.CENTER);
         topConstraint.gridy = 2;
         topPanel.add(sensorStatus, topConstraint);
-
 
         /********2nd Column Debounce Label*********/
         JLabel debounceOneLabel = new JLabel("<html><center>Stabilisation<br>(ms)</center></html>");
@@ -289,18 +297,20 @@ public class OperatingWindows extends JFrame {
         topConstraint.gridy = 1;
         topConstraint.weightx = 1;
         topPanel.add(calibrateOne, topConstraint);
+        topConstraint.weightx = 0;
 
         calibrateOne.addActionListener(e -> new Thread(() -> {
             Services.calibrate(selectedSensor);
         }).start());
 
-        topConstraint.weightx = 0;
-
         /*******5th Column, Separator**************/
         JSeparator sep = new JSeparator(SwingConstants.VERTICAL);
-        sep.setPreferredSize(new Dimension(1, 80));
+        sep.setPreferredSize(new Dimension(1, 130));
         topConstraint.gridx++;
+        topConstraint.gridy = 0;
+        topConstraint.gridheight = 3;
         topPanel.add(sep, topConstraint);
+        topConstraint.gridheight = 1;
         topConstraint.weightx = 1;
 
         /*******6th Column, DebounceAllLabel*******/
@@ -308,7 +318,6 @@ public class OperatingWindows extends JFrame {
         debounceAllLb.setBackground(BACKGROUND_COLOR);
         debounceAllLb.setForeground(FOREGROUND_COLOR);
         debounceAllLb.setHorizontalAlignment(SwingConstants.CENTER);
-        topConstraint.gridy = 0;
         ++topConstraint.gridx;
         topPanel.add(debounceAllLb, topConstraint);
 
@@ -434,7 +443,6 @@ public class OperatingWindows extends JFrame {
         topConstraint.gridy = 1;
         topPanel.add(calibrationTimeTextArea, topConstraint);
 
-
         /*****9th Column, calTimeValidation*********/
         JButton calTimeOK = new JButton("OK");
         calTimeOK.setBackground(BUTTON_COLOR);
@@ -478,15 +486,14 @@ public class OperatingWindows extends JFrame {
         topPanel.add(resetButton, topConstraint);
 
         resetButton.addActionListener(e -> {
-            int choice = JOptionPane.showConfirmDialog(OperatingWindows.this, "<html><center>Êtes vous sur de vouloir réinitialiser l'arduino?" +
+            int choice = JOptionPane.showConfirmDialog(OperatingWindows.this, "<html><center>Êtes vous sur de vouloir " +
+                            "réinitialiser l'arduino?" +
                             "<br>Cette action peut prendre du temps pendant lequel aucun message ne sera transmis",
                     "Question", JOptionPane.YES_NO_OPTION);
-
             if (choice == JOptionPane.YES_OPTION) {
                 new Thread(Services::resetArduino).start();
             }
         });
-
 
         /******************************************/
         /**************Center Panel****************/
@@ -501,7 +508,7 @@ public class OperatingWindows extends JFrame {
         mainConstraint.gridy = mainConstraint.gridy + 1;
         mainConstraint.gridx = 0;
 
-        /**MIDI**/
+        /**MIDI Panel**/
         centerMidiConstraint = new GridBagConstraints();
         centerMidiConstraint.fill = GridBagConstraints.HORIZONTAL;
         centerMidiConstraint.weightx = 1;
@@ -510,11 +517,12 @@ public class OperatingWindows extends JFrame {
         centerMidiPanel.setBackground(BACKGROUND_COLOR);
         centerMidiPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
+        /**ScrollPane Midi**/
         JScrollPane centerMidiPanelScroll = new JScrollPane(centerMidiPanel);
         centerMidiPanelScroll.setBackground(BACKGROUND_COLOR);
         centerMidiPanelScroll.setForeground(FOREGROUND_COLOR);
 
-        /**OSC**/
+        /**OSC Panel**/
         centerOscConstraint = new GridBagConstraints();
         centerOscConstraint.fill = GridBagConstraints.HORIZONTAL;
         centerOscConstraint.weightx = 1;
@@ -523,15 +531,18 @@ public class OperatingWindows extends JFrame {
         centerOscPanel.setBackground(BACKGROUND_COLOR);
         centerOscPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
+        /**ScrollPane OSC**/
         JScrollPane centerOscPanelScroll = new JScrollPane(centerOscPanel);
         centerOscPanelScroll.setBackground(BACKGROUND_COLOR);
         centerOscPanelScroll.setForeground(FOREGROUND_COLOR);
 
+        /**Tabbed Pane**/
         centerTabbedPanel.add(centerMidiPanelScroll, MIDI_INDEX);
         centerTabbedPanel.setTitleAt(MIDI_INDEX, "Midi");
         centerTabbedPanel.add(centerOscPanelScroll, OSC_INDEX);
         centerTabbedPanel.setTitleAt(OSC_INDEX, "Osc");
         centerTabbedPanel.setEnabledAt(OSC_INDEX, false);
+
         mainPanel.add(centerTabbedPanel, mainConstraint);
 
         /******************************************/
@@ -544,7 +555,6 @@ public class OperatingWindows extends JFrame {
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
         bottomPanel.setBackground(BACKGROUND_COLOR);
         mainPanel.add(bottomPanel, mainConstraint);
-
 
         /*****************Disable Shortcut*********/
         JButton disableShortcut = new JButton("<html><center>Désactiver les<br>raccourcis clavier</center></html>");
@@ -620,10 +630,9 @@ public class OperatingWindows extends JFrame {
                     }
                     break;
             }
-
-
         }).start());
 
+        /**Listen to the keyboard for shortcut**/
         KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
         manager.addKeyEventDispatcher(new MyDispatcher());
 
@@ -790,13 +799,21 @@ public class OperatingWindows extends JFrame {
         return shortcutEnable;
     }
 
+    /**
+     * Used if the connection with the server is lost
+     */
     public static void signalDisconnection() {
         JOptionPane.showMessageDialog(centerMidiPanel, "La connexion au serveur a été perdu, pour se reconnecter :" +
                 " Edition -> Paramètres Client", "Attention", JOptionPane.ERROR_MESSAGE);
         clientSettingItem.setEnabled(true);
     }
 
-    protected static void setOscStatus(boolean status) {
+    /**
+     * Enable or disable the OSC tab
+     *
+     * @param status status of the OSC tab
+     */
+    public static void setOscStatus(boolean status) {
         centerTabbedPanel.setEnabledAt(OSC_INDEX, status);
         //centerTabbedPanel.setSelectedIndex(MIDI_INDEX);
     }
@@ -1015,13 +1032,13 @@ public class OperatingWindows extends JFrame {
             }
         }));
 
-        //Aide
+        /**Aide**/
         JMenu helpMenu = new JMenu("Aide");
         menuBar.add(helpMenu);
         helpMenu.setBackground(BACKGROUND_COLOR);
         helpMenu.setForeground(FOREGROUND_COLOR);
 
-        //getHelp Item
+        /**getHelp Item**/
         JMenuItem getHelpItem = new JMenuItem("Obtenir de l'aide");
         helpMenu.add(getHelpItem);
         getHelpItem.setBackground(BACKGROUND_COLOR);
@@ -1107,7 +1124,7 @@ public class OperatingWindows extends JFrame {
     private class MyDispatcher implements KeyEventDispatcher {
         @Override
         public boolean dispatchKeyEvent(KeyEvent e) {
-            if (OperatingWindows.isShortcutEnable()) {
+            if (OperatingWindows.isShortcutEnable() && !NewMidiSensor.isOpen() && !NewOscSensor.isOpen()) {
                 if (e.getID() == KeyEvent.KEY_TYPED) {
                     char charTyped = e.getKeyChar();
                     OperatingWindows.sensorRowList.stream().filter(s -> charTyped == s.getShortcut()).forEach(OperatingWindows::impulseShortCut);
@@ -1117,5 +1134,4 @@ public class OperatingWindows extends JFrame {
             return false;
         }
     }
-
 }

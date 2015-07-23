@@ -86,7 +86,6 @@ public class InputManager {
         }
     }
 
-
     /**
      * Getter for an arduino channel object from its input number
      *
@@ -131,7 +130,6 @@ public class InputManager {
         chooseChanNb(activeCounter);
     }
 
-
     /**
      * Get the number of active channel
      *
@@ -156,10 +154,10 @@ public class InputManager {
             int number = a.getNumber();
             ArduinoInData.setDebounceTime(number, debounce);
             try {
-                Thread.sleep(20);
+                Thread.sleep(10);
 
                 ArduinoInData.setNoiseGate(number, threshold);
-                Thread.sleep(20);
+                Thread.sleep(10);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

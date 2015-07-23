@@ -1,5 +1,6 @@
-package IHM;
+package IHM.Settings;
 
+import IHM.OperatingWindows;
 import Metier.Services;
 import Network.Server;
 
@@ -14,7 +15,9 @@ public class ServerSettings extends JFrame {
 
     private static JTextArea logsArea;
 
-
+    /**
+     * Constructor for a ServerSettings Frame
+     */
     public ServerSettings() {
         super("Paramètres serveurs");
 
@@ -44,7 +47,6 @@ public class ServerSettings extends JFrame {
         ++mainConstraints.gridx;
 
         mainPanel.add(portTextField, mainConstraints);
-
 
         /**LaunchButton**/
         JButton launchButton = new JButton("Lancer le serveur");
@@ -92,7 +94,6 @@ public class ServerSettings extends JFrame {
         mainConstraints.gridwidth = 2;
         mainPanel.add(logsLabel, mainConstraints);
 
-
         /**LogsArea**/
         logsArea = new JTextArea();
         logsArea.setBackground(Color.BLACK);
@@ -127,13 +128,17 @@ public class ServerSettings extends JFrame {
 
         closeButton.addActionListener(e -> dispose());
 
-
         this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         this.setVisible(true);
         this.pack();
 
     }
 
+    /**
+     * Method called to refresh the server logs area
+     *
+     * @param logs the logs to set in the logs Area
+     */
     public static void fillInfo(String logs) {
         logsArea.setText(logs);
         logsArea.repaint();

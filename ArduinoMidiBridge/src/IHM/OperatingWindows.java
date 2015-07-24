@@ -43,7 +43,7 @@ public class OperatingWindows extends JFrame {
     /*********************************************************************/
     public static final Color BACKGROUND_COLOR = new Color(31, 31, 38);
     public static final Color BUTTON_COLOR = new Color(25, 25, 30);
-    public static final Color FOREGROUND_COLOR = new Color(218, 227, 226);
+    public static final Color FOREGROUND_COLOR = new Color(92, 141, 246);
     public static final Color MUTE_COLOR = new Color(174, 36, 33);
     public static final Color SOLO_COLOR = new Color(169, 162, 0);
     public static final Color IMPULSE_COLOR = new Color(45, 121, 36);

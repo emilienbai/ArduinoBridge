@@ -144,17 +144,6 @@ public class MidiSensorRow extends SensorRow {
         this(s.getName(), s.getArduinoIn(), s.getMidiPort(), s.getMinRange(), s.getMaxRange(), s.getPreamplifier(), s.getShortcut(), s.getMode(), s.getNoiseThreshold(), s.getDebounceTime());
     }
 
-    public static void main(String[] args) {
-        JFrame frame = new JFrame("Hello World");
-        JPanel panel = new JPanel();
-        MidiSensorRow sensorRow = new MidiSensorRow("On peut essayer de mettre un titre super long ", 12, 42, 'a');
-        panel.add(sensorRow);
-        frame.add(panel);
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.pack();
-        frame.setVisible(true);
-    }
-
     /**
      * Action done when the mute button is clicked
      */
@@ -334,5 +323,16 @@ public class MidiSensorRow extends SensorRow {
      */
     public void setImpulseColor(Color c) {
         impulseButton.setBackground(c);
+    }
+
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Hello World");
+        JPanel panel = new JPanel();
+        MidiSensorRow sensorRow = new MidiSensorRow("On peut essayer de mettre un titre super long ", 12, 42, 'a');
+        panel.add(sensorRow);
+        frame.add(panel);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        frame.pack();
+        frame.setVisible(true);
     }
 }

@@ -1,3 +1,5 @@
+#include <TimerOne.h>
+
 #define   wdt_disable()
 
 // Constants
@@ -14,6 +16,11 @@
 #define sensorNumberCommand "setnb"
 #define calibrationTimeSet "caltm"
 #define resetCommand "rst"
+
+void(*resetFunc)(void) = 0;
+
+unsigned long lastUpdate = 0;
+unsigned long timeout = 15000;
 
 
 byte Pins[] = {A0,A1,A2,A3,A4,A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15};
@@ -35,6 +42,21 @@ boolean commandComplete = false;
 int activeSensorNumber;
 int count;
 
+void longWDT(void)
+{
+  if((millis()-lastUpdate)>timeout)
+  {
+    sei();
+
+    Timer1.detachInterrupt();
+
+    Serial.println("*rst");
+    Serial.flush();
+
+    resetFunc();
+  }
+}
+
 void setup() {
   Serial.begin(230400);  // Such serial, many wow
   input.reserve(200);
@@ -43,6 +65,8 @@ void setup() {
   activeSensorNumber = nSensors;
   int i;
   count = 0;
+  Timer1.initialize(1000000);
+  Timer1.attachInterrupt(longWDT);
 }
 
 void listenSerial(){
@@ -262,21 +286,10 @@ void loop() {
     if(!signal.equals("")){
       signal+="\n";
       Serial.print(signal);
-      count = 0;
-    } else if (count == 1000){
-      Serial.print("\n");
-      count =0;
-    } else {
-      count++;
+      lastUpdate = millis();
     }
     // -------------
   }
   
   delay(loopDelay);        // delay in between reads for stability
 }
-
-
-
-
-
-

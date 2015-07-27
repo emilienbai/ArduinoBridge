@@ -102,7 +102,7 @@ public class OperatingWindows extends JFrame {
     public OperatingWindows(boolean isServer) {
         super("ArduinoBrigde");
         this.isServer = isServer;
-        setPreferredSize(new Dimension(800, 400));
+        //setPreferredSize(new Dimension(800, 400));
         setMinimumSize(new Dimension(200, 100));
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         this.setLocationRelativeTo(null);
@@ -513,6 +513,7 @@ public class OperatingWindows extends JFrame {
         centerMidiConstraint.fill = GridBagConstraints.HORIZONTAL;
         centerMidiConstraint.weightx = 1;
         centerMidiConstraint.gridx = 0;
+        centerMidiConstraint.gridy = 0;
         centerMidiPanel = new JPanel(new GridBagLayout());
         centerMidiPanel.setBackground(BACKGROUND_COLOR);
         centerMidiPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -527,6 +528,7 @@ public class OperatingWindows extends JFrame {
         centerOscConstraint.fill = GridBagConstraints.HORIZONTAL;
         centerOscConstraint.weightx = 1;
         centerOscConstraint.gridx = 0;
+        centerMidiConstraint.gridy = 0;
         centerOscPanel = new JPanel(new GridBagLayout());
         centerOscPanel.setBackground(BACKGROUND_COLOR);
         centerOscPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -820,7 +822,6 @@ public class OperatingWindows extends JFrame {
 
     public static void main(String[] args) {
         JFrame frame = new OperatingWindows(true);
-        frame.pack();
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setVisible(true);
     }
@@ -1052,6 +1053,7 @@ public class OperatingWindows extends JFrame {
      * initialize the midiPort Vector
      */
     private void initMidiPort() {
+        availableMidiPort.clear();
         for (int i = 0; i < 128; i++) {
             availableMidiPort.add(i);
         }
@@ -1072,10 +1074,13 @@ public class OperatingWindows extends JFrame {
                 MidiSensorRow sr = new MidiSensorRow(ms);
                 sensorRowList.add(sr);
                 availableMidiPort.removeElement(ms.getMidiPort());
-                //constraints for the grid bag layout
-                centerMidiConstraint.gridy = centerMidiConstraint.gridy + 1;
-                centerMidiConstraint.gridx = 0;
-                SwingUtilities.invokeLater(() -> centerMidiPanel.add(sr, centerMidiConstraint));
+                System.out.println("Removing : " + ms.getMidiPort());
+
+                SwingUtilities.invokeLater(() ->{
+                    //constraints for the grid bag layout
+                    centerMidiConstraint.gridy ++;
+                    centerMidiPanel.add(sr, centerMidiConstraint);
+                });
             }
 
             OSCSensor os;
@@ -1083,8 +1088,10 @@ public class OperatingWindows extends JFrame {
                 os = e.getValue();
                 OscSensorRow sr = new OscSensorRow(os);
                 oscSensorRowList.add(sr);
-                centerOscConstraint.gridy++;
-                SwingUtilities.invokeLater(() -> centerOscPanel.add(sr, centerOscConstraint));
+                SwingUtilities.invokeLater(() -> {
+                    centerOscConstraint.gridy++;
+                    centerOscPanel.add(sr, centerOscConstraint);
+                });
             }
 
             String debounce = String.valueOf(arduinoChanVector.get(selectedSensor).getDebounce());
@@ -1096,7 +1103,7 @@ public class OperatingWindows extends JFrame {
                 thresholdOneTextArea.setText(threshold);
                 sensorNumberCb.setSelectedIndex(activeNumber - 1);
                 repaint();
-                pack();
+                this.cleanPack();
             });
         }).start();
 
@@ -1114,8 +1121,18 @@ public class OperatingWindows extends JFrame {
         oscSensorRowList.clear();
         centerOscConstraint.gridy = 0;
 
+        initMidiPort();
+
         repaint();
-        pack();
+        cleanPack();
+    }
+
+    public void cleanPack(){
+        Dimension tempSize = this.getSize();
+        Point tempLocation = this.getLocation();
+        this.pack();
+        this.setSize(tempSize);
+        this.setLocation(tempLocation);
     }
 
     /**

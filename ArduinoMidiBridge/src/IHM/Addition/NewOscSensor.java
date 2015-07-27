@@ -14,7 +14,7 @@ import java.awt.*;
 public class NewOscSensor extends JFrame {
     private static boolean open;
 
-    public NewOscSensor(JFrame toPack) {
+    public NewOscSensor(OperatingWindows toPack) {
         super("Ajout d'un nouveau capteur OSC");
         this.setLocationRelativeTo(null);
         this.setResizable(false);
@@ -179,7 +179,7 @@ public class NewOscSensor extends JFrame {
             if (!name.equals("") && !address.equals("")
                     && !(addressBis.equals("") && mode == Sensor.ALTERNATE)) {
                 OperatingWindows.addOscSensor(name, arduinoIn, address, addressBis, mode);
-                toPack.pack();
+                toPack.cleanPack();
                 open = false;
                 dispose();
             } else {
@@ -211,7 +211,7 @@ public class NewOscSensor extends JFrame {
     }
 
     public static void main(String[] args) {
-        JFrame f = new JFrame();
+        OperatingWindows f = new OperatingWindows(true);
         new NewOscSensor(f);
     }
 

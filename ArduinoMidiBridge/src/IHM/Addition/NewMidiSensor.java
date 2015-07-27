@@ -14,7 +14,7 @@ import java.util.Vector;
 public class NewMidiSensor extends JFrame {
     private static boolean open = false;
 
-    public NewMidiSensor(Vector<Integer> availaibleMidiPort, JFrame toPack) {
+    public NewMidiSensor(Vector<Integer> availaibleMidiPort, OperatingWindows toPack) {
         super("Ajout d'un nouveau capteur midi");
         this.setLocationRelativeTo(null);
         this.setResizable(false);
@@ -120,7 +120,7 @@ public class NewMidiSensor extends JFrame {
             if (newName != null && !newName.equals("")) {
                 new Thread(() -> {
                     OperatingWindows.addMidiSensor(newName, arduIn, midiPort);
-                    toPack.pack();
+                    toPack.cleanPack();
                     open = false;
                 }).start();
                 dispose();
@@ -150,7 +150,7 @@ public class NewMidiSensor extends JFrame {
         for (int i = 0; i < 128; i++) {
             v.addElement(i);
         }
-        JFrame f = new JFrame();
+        OperatingWindows f = new OperatingWindows(true);
         new NewMidiSensor(v, f);
     }
 

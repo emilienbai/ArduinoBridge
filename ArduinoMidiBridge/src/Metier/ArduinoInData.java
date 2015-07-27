@@ -262,6 +262,9 @@ public class ArduinoInData implements SerialPortEventListener {
             System.out.println("DATA :" + ft.format(new Date()));*/
             try {
                 String inputLine = input.readLine();
+                if(inputLine.startsWith("*")){
+                    Services.resetArduino();
+                }
                 if (inputLine.startsWith("-")) {
                     arduiLog += inputLine + "\n";
                     OperatingWindows.refreshLogs(arduiLog);

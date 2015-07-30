@@ -4,10 +4,12 @@
 
 // Constants
 #define nSensors 16
-#define loopDelay 2
+#define loopDelay 1
 #define commandSize 4
 #define debug false
 #define sensorMax 1023
+#define numReadings 5
+#define compressor 300
 
 #define calibrationCommand "cal"
 #define pingCommand "ping"
@@ -20,7 +22,7 @@
 void(*resetFunc)(void) = 0;
 
 unsigned long lastUpdate = 0;
-unsigned long timeout = 15000;
+unsigned long timeout = 40000; //watchdog reset after 40s
 
 
 byte Pins[] = {A0,A1,A2,A3,A4,A5, A6, A7, A8, A9, A10, A11, A12, A13, A14, A15};
@@ -31,10 +33,12 @@ int iNt = 100;
 int calibrationTime = 1000;
 int timeThreshold[nSensors] ={itt, itt, itt, itt, itt, itt, itt, itt, itt, itt, itt, itt, itt, itt, itt, itt};
 int noiseThreshold[nSensors]={iNt, iNt, iNt, iNt, iNt, iNt, iNt, iNt, iNt, iNt, iNt, iNt, iNt, iNt, iNt, iNt};
-int values[nSensors]={0};
+int lastValues[nSensors]={0};
 int maxNoise[nSensors]={0};
 int playing[nSensors]={false};
-int nulled[nSensors]={false};
+int nulled[nSensors]={true};
+int displayLogs = false;
+
 String input="";
 String commands[commandSize];
 int c;
@@ -65,7 +69,7 @@ void setup() {
   activeSensorNumber = nSensors;
   int i;
   count = 0;
-  Timer1.initialize(1000000);
+  Timer1.initialize(1000000); //wake up every second
   Timer1.attachInterrupt(longWDT);
 }
 
@@ -263,12 +267,26 @@ void loop() {
     String signal="";
     for (int x = 0; x < activeSensorNumber; ++x){  // For each sensor
       // Read new value (center and normalize)
-      int newValue = abs(max(((analogRead(Pins[x])) - maxNoise[x]),0) * ((double)sensorMax) / ((double)(sensorMax - maxNoise[x])));
-      //newValue = (analogRead(Pins[x]));
+      //int max =0;
+      int total = 0;
+      for(count = 0; count<numReadings; count++)
+      {
+        total = total + analogRead(Pins[x]);
+      }
+      total = total/numReadings;
+      int newValue = abs(max((total - maxNoise[x]),0) * ((double)sensorMax) / ((double)(sensorMax - maxNoise[x])));
       
       // Check for threshold
         int timeDiff = millis() - playing[x];
-      if(newValue > noiseThreshold[x] && timeDiff > timeThreshold[x]){
+      if(newValue >= noiseThreshold[x] && timeDiff >= timeThreshold[x]){
+        if(abs(newValue-lastValues[x])>compressor)
+        {
+          lastValues[x]=newValue;
+          newValue = ((double) newValue)*0.7;
+        } else 
+        {
+          lastValues[x]=newValue;
+        }
         signal.concat(x);
         signal+="-";
         signal.concat(newValue);
@@ -276,16 +294,28 @@ void loop() {
         playing[x] = millis();
         nulled[x] = false;
       }
-      else if (newValue < noiseThreshold[x] && timeDiff > timeThreshold[x] && !nulled[x]){
+      else if (newValue < noiseThreshold[x] && timeDiff > timeThreshold[x] && !nulled[x] && lastValues[x] != 0){
+        newValue = ((double) lastValues[x])/1.5;
+        signal.concat(x);
+        signal+="-";
+        signal.concat(newValue);
+        signal+="-";
+        //playing[x] = millis();
+        lastValues[x] = newValue;
+        nulled[x]=false;        
+      }
+      /*else if (newValue < noiseThreshold[x] && timeDiff > timeThreshold[x] && !nulled[x] && lastValues[x] == 0){
         signal.concat(x);
         signal+="-0-";
-        nulled[x]=true;        
-      }
+        //playing[x] = millis();
+        nulled[x] = true;
+      }*/
     }
     
     if(!signal.equals("")){
       signal+="\n";
       Serial.print(signal);
+      Serial.flush();
       lastUpdate = millis();
     }
     // -------------

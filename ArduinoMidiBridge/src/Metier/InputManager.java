@@ -11,6 +11,7 @@ public class InputManager {
     private static final int MAX_INPUT = 16;
     private static Vector<ArduinoChan> arduinoInVector = new Vector<>(16);
     private static int activeNumber;
+    private static int calibrationTime;
 
     /**
      * Initialize the arduino manager
@@ -22,6 +23,7 @@ public class InputManager {
             arduinoInVector.add(i, a);
         }
         activeNumber = MAX_INPUT;
+        calibrationTime = 1;
     }
 
     /**
@@ -31,10 +33,11 @@ public class InputManager {
      */
     protected static void chooseChanNb(int newNumber) {
         if (newNumber != activeNumber) {
+            for (int i = 0; i < newNumber; i++) {
+                arduinoInVector.get(i).setEnable(true);
+            }
             for (int i = newNumber; i < MAX_INPUT; i++) {
-                ArduinoChan a = arduinoInVector.get(i);
-                a.setEnable(false);
-                arduinoInVector.set(i, a);
+                arduinoInVector.get(i).setEnable(false);
             }
             activeNumber = newNumber;
         }
@@ -87,6 +90,14 @@ public class InputManager {
     }
 
     /**
+     * Setter for the calibration Time value
+     * @param calibrationTime the new calibration Time.
+     */
+    protected static void setCalibrationTime(int calibrationTime) {
+        InputManager.calibrationTime = calibrationTime;
+    }
+
+    /**
      * Getter for an arduino channel object from its input number
      *
      * @param chanNumber channel number
@@ -125,7 +136,6 @@ public class InputManager {
             }
             setDebounceOne(number, debounce);
             setThresholdOne(number, threshold);
-
         }
         chooseChanNb(activeCounter);
     }
@@ -143,8 +153,9 @@ public class InputManager {
      * Re-set all the input after a software reset
      */
     public static void reset() {
+        Services.setIsResetting(true);
         try {
-            Thread.sleep(20);
+            Thread.sleep(5);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -154,13 +165,16 @@ public class InputManager {
             int number = a.getNumber();
             ArduinoInData.setDebounceTime(number, debounce);
             try {
-                Thread.sleep(10);
+                Thread.sleep(5);
 
                 ArduinoInData.setNoiseGate(number, threshold);
-                Thread.sleep(10);
+                Thread.sleep(5);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
+        Services.setCalibrationTime(calibrationTime);
+        chooseChanNb(activeNumber);
+        Services.setIsResetting(false);
     }
 }

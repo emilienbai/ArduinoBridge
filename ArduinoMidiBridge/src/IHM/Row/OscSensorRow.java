@@ -31,7 +31,7 @@ public class OscSensorRow extends SensorRow {
      * @param noiseThreshold a noise threshold for toggle, alternate and momentary mode
      * @param debounceTime   a time of debounce for toggle, alternate and momentary mode
      */
-    public OscSensorRow(String name, int arduChan, String address, int minRange, int maxRange, int preamplifier,
+    public OscSensorRow(String name, int arduChan, String address, float minRange, float maxRange, int preamplifier,
                         int mode, int noiseThreshold, int debounceTime) {
         super(name, arduChan, address, minRange, maxRange, preamplifier, mode, noiseThreshold, debounceTime);
         this.address = address;
@@ -167,7 +167,7 @@ public class OscSensorRow extends SensorRow {
      * @param newValue the modified value
      */
     @Override
-    protected void maxThreshModification(int newValue) {
+    protected void maxThreshModification(float newValue) {
         if (this.mode == Sensor.FADER) {
             if (minOutVal <= newValue) {
                 Services.changeOscMaxRange(address, newValue);
@@ -179,8 +179,8 @@ public class OscSensorRow extends SensorRow {
             }
         } else {
             if (newValue > 0) {
-                Services.setOscLineThreshold(address, newValue);
-                noiseThreshold = newValue;
+                Services.setOscLineThreshold(address, (int) newValue);
+                noiseThreshold = (int) newValue;
             } else {
                 Services.setOscLineThreshold(address, 0);
                 noiseThreshold = 0;
@@ -195,7 +195,7 @@ public class OscSensorRow extends SensorRow {
      * @param newValue the modified value
      */
     @Override
-    protected void minDebModification(int newValue) {
+    protected void minDebModification(float newValue) {
         if (this.mode == Sensor.FADER) {
             if (maxOutVal >= newValue) {
                 Services.changeOscMinRange(address, newValue);
@@ -207,8 +207,8 @@ public class OscSensorRow extends SensorRow {
             }
         } else {
             if (newValue > 0) {
-                Services.setOscLineDebounce(address, newValue);
-                debounceTime = newValue;
+                Services.setOscLineDebounce(address, (int) newValue);
+                debounceTime = (int) newValue;
             } else {
                 Services.setOscLineDebounce(address, 0);
                 debounceTime = 0;
@@ -225,6 +225,22 @@ public class OscSensorRow extends SensorRow {
     @Override
     public void setOutputValue(int outValue) {
         outputValue.setText(String.valueOf(outValue));
+        repaint();
+    }
+
+    /**
+     * Set the value of the output Label
+     *
+     * @param outValue the value to set
+     */
+    public void setOutputValue(float outValue) {
+        String outVal = String.valueOf(outValue);
+        try {
+            outVal = outVal.substring(0, 4);
+        } catch (StringIndexOutOfBoundsException e) {
+
+        }
+        outputValue.setText(outVal);
         repaint();
     }
 

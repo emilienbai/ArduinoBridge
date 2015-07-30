@@ -47,7 +47,7 @@ public class OSCSensor extends Sensor {
      * @param debounceTime   time of debounce specific for toggle, alternate or momentary mode
      * @param oscPortOut     port where to send osc messages
      */
-    public OSCSensor(String name, int arduinoIn, String oscAddress, int minRange, int maxRange, int preamplifier,
+    public OSCSensor(String name, int arduinoIn, String oscAddress, float minRange, float maxRange, int preamplifier,
                      int mode, int noiseThreshold, int debounceTime, OSCPortOut oscPortOut) {
         super(name, arduinoIn, minRange, maxRange, preamplifier, mode, noiseThreshold, debounceTime);
         this.oscAddress = oscAddress;
@@ -103,7 +103,7 @@ public class OSCSensor extends Sensor {
                             lastWasOn = false;
                         } else {
                             args.add(OSC_ON);
-                            outputValue = OSC_ON;
+                            outputValue = 100;//fixme
                             toSend = new OSCMessage(oscAddress, args);
                             lastWasOn = true;
                         }
@@ -118,7 +118,7 @@ public class OSCSensor extends Sensor {
                     }
                     break;
                 case FADER:
-                    int value = calculate(dataFromSensor);
+                    float value = calculate(dataFromSensor);
                     args.add(value);
                     outputValue = value;
                     toSend = new OSCMessage(oscAddress, args);
@@ -142,7 +142,7 @@ public class OSCSensor extends Sensor {
             }
 
             try {
-                if (toSend != null) {
+                if (toSend != null && oscPortOut != null) {
                     oscPortOut.send(toSend);
                 }
                 if (mode == MOMENTARY) {

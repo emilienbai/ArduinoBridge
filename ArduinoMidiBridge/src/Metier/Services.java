@@ -32,6 +32,8 @@ public class Services {
     private static boolean serverEnabled = false;
     private static boolean clientEnabled = false;
     private static boolean oscEnabled = false;
+    private static boolean mutedAll = false;
+    private static boolean isResetting = false;
 
     /******************************************************************************************************************/
     /**                                                                                                              **/
@@ -49,6 +51,7 @@ public class Services {
      */
     public static void addMidiSensor(String name, int arduinoIn, int midiPort, char shortcut) {
         MidiSensor s = new MidiSensor(name, arduinoIn, midiPort, shortcut, MidiManager.getMidiReceiver());
+        s.setIsMutedAll(mutedAll);
         MidiSensorManager.addSensor(s);
     }
 
@@ -62,6 +65,7 @@ public class Services {
      */
     public static void addOscSensor(String name, int arduinoIn, String oscAddress, int mode) {
         OSCSensor s = new OSCSensor(name, arduinoIn, oscAddress, mode, OSCManager.getOscPortOut());
+        s.setIsMutedAll(mutedAll);
         OSCSensorManager.addOscSensor(s);
     }
 
@@ -76,6 +80,7 @@ public class Services {
      */
     public static void addOscSensor(String name, int arduinoIn, String oscAddress, String oscAddressBis, int mode) {
         OSCSensor s = new OSCSensor(name, arduinoIn, oscAddress, oscAddressBis, mode, OSCManager.getOscPortOut());
+        s.setIsMutedAll(mutedAll);
         OSCSensorManager.addOscSensor(s);
     }
 
@@ -103,9 +108,9 @@ public class Services {
      * @param instructions string formed arduinoChan-data-arduinoChan-data...
      */
     public static void sendMessage(String instructions) {
-        if (instructions.startsWith("-")) {
+        if (instructions.startsWith("-") && !isResetting() && !ArduinoInData.isResetting()) {
             arduiLog += instructions + "\n";
-            OperatingWindows.refreshLogs(arduiLog);
+            //OperatingWindows.refreshLogs(arduiLog);
         } else {
             if (serverEnabled) {
                 Server.sendData(instructions);
@@ -115,10 +120,14 @@ public class Services {
             int value;
             if (splitted.length % 2 == 0) {
                 for (int i = 0; i < splitted.length; i += 2) {
-                    sensorNumber = Integer.parseInt(splitted[i]);
-                    value = Integer.parseInt(splitted[i + 1]);
-                    MidiSensorManager.sendMidiMessage(sensorNumber, value);
-                    OSCSensorManager.sendOscMessage(sensorNumber, value);
+                    try {
+                        sensorNumber = Integer.parseInt(splitted[i]);
+                        value = Integer.parseInt(splitted[i + 1]);
+                        MidiSensorManager.sendMidiMessage(sensorNumber, value);
+                        OSCSensorManager.sendOscMessage(sensorNumber, value);
+                    } catch (NumberFormatException e) {
+
+                    }
                 }
             }
             OperatingWindows.refreshInterface(instructions);
@@ -141,7 +150,7 @@ public class Services {
      * @param address  the osc address to set
      * @param newValue new max value to apply
      */
-    public static void changeOscMaxRange(String address, int newValue) {
+    public static void changeOscMaxRange(String address, float newValue) {
         OSCSensorManager.changeMaxRange(address, newValue);
     }
 
@@ -152,7 +161,7 @@ public class Services {
      * @return maximal output valu of the concerned midi port
      */
     public static int getMidiMaxRange(int midiPort) {
-        return MidiSensorManager.getMaxRange(midiPort);
+        return (int) MidiSensorManager.getMaxRange(midiPort);
     }
 
     /**
@@ -171,7 +180,7 @@ public class Services {
      * @param address  address to modify
      * @param newValue new value for the minimum range
      */
-    public static void changeOscMinRange(String address, int newValue) {
+    public static void changeOscMinRange(String address, float newValue) {
         OSCSensorManager.changeMinRange(address, newValue);
     }
 
@@ -182,7 +191,7 @@ public class Services {
      * @return the minimal range we want
      */
     public static int getMidiMinRange(int midiPort) {
-        return MidiSensorManager.getMinRange(midiPort);
+        return (int) MidiSensorManager.getMinRange(midiPort);
     }
 
 
@@ -276,6 +285,7 @@ public class Services {
     public static void muteAll() {
         midiMuteAll();
         oscMuteAll();
+        mutedAll = true;
     }
 
     /**
@@ -284,6 +294,7 @@ public class Services {
     public static void unMuteAll() {
         midiUnMuteAll();
         oscUnMuteAll();
+        mutedAll = false;
     }
 
     /**
@@ -420,7 +431,7 @@ public class Services {
         return MidiSensorManager.getOutputValue(midiPort);
     }
 
-    public static int getoscOutputValue(String address) {
+    public static float getoscOutputValue(String address) {
         return OSCSensorManager.getOutputValue(address);
     }
 
@@ -545,6 +556,7 @@ public class Services {
      */
     public static void setCalibrationTime(int newCalibrationTime) {
         ArduinoInData.setCalibrationTime(newCalibrationTime);
+        InputManager.setCalibrationTime(newCalibrationTime);
     }
 
     /**
@@ -598,10 +610,20 @@ public class Services {
      * Reset procedure for the arduino
      */
     public static void resetArduino() {
-        MidiSensorManager.muteAll();
+        isResetting = true;
+        muteAll();
         ArduinoInData.resetArduino();
         InputManager.reset();
-        MidiSensorManager.unMuteAll();
+        unMuteAll();
+        isResetting = false;
+    }
+
+    public static boolean isResetting() {
+        return isResetting;
+    }
+
+    public static void setIsResetting(boolean isResetting) {
+        Services.isResetting = isResetting;
     }
 
     /**
@@ -985,8 +1007,8 @@ public class Services {
         String name = getTextValue(el, "name");
         int arduinoIn = getIntValue(el, "arduinoIn");
         String oscAddress = getTextValue(el, "oscAddress");
-        int minRange = getIntValue(el, "minRange");
-        int maxRange = getIntValue(el, "maxRange");
+        float minRange = getFloatValue(el, "minRange");
+        float maxRange = getFloatValue(el, "maxRange");
         int preamplifier = getIntValue(el, "preamplifier");
         int mode = getIntValue(el, "mode");
         int noiseThreshold = getIntValue(el, "noiseThreshold");
@@ -1009,8 +1031,8 @@ public class Services {
         int midiPort = getIntValue(sensEl, "midiPort");
         String shortcut = getTextValue(sensEl, "shortcut");
         char shortChar = shortcut.charAt(0);
-        int minRange = getIntValue(sensEl, "minRange");
-        int maxRange = getIntValue(sensEl, "maxRange");
+        int minRange = (int) getFloatValue(sensEl, "minRange");
+        int maxRange = (int) getFloatValue(sensEl, "maxRange");
         int preamplifier = getIntValue(sensEl, "preamplifier");
         int mode = getIntValue(sensEl, "mode");
         int noiseThreshold = getIntValue(sensEl, "noiseThreshold");
@@ -1059,8 +1081,22 @@ public class Services {
      * Calls getTextValue and returns a int value
      */
     private static int getIntValue(Element ele, String tagName) {
-        //in production application you would catch the exception
         return Integer.parseInt(getTextValue(ele, tagName));
+    }
+
+    /**
+     * Calls getTextValue and returns a float value
+     *
+     * @param ele
+     * @param tagName
+     * @return
+     */
+    private static float getFloatValue(Element ele, String tagName) {
+        try {
+            return Float.parseFloat(getTextValue(ele, tagName));
+        } catch (NumberFormatException e) {
+            return (-1.0f);
+        }
     }
 
     /**

@@ -115,7 +115,7 @@ public class MidiSensor extends Sensor {
 
             } else {
                 int velocity; //velocity of the message to send;
-                velocity = calculate(dataFromSensor);
+                velocity = (int) calculate(dataFromSensor);
                 ShortMessage msg = new ShortMessage();
                 try {
                     msg.setMessage(ShortMessage.NOTE_ON, this.midiPort, velocity);
@@ -143,7 +143,7 @@ public class MidiSensor extends Sensor {
             System.err.println("Error sending impulsion from " + this.name);
         }
         try {
-            Thread.sleep(2000);
+            Thread.sleep(6000);
         } catch (InterruptedException e1) {
             e1.printStackTrace();
             System.err.println("Programme interrompu pendant l'envoie d'une impulsion");

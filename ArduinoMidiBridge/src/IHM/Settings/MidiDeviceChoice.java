@@ -356,9 +356,7 @@ public class MidiDeviceChoice extends JFrame {
 
         quitButton.addActionListener(e -> {
             if (connectionToSet) {
-                MidiManager.exit();
-                ArduinoInData.close();
-                exit(0);
+                quit();
             } else {
                 dispose();
             }
@@ -452,5 +450,11 @@ public class MidiDeviceChoice extends JFrame {
         JFrame frame = new MidiDeviceChoice(true);
         frame.setVisible(true);
         frame.pack();
+    }
+
+    private void quit() {
+        MidiManager.exit();
+        ArduinoInData.close();
+        exit(0);
     }
 }

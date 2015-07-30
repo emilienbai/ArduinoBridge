@@ -141,7 +141,18 @@ public class MidiSensorRow extends SensorRow {
      * @param s The midiSensor on which the sensorRow is based
      */
     public MidiSensorRow(MidiSensor s) {
-        this(s.getName(), s.getArduinoIn(), s.getMidiPort(), s.getMinRange(), s.getMaxRange(), s.getPreamplifier(), s.getShortcut(), s.getMode(), s.getNoiseThreshold(), s.getDebounceTime());
+        this(s.getName(), s.getArduinoIn(), s.getMidiPort(), (int) s.getMinRange(), (int) s.getMaxRange(), s.getPreamplifier(), s.getShortcut(), s.getMode(), s.getNoiseThreshold(), s.getDebounceTime());
+    }
+
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Hello World");
+        JPanel panel = new JPanel();
+        MidiSensorRow sensorRow = new MidiSensorRow("Grosse Caisse ", 12, 42, 'a');
+        panel.add(sensorRow);
+        frame.add(panel);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        frame.pack();
+        frame.setVisible(true);
     }
 
     /**
@@ -176,24 +187,24 @@ public class MidiSensorRow extends SensorRow {
      * @param newValue the modified value
      */
     @Override
-    protected void maxThreshModification(int newValue) {
+    protected void maxThreshModification(float newValue) {
         if (MidiSensorRow.this.mode == Sensor.FADER) {
             if (newValue <= 127 && newValue >= minOutVal) {
-                Services.changeMidiMaxRange(midiPort, newValue);
+                Services.changeMidiMaxRange(midiPort, (int) newValue);
                 maxOutVal = newValue;
             } else if (newValue > 127) {
                 Services.changeMidiMaxRange(midiPort, 127);
                 maxOutVal = 127;
                 SwingUtilities.invokeLater(() -> maxOutValue.setText("127"));
             } else {
-                Services.changeMidiMaxRange(midiPort, minOutVal);
+                Services.changeMidiMaxRange(midiPort, (int) minOutVal);
                 maxOutVal = minOutVal;
                 SwingUtilities.invokeLater(() -> maxOutValue.setText(String.valueOf(minOutVal)));
             }
         } else {
             if (newValue > 0) {
-                Services.setMidiLineThreshold(midiPort, newValue);
-                noiseThreshold = newValue;
+                Services.setMidiLineThreshold(midiPort, (int) newValue);
+                noiseThreshold = (int) newValue;
             } else {
                 Services.setMidiLineThreshold(midiPort, 0);
                 noiseThreshold = 0;
@@ -208,24 +219,24 @@ public class MidiSensorRow extends SensorRow {
      * @param newValue the modified value
      */
     @Override
-    protected void minDebModification(int newValue) {
+    protected void minDebModification(float newValue) {
         if (MidiSensorRow.this.mode == Sensor.FADER) {
             if (newValue >= 0 && newValue <= maxOutVal) {
-                Services.changeMidiMinRange(midiPort, newValue);
+                Services.changeMidiMinRange(midiPort, (int) newValue);
                 minOutVal = newValue;
             } else if (newValue < 0) {
                 Services.changeMidiMinRange(midiPort, 0);
                 minOutVal = 0;
                 SwingUtilities.invokeLater(() -> minOutValue.setText("0"));
             } else {
-                Services.changeMidiMinRange(midiPort, maxOutVal);
+                Services.changeMidiMinRange(midiPort, (int) maxOutVal);
                 minOutVal = maxOutVal;
                 SwingUtilities.invokeLater(() -> minOutValue.setText(String.valueOf(maxOutVal)));
             }
         } else {
             if (newValue > 0) {
-                Services.setMidiLineDebounce(midiPort, newValue);
-                debounceTime = newValue;
+                Services.setMidiLineDebounce(midiPort, (int) newValue);
+                debounceTime = (int) newValue;
             } else {
                 Services.setMidiLineDebounce(midiPort, 0);
                 debounceTime = 0;
@@ -323,16 +334,5 @@ public class MidiSensorRow extends SensorRow {
      */
     public void setImpulseColor(Color c) {
         impulseButton.setBackground(c);
-    }
-
-    public static void main(String[] args) {
-        JFrame frame = new JFrame("Hello World");
-        JPanel panel = new JPanel();
-        MidiSensorRow sensorRow = new MidiSensorRow("On peut essayer de mettre un titre super long ", 12, 42, 'a');
-        panel.add(sensorRow);
-        frame.add(panel);
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.pack();
-        frame.setVisible(true);
     }
 }

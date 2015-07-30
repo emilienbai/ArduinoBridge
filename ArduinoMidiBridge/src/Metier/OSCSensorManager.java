@@ -63,7 +63,7 @@ public class OSCSensorManager {
      * @param address  address to modify
      * @param newValue new value for the maximum range
      */
-    protected static void changeMaxRange(String address, int newValue) {
+    protected static void changeMaxRange(String address, float newValue) {
         oscSensorTable.get(address).setMaxRange(newValue);
     }
 
@@ -73,7 +73,7 @@ public class OSCSensorManager {
      * @param address address we want to know about
      * @return the maximum output value for this
      */
-    protected static int getMaxRange(String address) {
+    protected static float getMaxRange(String address) {
         return oscSensorTable.get(address).getMaxRange();
     }
 
@@ -83,7 +83,7 @@ public class OSCSensorManager {
      * @param address  address to modify
      * @param newValue new value for the minimum range
      */
-    protected static void changeMinRange(String address, int newValue) {
+    protected static void changeMinRange(String address, float newValue) {
         oscSensorTable.get(address).setMinRange(newValue);
     }
 
@@ -93,7 +93,7 @@ public class OSCSensorManager {
      * @param address address we want to know about
      * @return the minimum output value for this
      */
-    protected static int getMinRange(String address) {
+    protected static float getMinRange(String address) {
         return oscSensorTable.get(address).getMinRange();
     }
 
@@ -230,7 +230,7 @@ public class OSCSensorManager {
      * @param address the address we want to know about
      * @return the last output value of this sensor
      */
-    protected static int getOutputValue(String address) {
+    protected static float getOutputValue(String address) {
         return oscSensorTable.get(address).getOutputValue();
     }
 

@@ -63,6 +63,8 @@ public class OperatingWindows extends JFrame {
     /***********/
     private static final String SAVE_EXTENSION = ".xml";
     private static final int DEFAULT_THRESHOLD = 100;
+    private static final int MIN_THRESHOLD = 1;
+    private static final int MIN_DEBOUNCE = 1;
     private static final int DEFAULT_DEBOUNCE = 200;
     private static final int MIDI_INDEX = 0;
     private static final int OSC_INDEX = 1;
@@ -86,8 +88,8 @@ public class OperatingWindows extends JFrame {
     private static GridBagConstraints centerMidiConstraint;
     private static GridBagConstraints centerOscConstraint;
     private static JTabbedPane centerTabbedPanel;
-    private JTextArea debounceOneText;
-    private JTextArea thresholdOneTextArea;
+    private JTextField debounceOneText;
+    private JTextField thresholdOneTextArea;
     private JLabel sensorStatus;
     private JButton muteAllButton;
     private JComboBox<Integer> sensorNumberCb;
@@ -224,7 +226,7 @@ public class OperatingWindows extends JFrame {
         topPanel.add(debounceOneLabel, topConstraint);
 
         /*******2nd Column, DebounceTextArea*******/
-        debounceOneText = new JTextArea(String.valueOf(DEFAULT_DEBOUNCE));
+        debounceOneText = new JTextField(String.valueOf(DEFAULT_DEBOUNCE));
         debounceOneText.setBackground(BACKGROUND_COLOR);
         debounceOneText.setForeground(FOREGROUND_COLOR);
         debounceOneText.setBorder(LOWERED_BORDER);
@@ -244,7 +246,12 @@ public class OperatingWindows extends JFrame {
         debounceOneOK.addActionListener(e -> new Thread(() -> {
             try {
                 int newDebounce = Integer.parseInt(debounceOneText.getText());
-                Services.setDebounceOne(selectedSensor, newDebounce);
+                if (newDebounce >= MIN_DEBOUNCE) {
+                    Services.setDebounceOne(selectedSensor, newDebounce);
+                } else {
+                    Services.setDebounceOne(selectedSensor, MIN_DEBOUNCE);
+                    SwingUtilities.invokeLater(() -> debounceOneLabel.setText(String.valueOf(MIN_DEBOUNCE)));
+                }
             } catch (NumberFormatException e1) {
                 numberFormatWarning();
             }
@@ -261,7 +268,7 @@ public class OperatingWindows extends JFrame {
         topPanel.add(thresholdOneLb, topConstraint);
 
         /*******3rd Column, thresholdOneTextArea***/
-        thresholdOneTextArea = new JTextArea(String.valueOf(DEFAULT_THRESHOLD));
+        thresholdOneTextArea = new JTextField(String.valueOf(DEFAULT_THRESHOLD));
         thresholdOneTextArea.setBackground(BACKGROUND_COLOR);
         thresholdOneTextArea.setForeground(FOREGROUND_COLOR);
         thresholdOneTextArea.setBorder(LOWERED_BORDER);
@@ -281,7 +288,12 @@ public class OperatingWindows extends JFrame {
         thresholdOneOK.addActionListener(e -> new Thread(() -> {
             try {
                 int newThreshold = Integer.parseInt(thresholdOneTextArea.getText());
-                Services.setThresholdOne(selectedSensor, newThreshold);
+                if (newThreshold >= MIN_THRESHOLD) {
+                    Services.setThresholdOne(selectedSensor, newThreshold);
+                } else {
+                    Services.setThresholdOne(selectedSensor, MIN_THRESHOLD);
+                    SwingUtilities.invokeLater(() -> thresholdOneLb.setText(String.valueOf(MIN_THRESHOLD)));
+                }
             } catch (NumberFormatException e1) {
                 numberFormatWarning();
             }
@@ -322,7 +334,7 @@ public class OperatingWindows extends JFrame {
         topPanel.add(debounceAllLb, topConstraint);
 
         /******6th Column, DebounceAllTextArea*****/
-        JTextArea debounceAllTextArea = new JTextArea(String.valueOf(DEFAULT_DEBOUNCE));
+        JTextField debounceAllTextArea = new JTextField(String.valueOf(DEFAULT_DEBOUNCE));
         debounceAllTextArea.setBackground(BACKGROUND_COLOR);
         debounceAllTextArea.setForeground(FOREGROUND_COLOR);
         debounceAllTextArea.setBorder(LOWERED_BORDER);
@@ -342,7 +354,12 @@ public class OperatingWindows extends JFrame {
         debounceAllOK.addActionListener(e -> new Thread(() -> {
             try {
                 int newDebounce = Integer.parseInt(debounceAllTextArea.getText());
-                Services.setDebounceAll(newDebounce);
+                if (newDebounce >= MIN_DEBOUNCE) {
+                    Services.setDebounceAll(newDebounce);
+                } else {
+                    Services.setDebounceAll(MIN_DEBOUNCE);
+                    SwingUtilities.invokeLater(() -> debounceAllLb.setText(String.valueOf(MIN_DEBOUNCE)));
+                }
                 SwingUtilities.invokeLater(() -> debounceOneText.setText(String.valueOf(newDebounce)));
             } catch (NumberFormatException e1) {
                 numberFormatWarning();
@@ -360,7 +377,7 @@ public class OperatingWindows extends JFrame {
         topPanel.add(thresholdAllLb, topConstraint);
 
         /******7th Column, thresholdAllTextArea****/
-        JTextArea thresholdAllTextArea = new JTextArea(String.valueOf(DEFAULT_THRESHOLD));
+        JTextField thresholdAllTextArea = new JTextField(String.valueOf(DEFAULT_THRESHOLD));
         thresholdAllTextArea.setBackground(BACKGROUND_COLOR);
         thresholdAllTextArea.setForeground(FOREGROUND_COLOR);
         thresholdAllTextArea.setBorder(LOWERED_BORDER);
@@ -380,7 +397,12 @@ public class OperatingWindows extends JFrame {
         thresholdAllOK.addActionListener(e -> new Thread(() -> {
             try {
                 int newThreshold = Integer.parseInt(thresholdAllTextArea.getText());
-                Services.setThresholdAll(newThreshold);
+                if (newThreshold >= MIN_THRESHOLD) {
+                    Services.setThresholdAll(newThreshold);
+                } else {
+                    Services.setThresholdAll(MIN_THRESHOLD);
+                    SwingUtilities.invokeLater(() -> thresholdAllLb.setText(String.valueOf(MIN_THRESHOLD)));
+                }
                 SwingUtilities.invokeLater(() -> thresholdOneTextArea.setText(String.valueOf(newThreshold)));
             } catch (NumberFormatException e1) {
                 numberFormatWarning();
@@ -436,7 +458,7 @@ public class OperatingWindows extends JFrame {
         topPanel.add(calibrationTimeLabel, topConstraint);
 
         /*****9th Column, calTimeTextArea**********/
-        JTextArea calibrationTimeTextArea = new JTextArea("1");
+        JTextField calibrationTimeTextArea = new JTextField("1");
         calibrationTimeTextArea.setBackground(BACKGROUND_COLOR);
         calibrationTimeTextArea.setForeground(FOREGROUND_COLOR);
         calibrationTimeTextArea.setBorder(LOWERED_BORDER);
@@ -767,7 +789,7 @@ public class OperatingWindows extends JFrame {
                                 if (s.getArduinoChannel() == sensorNumber) {
                                     int input = Integer.parseInt(splitted[i + 1]);
                                     s.setIncomingSignal(input);
-                                    int output = Services.getoscOutputValue(s.getAddress());
+                                    float output = Services.getoscOutputValue(s.getAddress());
                                     s.setOutputValue(output);
                                 }
                             }
@@ -1106,7 +1128,6 @@ public class OperatingWindows extends JFrame {
                 this.cleanPack();
             });
         }).start();
-
     }
 
     /**

@@ -24,11 +24,11 @@ public abstract class Sensor {
     /**
      * minimum midi value sent in messages
      */
-    protected int minRange;
+    protected float minRange;
     /**
      * maximum midi value sent in messages
      */
-    protected int maxRange;
+    protected float maxRange;
     /**
      * multiplication factor to reduce or amplify sensor
      * sensibility
@@ -73,7 +73,7 @@ public abstract class Sensor {
     /**
      * last outputValue
      */
-    protected int outputValue;
+    protected float outputValue;
 
     /**
      * Constructor for a Sensor object
@@ -87,7 +87,7 @@ public abstract class Sensor {
      * @param noiseThreshold the noise threshold for momentary, alternate or toggle mode
      * @param debounceTime   the time of debounce for momentary, alternate or toggle ode
      */
-    public Sensor(String name, int arduinoIn, int minRange, int maxRange, int preamplifier, int mode, int noiseThreshold, int debounceTime) {
+    public Sensor(String name, int arduinoIn, float minRange, float maxRange, int preamplifier, int mode, int noiseThreshold, int debounceTime) {
         this.name = name;
         this.arduinoIn = arduinoIn;
         this.minRange = minRange;
@@ -111,16 +111,16 @@ public abstract class Sensor {
      * @param data value incoming from the sensor
      * @return result, a rescaled value between min and max range
      */
-    protected int calculate(int data) {
+    protected float calculate(int data) {
         float result;
-        result = (this.preamplifier * data) / 100;
+        result = (float) (this.preamplifier * data) / 100;
         //apply the premaplifier modification
         result = result / MAX_FROM_SENSOR;
         //rescale the value to maximum 1
         result = result * (this.maxRange - this.minRange) + this.minRange;
         //rescale with min and max range value
         if (result <= this.maxRange && result >= this.minRange) {
-            return (int) result;
+            return result;
         } else if (result > maxRange) {
             return this.maxRange;
         } else {
@@ -151,11 +151,11 @@ public abstract class Sensor {
         return arduinoIn;
     }
 
-    public int getMinRange() {
+    public float getMinRange() {
         return minRange;
     }
 
-    public void setMinRange(int minRange) {
+    public void setMinRange(float minRange) {
         if (minRange > this.maxRange) {
             this.minRange = maxRange;
         } else {
@@ -164,11 +164,11 @@ public abstract class Sensor {
         }
     }
 
-    public int getMaxRange() {
+    public float getMaxRange() {
         return maxRange;
     }
 
-    public void setMaxRange(int maxRange) {
+    public void setMaxRange(float maxRange) {
         if (maxRange < this.minRange) {
             this.maxRange = this.minRange;
         } else {
@@ -220,7 +220,7 @@ public abstract class Sensor {
         this.mode = mode;
     }
 
-    public int getOutputValue() {
+    public float getOutputValue() {
         return outputValue;
     }
 
@@ -234,4 +234,5 @@ public abstract class Sensor {
                 ", preamplifer = " + preamplifier + "" +
                 ", mode = " + mode + "}";
     }
+
 }

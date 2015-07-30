@@ -35,8 +35,8 @@ public abstract class SensorRow extends JPanel {
     protected JLabel shortcutLabel;
 
     protected int arduinoChannel;
-    protected int minOutVal;
-    protected int maxOutVal;
+    protected float minOutVal;
+    protected float maxOutVal;
     protected boolean muteState;
     protected boolean soloState;
     protected String name;
@@ -45,7 +45,7 @@ public abstract class SensorRow extends JPanel {
     protected int noiseThreshold;
     protected int debounceTime;
 
-    public SensorRow(String name, int arduChan, Object key, int minRange, int maxRange, int preamplifier, int mode,
+    public SensorRow(String name, int arduChan, Object key, float minRange, float maxRange, int preamplifier, int mode,
                      int noiseThreshold, int debounceTime) {
         super(new GridBagLayout());
         constraint = new GridBagConstraints();
@@ -133,7 +133,7 @@ public abstract class SensorRow extends JPanel {
         this.add(preampLabel, constraint);
 
         /**********Preamplifier Slider**********/
-        preamplifierSlider = new JSlider(SwingConstants.HORIZONTAL, 0, 500, 100);
+        preamplifierSlider = new JSlider(SwingConstants.HORIZONTAL, 0, 800, 100);
         preamplifierSlider.setValue(preamplifier);
         changeColor(preamplifierSlider);
         constraint.gridx++;
@@ -188,7 +188,7 @@ public abstract class SensorRow extends JPanel {
                     int key = e.getKeyCode();
                     if (key == KeyEvent.VK_ENTER) {
                         try {
-                            int newValue = Integer.parseInt(maxOutValue.getText());
+                            float newValue = Float.parseFloat(maxOutValue.getText());
                             maxThreshModification(newValue);
                         } catch (NumberFormatException e1) {
                             numberFormatWarning();
@@ -214,7 +214,7 @@ public abstract class SensorRow extends JPanel {
             @Override
             public void focusLost(FocusEvent e) {
                 try {
-                    int newValue = Integer.parseInt(maxOutValue.getText());
+                    Float newValue = Float.parseFloat(maxOutValue.getText());
                     maxThreshModification(newValue);
                 } catch (NumberFormatException e1) {
                     numberFormatWarning();
@@ -257,7 +257,7 @@ public abstract class SensorRow extends JPanel {
                     int key = e.getKeyCode();
                     if (key == KeyEvent.VK_ENTER) {
                         try {
-                            int newValue = Integer.parseInt(minOutValue.getText());
+                            float newValue = Float.parseFloat(minOutValue.getText());
                             minDebModification(newValue);
                         } catch (NumberFormatException e1) {
                             numberFormatWarning();
@@ -281,7 +281,7 @@ public abstract class SensorRow extends JPanel {
             @Override
             public void focusLost(FocusEvent e) {
                 try {
-                    int newValue = Integer.parseInt(minOutValue.getText());
+                    float newValue = Float.parseFloat(minOutValue.getText());
                     minDebModification(newValue);
                 } catch (NumberFormatException e1) {
                     numberFormatWarning();
@@ -422,9 +422,9 @@ public abstract class SensorRow extends JPanel {
         impulseButton.setBackground(c);
     }
 
-    protected abstract void maxThreshModification(int newValue);
+    protected abstract void maxThreshModification(float newValue);
 
-    protected abstract void minDebModification(int newValue);
+    protected abstract void minDebModification(float newValue);
 
     protected abstract void setOutputValue(int outValue);
 

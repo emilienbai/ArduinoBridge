@@ -1,48 +1,78 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"  
   "http://www.w3.org/TR/html4/loose.dtd">  
-<html xml:lang="fr" > 
-<head><title>Arduino Midi Bridge V-0.1</title> 
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"> 
+<html xml:lang="fr" >
+<head><title>Arduino Bridge</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <meta name="generator" content="TeX4ht (http://www.cse.ohio-state.edu/~gurari/TeX4ht/)"> 
 <meta name="originator" content="TeX4ht (http://www.cse.ohio-state.edu/~gurari/TeX4ht/)"> 
 <!-- html --> 
-<meta name="src" content="DocArduinoBridge.tex"> 
-<meta name="date" content="2015-07-01 14:12:00"> 
-<link rel="stylesheet" type="text/css" href="DocArduinoBridge.css"> 
+<meta name="src" content="DocArduinoBridge.tex">
+    <meta name="date" content="2015-07-27 16:07:00">
+    <link rel="stylesheet" type="text/css" href="DocArduinoBridge.css">
 </head><body 
 >
    <div class="maketitle">
-                                                                                          
-                                                                                          
-                                                                                          
-                                                                                          
 
-<h2 class="titleHead">Arduino Midi Bridge V-0.1</h2>
-       <div class="author" ><span 
-class="ec-lmr-12x-x-120">Emilien Bai</span>
-<br /><span 
+
+       <h2 class="titleHead">Arduino Bridge</h2>
+
+       <div class="author"><span
+               class="ec-lmr-12x-x-120">Emilien Bai pour XLR Project</span>
+           <br/>    <span
 class="ec-lmr-12x-x-120">emilien.bai@insa-lyon.fr</span></div><br />
-<div class="date" ><span 
-class="ec-lmr-12x-x-120">Juin 2015</span></div>
+<div class="date" ><span
+        class="ec-lmr-12x-x-120">2015</span></div>
    </div>
-   <h3 class="likesectionHead"><a 
- id="x1-1000"></a>Arduino<span 
+   <h3 class="likesectionHead"><a
+           id="x1-1000"></a>Introduction</h3>
+   <!--l. 34--><p class="noindent">Le programme Arduino Bridge est une application développée en java servant à
+       récupérer
+       l&#8217;information provenant de capteurs analogiques branchés sur un arduino, afin de les convertir en
+       messages MIDI et/ou OSC (Open Sound Control<span class="frenchb-nbsp">&nbsp;</span>: <a
+               href="http://opensoundcontrol.org">http://opensoundcontrol.org</a>) exploitables par les
+       logiciels compatibles. Il necessite pour pleinement fonctionner une carte Arduino<span
+               class="ec-lmr-8x-x-97">®;</span> Mega2560 ou
+       équivalent, même s&#8217;il est possible de préparer et tester des configurations sans carte arduino. Ce
+       document décrit le fonctionnement du programme ainsi que les actions à effectuer pour pouvoir
+       l&#8217;utiliser pleinement et dans de bonnes conditions. L&#8217;application a été développée et testée
+       sur une machine Linux mais fonctionne aussi sous Mac OS X.10 (non testée sur les
+       version précédentes) et est théoriquement compatible avec les systèmes Windows. Il
+       est necessaire d&#8217;avoir installé Java sur votre machine pour pouvoir faire fonctionner ce
+       programme.
+       <!--l. 37-->
+
+   <p class="noindent">
+
+   <h3 class="likesectionHead"><a
+           id="x1-2000"></a>Arduino<span
 class="ec-lmr-8x-x-97">®;</span></h3>
-<!--l. 43--><p class="noindent" >Ce programme a été conçu pour fonctionner avec un Arduino<span 
+   <!--l. 38--><p class="noindent">Ce programme a été conçu pour fonctionner avec un Arduino<span
 class="ec-lmr-8x-x-97">®;</span> Mega2560. Cependant, le code
-arduino (disponible <a 
-href="https://mega.nz/#!DoZ2AATR!_7BXm-u1HoiH2_OESlqN5YBVDFQVTx4Qel8LdIARha4" ><span class="underline">ici</span></a> peut être adapté en fonction de l&#8217;arduino utilisé en modifiant la
-valeur de la constante nSensors et en l&#8217;adaptant au nombre d&#8217;entrées analogiques de
-l&#8217;arduino.
-<!--l. 45--><p class="noindent" >
-   <h3 class="likesectionHead"><a 
- id="x1-2000"></a>Midi</h3>
-<!--l. 46--><p class="noindent" >Pour fonctionner, ce programme a besoin d&#8217;utiliser un port midi virtuel. C&#8217;est par là que
-transiteront les messages entre le programme et l&#8217;application pilotable en midi.
-<!--l. 48--><p class="noindent" >
-   <h4 class="likesubsectionHead"><a 
- id="x1-3000"></a>Pour Linux</h4>
-<!--l. 49--><p class="noindent" >Pour créer des ports midi virtuels sur linux, il suffit d&#8217;éxécuter la commande suivante dans un
+       arduino (disponible sur le git <a
+               href="https://github.com/emilienbai/ArduinoMidiBridge/blob/master/ArduinoCode/piezoSensor/piezoSensor.ino">https://github.com/emilienbai/ArduinoMidiBridge/</a>
+       peut être adapté
+       en fonction de l&#8217;arduino utilisé en modifiant la valeur de la constante nSensors et en l&#8217;adaptant au
+       nombre d&#8217;entrées analogiques de l&#8217;arduino.
+       <!--l. 40-->
+
+   <p class="noindent">
+   <h3 class="likesectionHead"><a
+           id="x1-3000"></a>Midi</h3>
+
+
+   <!--l. 41--><p class="noindent">Pour fonctionner, ce programme a besoin d&#8217;utiliser un port midi virtuel. C&#8217;est
+       par là que
+       transiteront les messages entre le programme et l&#8217;application pilotable en midi. Il est par ailleur
+       necessaire de se connecter à un de ces périphériques midi virtuels pour pouvoir lancer cette
+       application. Il n&#8217;est cependant possible de se connecter qu&#8217;à un unique périphérique midi par
+       instance de l&#8217;application.
+       <!--l. 43-->
+
+   <p class="noindent">
+   <h4 class="likesubsectionHead"><a
+           id="x1-4000"></a>Pour Linux</h4>
+   <!--l. 44--><p class="noindent">Pour créer des ports midi virtuels sur linux, il suffit d&#8217;éxécuter la commande
+       suivante dans un
 terminal<span class="frenchb-nbsp">&nbsp;</span>: <span 
 class="ec-lmtt-12">sudo modprobe snd-virmidi snd_index=1</span>. Vous pouvez vérifier la création de ces
 ports grâce à la commande <span 
@@ -50,114 +80,365 @@ class="ec-lmtt-12">cat /proc/asound/cards</span>. Vous devriez normalement voir 
 une ligne <span 
 class="ec-lmtt-12">VirMIDI - Virtual MIDI card 1</span>. À partir de la, le programme sera capable de détecter
 ces ports midi virtuels et de s&#8217;y connecter.
-<!--l. 51--><p class="noindent" >
-   <h4 class="likesubsectionHead"><a 
- id="x1-4000"></a>Pour Mac OSX</h4>
-                                                                                          
-                                                                                          
-<!--l. 52--><p class="noindent" >Sous Mac OSX, il est possible de créer des ports virtuels midi à partir du menu "configuration
+       <!--l. 46-->
+
+   <p class="noindent">
+   <h4 class="likesubsectionHead"><a
+           id="x1-5000"></a>Pour Mac OSX</h4>
+   <!--l. 47--><p class="noindent">Sous Mac OSX, il est possible de créer des ports virtuels midi à partir du menu
+       "configuration
 audio et MIDI". Ces ports sont ensuite détéctés et peuvent être utilisés par le logiciel. Arduino
-Bridge est capable de détecter les BUS virtuels IAC créés par MacOS.
-<!--l. 54--><p class="noindent" >
-   <h4 class="likesubsectionHead"><a 
- id="x1-5000"></a>Pour Windows</h4>
-<!--l. 55--><p class="noindent" >Le logiciel LoopMIDI téléchargeable gratuitement sur internet permet de créer les ports virtuels
+       Bridge est capable de détecter les BUS virtuels IAC créés par MacOS. Il est important de penser à
+       activer ce Bus IAC pour pouvoir s&#8217;y connecter.
+       <!--l. 49-->
+
+   <p class="noindent">
+   <h4 class="likesubsectionHead"><a
+           id="x1-6000"></a>Pour Windows</h4>
+   <!--l. 50--><p class="noindent">Le logiciel LoopMIDI téléchargeable gratuitement sur internet permet de créer les
+       ports virtuels
 midi necessaire au fonctionnement de ce logiciel sous Windows. Cette solution n&#8217;a pas encore été
 testée.
-<!--l. 57--><p class="noindent" >
-   <h3 class="likesectionHead"><a 
- id="x1-6000"></a>Fonctionnement</h3>
-<!--l. 58--><p class="noindent" >
-   <h4 class="likesubsectionHead"><a 
- id="x1-7000"></a>Initialisation</h4>
-<!--l. 59--><p class="noindent" >À l&#8217;ouverture de ce programme, il est demandé de configurer la connexion à l&#8217;Arduino<span 
-class="ec-lmr-8x-x-97">®;</span> en
-selectionnant le port de communication utilisé. Sur Linux et Mac OS, les ports de communications
-utilisables pour communiquer avec l&#8217;arduino sont automatiquement listés. Pour windows, il faut
-completer le numéro du port COM à utiliser. Le port sélectionné est le même que celui utilisé par
-l&#8217;arduino IDE.
-<!--l. 61--><p class="indent" >   Il faut aussi sélectionner le périphérique midi virtuel à utiliser parmis la liste des périphériques
-utilisables.
+       <!--l. 52-->
+
+   <p class="noindent">
+   <h3 class="likesectionHead"><a
+           id="x1-7000"></a>Fonctionnement</h3>
+   <!--l. 53--><p class="noindent">
+   <h4 class="likesubsectionHead"><a
+           id="x1-8000"></a>Initialisation</h4>
+   <!--l. 54--><p class="noindent">À l&#8217;ouverture de ce programme, il est demandé de choisir le mode de reception
+       des informations
+       pour cette session de l&#8217;application.
+
+   <div class="center"
+           >
+
+
+       <!--l. 56--><p class="noindent">
+       <!--l. 57-->
+
+       <p class="noindent"><img
+               src="./Images/Init.png" alt="PIC"
+               ></div>
+   <!--l. 59--><p class="noindent">
+   <h5 class="likesubsubsectionHead"><a
+           id="x1-9000"></a>Connexion Arduino</h5>
+   <!--l. 60--><p class="noindent">Il est possible de se connecter directement à l&#8217;Arduino<span
+           class="ec-lmr-8x-x-97">®;</span> en selectionnant le port de communication
+       utilisé. Sur Linux et Mac OS, les ports de communications utilisables pour communiquer avec
+       l&#8217;arduino sont automatiquement listés. Pour windows, il faut completer le numéro du port COM à
+       utiliser. Le port sélectionné est le même que celui utilisé par l&#8217;arduino IDE. On valide cette
+       connexion en cliquant sur le bouton "Valider".
 <!--l. 63--><p class="noindent" >
-   <h4 class="likesubsectionHead"><a 
- id="x1-8000"></a>Usage courant</h4>
-<!--l. 64--><p class="noindent" >
-   <h5 class="likesubsubsectionHead"><a 
- id="x1-9000"></a>Gestion des entrées arduino</h5>
-<!--l. 65--><p class="noindent" >Le panneau situé en haut de l&#8217;interface permet la gestion de certains paramètres de l&#8217;arduino. Dans
-la partie gauche, on peut gérer chaque capteur indépendemment et ainsi, voir son état
+   <h5 class="likesubsubsectionHead"><a
+           id="x1-10000"></a>Connexion Client Réseau</h5>
+   <!--l. 64--><p class="noindent">Si la carte arduino est branchée à un autre ordinateur utilisant lui même l&#8217;application,
+       il
+       est alors possible d&#8217;établir une connection en réseau local entre l&#8217;ordinateur "serveur"
+       (celui connecté à l&#8217;arduino) et l&#8217;ordinateur client. Pour cela, il faut renseigner l&#8217;adresse
+       IP du serveur ainsi que le port de communication à utiliser pour communiquer entre
+       ordinateurs.
+
+   <div class="center"
+           >
+       <!--l. 65--><p class="noindent">
+       <!--l. 66-->
+
+       <p class="noindent"><img
+               src="./Images/Client.png" alt="PIC"
+               ></div>
+   <!--l. 68--><p class="noindent">Du coté serveur, il faut activer grâce à une option de la barre de menu le support
+       serveur. Dans cette
+       fenêtre d&#8217;activation du serveur, on retrouve l&#8217;adresse IP ainsi que le port de communication
+       utilisé.
+
+   <div class="center"
+           >
+       <!--l. 69--><p class="noindent">
+       <!--l. 70-->
+
+       <p class="noindent"><img
+               src="./Images/Server.png" alt="PIC"
+               ></div>
+   <!--l. 72--><p class="noindent">La connexion client serveur peut aussi servir à communiquer sur plusieurs ports midi
+       de la même
+       machine simultanément. Pour cela, il suffit de connecter le client à sa propre adresse
+       IP.
+       <!--l. 74-->
+
+   <p class="noindent">
+   <h5 class="likesubsubsectionHead"><a
+           id="x1-11000"></a>Mode Edition</h5>
+   <!--l. 75--><p class="noindent">Dans le cas où vous n&#8217;avez pas d&#8217;Arduino sous la main et qu&#8217;il n&#8217;y
+       a pas de serveur lancé, il est
+       possible de lancer l&#8217;application en "mode edition" ou aucune information provenant de l&#8217;extérieur
+       ne sera reçu. <br
+               class="newline"/>
+
+
+       <!--l. 78-->
+
+   <p class="indent"> Il faut aussi sélectionner le périphérique midi virtuel à utiliser parmis la liste des
+       périphériques
+       utilisables. À defaut de périphérique virtuel existant, il est toujours possible de se connecter à
+       Gervill, le synthétiseur midi par défaut de Java.
+       <!--l. 80-->
+
+   <p class="noindent">
+   <h4 class="likesubsectionHead"><a
+           id="x1-12000"></a>Usage courant</h4>
+   <!--l. 81--><p class="noindent">
+   <h5 class="likesubsubsectionHead"><a
+           id="x1-13000"></a>Gestion des entrées arduino</h5>
+   <!--l. 82--><p class="noindent">Le panneau situé en haut de l&#8217;interface permet la gestion de certains
+       paramètres de l&#8217;arduino. Il
+       n&#8217;est accesible que si l&#8217;application est connectée à l&#8217;arduino.
+
+   <div class="center"
+           >
+       <!--l. 83--><p class="noindent">
+       <!--l. 84-->
+
+       <p class="noindent"><img
+               src="./Images/topPanel.png" alt="PIC"
+               ></div>
+   <!--l. 86--><p class="noindent">Dans la partie gauche, on peut gérer chaque capteur indépendemment et ainsi, voir son
+       état
 (actif/inactif), régler son temps de stabilisation qui est l&#8217;intervalle de temp minimum entre deux
-lecture de valeurs du piezo. Plus cette valeur est faible, plus les lectures auront lieu
-souvent au risque de surcharger le port série d&#8217;information et d&#8217;introduire une forte
-latence. Au contraire, si cette valeur est trop élevée, l&#8217;arduino est succeptible d&#8217;ignorer
-certaines valeurs. Il est aussi possible de régler une valeur de seuil propre à l&#8217;entrée de
+       lecture de valeurs du piezo. Plus cette valeur est faible, plus les lectures auront lieu souvent au
+       risque de surcharger le port série d&#8217;information et d&#8217;introduire une forte latence. Au
+       contraire, si cette valeur est trop élevée, l&#8217;arduino est succeptible d&#8217;ignorer certaines
+       modifications de valeurs. Il est aussi possible de régler une valeur de seuil propre à l&#8217;entrée de
 l&#8217;arduino. Ce paramètre donne une valeur minimale en dessous de laquelle le signal ne
 sera pas transmit (comme une noise gate). Elle permet d&#8217;éliminer les signaux parasites
 faible pouvant exister sur le capteur. Enfin, il est possible d&#8217;initialiser une séquence
-                                                                                          
-                                                                                          
 de calibration pendant laquelle, sur un temps indiqué en haut à droite de la fenêtre,
-l&#8217;ardiuno va lire les valeurs du capteur et se servir du maximum pour éliminer le bruit et
+       l&#8217;arduino va lire les valeurs du capteur et se servir du maximum pour éliminer le bruit et
 redistribuer les valeurs du capteur sur l&#8217;ensemble de l&#8217;intervalle nous intéressant. Tous
 ces paramêtres sont aussi applicables à l&#8217;ensemble des capteurs simultanément grâce à
 la partie droite de la fenêtre. Enfin, en haut à droite se situe un écran de logs ou il
 est possible de vérifier que l&#8217;arduino a bien reçu et traité les demandes qui lui ont été
 faites.
-<!--l. 68--><p class="noindent" >
-   <h5 class="likesubsubsectionHead"><a 
- id="x1-10000"></a>Gestion des pistes midi</h5>
-<!--l. 69--><p class="noindent" >L&#8217;usage du logiciel est très simple<span class="frenchb-nbsp">&nbsp;</span>: dans le panneau du bas, on nomme un capteur, on choisi le
-canal arduino correspondant et le port MIDI auquel on veut le connecter. Une fois que toute ces
-informations sont complétées, on peut ajouter ce capteur aux capteurs actifs en cliquant sur
-ajouter<span class="frenchb-nbsp">&nbsp;</span>: il est alors demandé d&#8217;attribuer une touche à cette piste, touche permettant de faire
-envoyer à la piste une impulsion sur le port midi concerné. Chaque capteur possède plusieurs
-attributs et réglages qui leur sont propre<span class="frenchb-nbsp">&nbsp;</span>:
-<!--l. 70--><p class="noindent" ><span class="likeparagraphHead"><a 
- id="x1-11000"></a>In<span class="frenchb-nbsp">&nbsp;</span>: </span>
+       <!--l. 89-->
+
+   <p class="indent"> Pour maximiser les performances, il est conseillé d&#8217;adapter le nombre d&#8217;entrées de l&#8217;arduino
+       actif au nombre d&#8217;entrée réellement utilisées.
+       <!--l. 91-->
+
+   <p class="noindent">
+   <h5 class="likesubsubsectionHead"><a
+           id="x1-14000"></a>Gestion des pistes midi</h5>
+   <!--l. 92--><p class="noindent">Pour ajouter une piste midi, il faut cliquer sur le bouton "Ajouter un capteur"
+       lorsque l&#8217;onglet
+       "MIDI" est selectionné. Il faut alors completer les informations concernant notre piste dans la
+       fenêtre qui apparait en attribuant au capteur un nom, un canal arduino d&#8217;entrée ainsi qu&#8217;un port
+       MIDI.
+
+
+   <div class="center"
+           >
+       <!--l. 93--><p class="noindent">
+       <!--l. 94-->
+
+       <p class="noindent"><img
+               src="./Images/addMidi.png" alt="PIC"
+               ></div>
+   <!--l. 96--><p class="noindent">On valide l&#8217;ajout de ce capteur en cliquant sur le bouton OK<span
+           class="frenchb-nbsp">&nbsp;</span>: il est alors demandé d&#8217;attribuer une
+       touche à cette piste, touche permettant de faire envoyer à la piste une impulsion sur le
+       port midi concerné. Chaque piste possède plusieurs attributs et réglages qui leur sont
+       propre<span class="frenchb-nbsp">&nbsp;</span>:
+
+   <div class="center"
+           >
+       <!--l. 97--><p class="noindent">
+       <!--l. 98-->
+
+       <p class="noindent"><img
+               src="./Images/midiRow.png" alt="PIC"
+               ></div>
+   <!--l. 100--><p class="noindent"><span class="likeparagraphHead"><a
+           id="x1-15000"></a>In<span class="frenchb-nbsp">&nbsp;</span>: </span>
    Il s&#8217;agit d&#8217;un pseudo vu mètre représentant le niveau d&#8217;entrée du canal arduino correspondant.
-Il permet de vérifier que l&#8217;on reçoit bien du signal de nos capteurs ainsi qu&#8217;avoir une idée de son
-intensité.
-<!--l. 71--><p class="noindent" ><span class="likeparagraphHead"><a 
- id="x1-12000"></a>Préamplification<span class="frenchb-nbsp">&nbsp;</span>: </span>
-   Plus qu&#8217;un réel préampli, il s&#8217;agit plutôt d&#8217;un rapport de multiplication du signal. Il est réglable
-grâce au slider ou en entrant la valeur manuellement. Pour être accéptée, la saisie doit être validée
-en appuyant sur la touche Entrée.
-<!--l. 72--><p class="noindent" ><span class="likeparagraphHead"><a 
- id="x1-13000"></a>Min<span class="frenchb-nbsp">&nbsp;</span>: </span>
-   Il s&#8217;agit de la valeur minimale du message midi envoyé. La saisie doit être validé avec la touche
-Entrée.
-<!--l. 73--><p class="noindent" ><span class="likeparagraphHead"><a 
- id="x1-14000"></a>Max<span class="frenchb-nbsp">&nbsp;</span>: </span>
-   Il s&#8217;agit de la valeur maximale du message midi envoyé. La saisie doit être validé avec la touche
-Entrée.
-<!--l. 74--><p class="noindent" ><span class="likeparagraphHead"><a 
- id="x1-15000"></a>Out<span class="frenchb-nbsp">&nbsp;</span>: </span>
+       Il permet de visualiser l&#8217;intensité du signal entrant.
+       <!--l. 101-->
+
+   <p class="noindent"><span class="likeparagraphHead"><a
+           id="x1-16000"></a>Préamplification<span class="frenchb-nbsp">&nbsp;</span>: </span>
+       Il s&#8217;agit plutôt d&#8217;un rapport de multiplication du signal. Il est réglable grâce au slider ou en
+       entrant la valeur manuellement. Pour être accéptée, la saisie doit être validée en appuyant sur la
+       touche Entrée.
+       <!--l. 102-->
+
+   <p class="noindent"><span class="likeparagraphHead"><a
+           id="x1-17000"></a>Min<span class="frenchb-nbsp">&nbsp;</span>: </span>
+       Il s&#8217;agit de la valeur minimale du message midi envoyé. La saisie est validé avec la touche
+       Entrée ou en cliquant sur n&#8217;import quel autre composant. Cette valeur n&#8217;est réglable uniquement
+       en mode Fader.
+       <!--l. 103-->
+
+   <p class="noindent"><span class="likeparagraphHead"><a
+           id="x1-18000"></a>Max<span class="frenchb-nbsp">&nbsp;</span>: </span>
+       Il s&#8217;agit de la valeur maximale du message midi envoyé. La saisie est validé avec la touche
+       Entrée ou en cliquant sur n&#8217;import quel autre composant. Cette valeur n&#8217;est réglable uniquement
+       en mode Fader.
+       <!--l. 104-->
+
+   <p class="noindent"><span class="likeparagraphHead"><a
+           id="x1-19000"></a>Debounce<span class="frenchb-nbsp">&nbsp;</span>: </span>
+       À la place du réglage de la valeur sortante minimale il apparait en mode Momentary ou Toggle
+       un paramètre Debounce. Il est indépendant du debounce de l&#8217;arduino mais reste cohérent avec<span
+               class="frenchb-nbsp">&nbsp;</span>:
+       si l&#8217;arduino est paramétré pour n&#8217;envoyer les valeurs que toutes les 200ms, regler le
+       debounce d&#8217;une piste à une valeur inférieure à 200ms ne permettra pas de raffraichir cette
+       piste plus régulièrement. À l&#8217;inverse, si le debounce de la piste est de 400ms , les envois
+       intermédiaires de l&#8217;arduino ne seront pas pris en compte. Ce choix de conception est
+       fait pour permettre à un fader d&#8217;avoir une restititution au plus proche de la lecture du
+       capteur tout en filtrant des pics d&#8217;intensité pour les lignes se comportant comme des
+       boutons.
+
+
+       <!--l. 105-->
+
+   <p class="noindent"><span class="likeparagraphHead"><a
+           id="x1-20000"></a>Seuil<span class="frenchb-nbsp">&nbsp;</span>: </span>
+       Comme pour le Debounce, ce réglage n&#8217;est possible que pour les modes Momentary ou Toggle.
+       Il est dans la même logique que le paramètre précédent indépendant mais cohérent avec les
+       réglages d&#8217;entrée de l&#8217;arduino.
+       <!--l. 106-->
+
+   <p class="noindent"><span class="likeparagraphHead"><a
+           id="x1-21000"></a>Out<span class="frenchb-nbsp">&nbsp;</span>: </span>
    Il s&#8217;agit du niveau de sortie de la derniere note MIDI envoyée. Elle se place sur une echelle de 1
 à 127.
-<!--l. 75--><p class="noindent" ><span class="likeparagraphHead"><a 
- id="x1-16000"></a>Bouton Mute<span class="frenchb-nbsp">&nbsp;</span>: </span>
+       <!--l. 107-->
+
+   <p class="noindent"><span class="likeparagraphHead"><a
+           id="x1-22000"></a>Bouton Mute<span class="frenchb-nbsp">&nbsp;</span>: </span>
    Cliquer sur ce bouton permet de muter la piste correspondante, c&#8217;est à dire que cela permet de
 ne plus envoyer de message avec cette piste de façon temporaire.
-                                                                                          
-                                                                                          
-<!--l. 76--><p class="noindent" ><span class="likeparagraphHead"><a 
- id="x1-17000"></a>Bouton Solo<span class="frenchb-nbsp">&nbsp;</span>: </span>
+       <!--l. 108-->
+
+   <p class="noindent"><span class="likeparagraphHead"><a
+           id="x1-23000"></a>Bouton Solo<span class="frenchb-nbsp">&nbsp;</span>: </span>
    Cliquer sur le bouton solo d&#8217;une piste permet de l&#8217;isoler des autres et de ne plus emmettre des
 notes que par les pistes solo. Cependant, une piste solo peut ne pas emmettre de note si le bouton
 Mute All est activé. Si la piste est "muté", le solo surpasse le mute.
-<!--l. 77--><p class="noindent" ><span class="likeparagraphHead"><a 
- id="x1-18000"></a>Bouton Impulsion<span class="frenchb-nbsp">&nbsp;</span>: </span>
-   Ce bouton emmet une note midi à l&#8217;intensité maximale pendant une demi seconde.
-Il permet de "mapper" une piste à un effet. Il surpasse les conditions de Mute ou de
-Solo.
-<!--l. 78--><p class="noindent" ><span class="likeparagraphHead"><a 
- id="x1-19000"></a>Bouton Supprimer<span class="frenchb-nbsp">&nbsp;</span>: </span>
+       <!--l. 109-->
+
+   <p class="noindent"><span class="likeparagraphHead"><a
+           id="x1-24000"></a>Bouton Test<span class="frenchb-nbsp">&nbsp;</span>: </span>
+       Ce bouton émet une note MIDI à l&#8217;intensité maximale pendant une demi seconde. Il permet de
+       "mapper" une piste à un effet. Il surpasse les conditions de Mute ou de Solo. Le même effet est
+       accessible grace aux raccourcis clavier des pistes.
+       <!--l. 110-->
+
+   <p class="noindent"><span class="likeparagraphHead"><a
+           id="x1-25000"></a>Bouton Mode<span class="frenchb-nbsp">&nbsp;</span>: </span>
+       Ce bouton permet de selectionner un mode d&#8217;action de la piste midi. pour le MIDI, il existe 3
+       modes d&#8217;action<span class="frenchb-nbsp">&nbsp;</span>:
+   <ul class="itemize1">
+       <li class="itemize">un mode "Fader", où la piste midi suis les variations de valeur du capteur.
+       </li>
+       <li class="itemize">un mode "Toggle", ou la valeur de la piste MIDI alterne entre 0 et le max à chaque
+           lecture de valeur depuis le capteur suivant les conditions définies dans les champs
+           Debounce et Seuil.
+       </li>
+       <li class="itemize">un mode "Momentary", où une très courte imulsion MIDI d&#8217;instensité maximum à
+           chaque lecture de valeur depuis le capteur suivant les conditions définies dans les
+           champs Debounce et Seuil.
+       </li>
+   </ul>
+   <!--l. 117--><p class="noindent"><span class="likeparagraphHead"><a
+           id="x1-26000"></a>Bouton Supprimer<span class="frenchb-nbsp">&nbsp;</span>: </span>
    Ce bouton permet de supprimer la piste sélectionnée.
-<!--l. 79--><p class="noindent" ><span class="likeparagraphHead"><a 
- id="x1-20000"></a>Bouton Mute All<span class="frenchb-nbsp">&nbsp;</span>: </span>
-   Ce bouton a pour effet de muter toutes les pistes actives du logiciel. Il peut être utile pour
-mapper les capteurs sans recevoir des messages analogiques perturbateurs.
-    
+
+
+       <!--l. 120-->
+
+   <p class="noindent">
+   <h5 class="likesubsubsectionHead"><a
+           id="x1-27000"></a>Gestion des pistes OSC</h5>
+   <!--l. 121--><p class="noindent">Pour pouvoir envoyer des messages OSC grâce à ArduinoBridge, il est d&#8217;abord
+       nécessaire d&#8217;activer
+       le serveur OSC (Menu Edition-&#x003E;Paramètres OSC). Il faut renseigner l&#8217;adresse IP du destinataire
+       ainsi que le port d&#8217;envoi à utiliser.
+
+   <div class="center"
+           >
+       <!--l. 122--><p class="noindent">
+       <!--l. 123-->
+
+       <p class="noindent"><img
+               src="./Images/OscServer.png" alt="PIC"
+               ></div>
+   <!--l. 125--><p class="noindent">Une fois le serveur en marche, il est alors possible de selectionner l&#8217;onglet
+       OSC et d&#8217;ajouter des pistes
+       OSC grâce au bouton "Ajouter un capteur" situé en bas à droite de la fenêtre. Dans la fenêtre qui
+       apparait, il faut alors choisir un nom pour la piste OSC, l&#8217;entrée arduino correspondante et
+       l&#8217;adresse à laquelle le message sera envoyé. Enfin, il faut selectionner le mode d&#8217;action parmis
+       "Fader", "Toggle", "Momentary" ou "Alternate". Le mode alternate est un mode ou les
+       messages osc sont envoyés alternativement à 2 adresses différentes (/play, /pause par
+       exemple).
+
+   <div class="center"
+           >
+       <!--l. 126--><p class="noindent">
+       <!--l. 127-->
+
+       <p class="noindent"><img
+               src="./Images/addOsc.png" alt="PIC"
+               ></div>
+   <!--l. 129--><p class="noindent">La création de la piste est validée en cliquant sur le bouton OK. La piste OSC est
+       similaire en tout
+       point à la piste midi à l&#8217;exception du mode qui ne peut être changé une fois la création effectuée et
+       l&#8217;absence de raccourci clavier pour l&#8217;envoi de messages test.
+       <!--l. 131-->
+
+   <p class="indent">
+
+
+   <h3 class="likesectionHead"><a
+           id="x1-28000"></a>Notes d&#8217;installation</h3>
+   <!--l. 134--><p class="noindent">
+   <h4 class="likesubsectionHead"><a
+           id="x1-29000"></a>Mac OS</h4>
+   <!--l. 135--><p class="noindent">Pour installer ce logiciel sur un ordinateur fonctionnant sous Mac OS, certaines
+       manipulation
+       préalables sont necessaire pour utiliser pleinement le logciel (notamment la connexion à l&#8217;arduino
+       ainsi que la communication OSC). Tous les fichiers mentionnées sont disponibles dans le répértoire
+       Ressources de l&#8217;archive zip. <br
+               class="newline"/>Copier les fichiers RXTXcomm.jar, javaosc-core-0.3.jar et librxtxSerial.jnilib dans le
+       répertoire
+       /Library/Java/Extensions. <br
+               class="newline"/><span
+               class="ec-lmtt-12">sudo cp RXTXcomm.jar /Library/Java/Extensions </span><br
+               class="newline"/><span
+               class="ec-lmtt-12">sudo cp librxtxSerial.jnilib /Library/Java/Extensions </span><br
+               class="newline"/><span
+               class="ec-lmtt-12">sudo cp javaosc-core-0.3.jar /Library/Java/Extensions</span>
+       <br
+               class="newline"/>Ajouter les deux lignes suivantes à la fin du fichier /etc/profile. <br
+               class="newline"/> <span
+               class="ec-lmtt-12">DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH</span><span
+               class="frenchb-nbsp">&nbsp;</span><span
+               class="ec-lmtt-12">:/Library/Java/Extensions </span><br
+               class="newline"/><span
+               class="ec-lmtt-12">export DYLD_LIBRARY_PATH</span>
+       <br
+               class="newline"/>Créer le répertoire /var/lock. <br
+               class="newline"/><span
+               class="ec-lmtt-12">mkdir /var/lock </span><br
+               class="newline"/>Ajouter l&#8217;utilisateur au groupe uucp et modifier les permissions. <br
+               class="newline"/><span
+               class="ec-lmtt-12">sudo dscl . -append /groups/_uucp GroupMembership username </span>en remplaçant
+       username par
+       le nom d&#8217;utilisateur. <br
+               class="newline"/><span
+               class="ec-lmtt-12">sudo chgrp uucp /var/lock  </span><br
+               class="newline"/><span
+               class="ec-lmtt-12">sudo chmod 775 /var/lock  </span>
 </body></html> 
 
                                                                                           

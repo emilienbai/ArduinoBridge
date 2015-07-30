@@ -73,7 +73,7 @@ public class MidiSensorManager {
      * @param midiPort the midi port we want to know about
      * @return the maximal range we want
      */
-    protected static int getMaxRange(int midiPort) {
+    protected static float getMaxRange(int midiPort) {
         return sensorList.get(midiPort).getMaxRange();
     }
 
@@ -93,7 +93,7 @@ public class MidiSensorManager {
      * @param midiPort the midi port we want to know about
      * @return the minimal range we want
      */
-    protected static int getMinRange(int midiPort) {
+    protected static float getMinRange(int midiPort) {
         return sensorList.get(midiPort).getMinRange();
     }
 
@@ -241,7 +241,7 @@ public class MidiSensorManager {
      * @return the output value
      */
     protected static int getOutputValue(int midiPort) {
-        return sensorList.get(midiPort).getOutputValue();
+        return (int) sensorList.get(midiPort).getOutputValue();
     }
 
     /**

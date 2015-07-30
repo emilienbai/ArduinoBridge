@@ -1,6 +1,5 @@
 package Metier;
 
-import IHM.OperatingWindows;
 import gnu.io.*;
 
 import java.io.BufferedReader;
@@ -14,6 +13,7 @@ import java.util.TooManyListenersException;
  * Created by Emilien Bai (emilien.bai@insa-lyon.fr)on 06/2015.
  */
 public class ArduinoInData implements SerialPortEventListener {
+
     /**
      * The port we're normally going to use.
      */
@@ -37,6 +37,7 @@ public class ArduinoInData implements SerialPortEventListener {
      * Default bits per second for COM port.
      */
     private static final int DATA_RATE = 230400;
+    private static boolean resetting = true;
     /**
      * The Serial port used to communicate with the arduino
      */
@@ -182,6 +183,10 @@ public class ArduinoInData implements SerialPortEventListener {
         return true;
     }
 
+    public static boolean isResetting() {
+        return resetting;
+    }
+
     /**
      * Initialize the connection with the arduino using specified port
      *
@@ -263,12 +268,10 @@ public class ArduinoInData implements SerialPortEventListener {
             try {
                 String inputLine = input.readLine();
                 if(inputLine.startsWith("*")){
-                    Services.resetArduino();
-                }
-                if (inputLine.startsWith("-")) {
-                    arduiLog += inputLine + "\n";
-                    OperatingWindows.refreshLogs(arduiLog);
+                    resetting = true;
+                    InputManager.reset();
                 } else {
+                    resetting = false;
                     new Thread(() -> {
                         Services.sendMessage(inputLine);
                         //OperatingWindows.refreshInterface(inputLine);

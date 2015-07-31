@@ -28,7 +28,6 @@ import java.util.Vector;
  */
 public class Services {
 
-    private static String arduiLog = "Logs :\n";
     private static boolean serverEnabled = false;
     private static boolean clientEnabled = false;
     private static boolean oscEnabled = false;
@@ -108,9 +107,17 @@ public class Services {
      * @param instructions string formed arduinoChan-data-arduinoChan-data...
      */
     public static void sendMessage(String instructions) {
-        if (instructions.startsWith("-") && !isResetting() && !ArduinoInData.isResetting()) {
-            arduiLog += instructions + "\n";
-            //OperatingWindows.refreshLogs(arduiLog);
+        if (instructions.startsWith("*")) {
+            isResetting = true;
+            OperatingWindows.refreshLogs("Resetting...\n");
+            InputManager.reset();
+            OperatingWindows.refreshLogs("Done !\n");
+            isResetting = false;
+        } else if (instructions.startsWith("-") && !isResetting) {
+            OperatingWindows.refreshLogs(instructions + "\n");
+        } else if (instructions.startsWith(",")) {
+            String[] splitted = instructions.split(",");
+            InputManager.setCalibrationValue(Integer.parseInt(splitted[1]), Integer.parseInt(splitted[2]));
         } else {
             if (serverEnabled) {
                 Server.sendData(instructions);
@@ -125,7 +132,7 @@ public class Services {
                         value = Integer.parseInt(splitted[i + 1]);
                         MidiSensorManager.sendMidiMessage(sensorNumber, value);
                         OSCSensorManager.sendOscMessage(sensorNumber, value);
-                    } catch (NumberFormatException e) {
+                    } catch (NumberFormatException ignored) {
 
                     }
                 }
@@ -611,20 +618,15 @@ public class Services {
      */
     public static void resetArduino() {
         isResetting = true;
+        OperatingWindows.refreshLogs("Resetting...\n");
         muteAll();
         ArduinoInData.resetArduino();
         InputManager.reset();
         unMuteAll();
+        OperatingWindows.refreshLogs("Done !\n");
         isResetting = false;
     }
 
-    public static boolean isResetting() {
-        return isResetting;
-    }
-
-    public static void setIsResetting(boolean isResetting) {
-        Services.isResetting = isResetting;
-    }
 
     /**
      * Getter for all the arduino channel
@@ -835,13 +837,15 @@ public class Services {
             file.write("<!ELEMENT debounceTime (#PCDATA)>");
             file.newLine();
             /*****************************Arduino Input**************************/
-            file.write("<!ELEMENT input (number, debounce, threshold, enable)>");
+            file.write("<!ELEMENT input (number, debounce, threshold, calValue, enable)>");
             file.newLine();
             file.write("<!ELEMENT number (#PCDATA)>");
             file.newLine();
             file.write("<!ELEMENT debounce (#PCDATA)>");
             file.newLine();
             file.write("<!ELEMENT threshold (#PCDATA)>");
+            file.newLine();
+            file.write("<!ELEMENT calValue (#PCDATA)>");
             file.newLine();
             file.write("<!ELEMENT enable (#PCDATA)>");
             file.newLine();
@@ -909,6 +913,8 @@ public class Services {
                 file.write("        <debounce>" + a.getDebounce() + "</debounce>");
                 file.newLine();
                 file.write("        <threshold>" + a.getThreshold() + "</threshold>");
+                file.newLine();
+                file.write("        <calValue>" + a.getCalValue() + "</calValue>");
                 file.newLine();
                 file.write("        <enable>" + a.isEnable() + "</enable>");
                 file.write("    </input>");
@@ -1051,11 +1057,12 @@ public class Services {
         int number = getIntValue(ardEl, "number");
         int debounce = getIntValue(ardEl, "debounce");
         int threshold = getIntValue(ardEl, "threshold");
+        int calValue = getIntValue(ardEl, "calValue");
         String enable = getTextValue(ardEl, "enable");
         if (enable.equals("true")) {
-            return new ArduinoChan(number, debounce, threshold, true);
+            return new ArduinoChan(number, debounce, threshold, calValue, true);
         } else {
-            return new ArduinoChan(number, debounce, threshold, false);
+            return new ArduinoChan(number, debounce, threshold, calValue, false);
         }
 
     }
@@ -1087,9 +1094,9 @@ public class Services {
     /**
      * Calls getTextValue and returns a float value
      *
-     * @param ele
-     * @param tagName
-     * @return
+     * @param ele       the xml element where to search
+     * @param tagName   the tag name
+     * @return the content between the tag
      */
     private static float getFloatValue(Element ele, String tagName) {
         try {

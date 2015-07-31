@@ -79,17 +79,21 @@ public class MidiSensor extends Sensor {
                     ShortMessage msg = new ShortMessage();
                     if (lastWasOn) {
                         try {
-                            msg.setMessage(ShortMessage.NOTE_OFF, this.midiPort, 0);
+                            if (minRange != 0) {
+                                msg.setMessage(ShortMessage.NOTE_ON, this.midiPort, (int) minRange);
+                            } else {
+                                msg.setMessage(ShortMessage.NOTE_OFF, this.midiPort, (int) minRange);
+                            }
                             lastWasOn = false;
-                            this.outputValue = 0;
+                            this.outputValue = minRange;
                         } catch (InvalidMidiDataException e) {
                             e.printStackTrace();
                         }
                     } else {
                         try {
-                            msg.setMessage(ShortMessage.NOTE_ON, this.midiPort, MAX_VELOCITY);
+                            msg.setMessage(ShortMessage.NOTE_ON, this.midiPort, (int) maxRange);
                             lastWasOn = true;
-                            this.outputValue = MAX_VELOCITY;
+                            this.outputValue = maxRange;
                         } catch (InvalidMidiDataException e) {
                             e.printStackTrace();
                         }
@@ -166,7 +170,7 @@ public class MidiSensor extends Sensor {
         try {
             msg.setMessage(ShortMessage.NOTE_OFF, this.midiPort, MAX_VELOCITY);
             this.midiReceiver.send(msg, -1);
-            //System.out.println("Message sent, channel muted");
+            outputValue = 0;
         } catch (InvalidMidiDataException e) {
             e.printStackTrace();
             System.err.println("Error sending mute instruction from " + this.name);

@@ -9,6 +9,7 @@ import java.util.Vector;
  */
 public class InputManager {
     private static final int MAX_INPUT = 16;
+    private static final int INIT_CAL_TIME = 1;
     private static Vector<ArduinoChan> arduinoInVector = new Vector<>(16);
     private static int activeNumber;
     private static int calibrationTime;
@@ -98,6 +99,15 @@ public class InputManager {
     }
 
     /**
+     * Setter for the calibration maximum value
+     *
+     * @param number the concerned input
+     * @param value  the maximum value during calibration
+     */
+    protected static void setCalibrationValue(int number, int value) {
+        arduinoInVector.get(number).setCalValue(value);
+    }
+    /**
      * Getter for an arduino channel object from its input number
      *
      * @param chanNumber channel number
@@ -153,28 +163,38 @@ public class InputManager {
      * Re-set all the input after a software reset
      */
     public static void reset() {
-        Services.setIsResetting(true);
         try {
-            Thread.sleep(5);
+            Thread.sleep(1);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         for (ArduinoChan a : arduinoInVector) {
             int debounce = a.getDebounce();
             int threshold = a.getThreshold();
+            int calValue = a.getCalValue();
             int number = a.getNumber();
-            ArduinoInData.setDebounceTime(number, debounce);
+            if (debounce != ArduinoChan.INIT_DEBOUNCE) {
+                ArduinoInData.setDebounceTime(number, debounce);
+            }
             try {
-                Thread.sleep(5);
-
-                ArduinoInData.setNoiseGate(number, threshold);
-                Thread.sleep(5);
+                Thread.sleep(1);
+                if (threshold != ArduinoChan.INIT_THRESHOLD) {
+                    ArduinoInData.setNoiseGate(number, threshold);
+                }
+                Thread.sleep(1);
+                if (calValue != ArduinoChan.INIT_CAL_VALUE) {
+                    ArduinoInData.setCalibrationValue(number, calValue);
+                }
+                Thread.sleep(1);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
-        Services.setCalibrationTime(calibrationTime);
-        chooseChanNb(activeNumber);
-        Services.setIsResetting(false);
+        if (calibrationTime != INIT_CAL_TIME) {
+            Services.setCalibrationTime(calibrationTime);
+        }
+        if (activeNumber != MAX_INPUT) {
+            chooseChanNb(activeNumber);
+        }
     }
 }

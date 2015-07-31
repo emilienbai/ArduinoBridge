@@ -6,6 +6,8 @@ import Metier.Services;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 /**
  * Created by Emilien Bai (emilien.bai@insa-lyon.fr) on 07/2015.
@@ -22,6 +24,14 @@ public class OscSettings extends JFrame {
         this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         this.launched = launched;
         open = true;
+
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                open = false;
+                dispose();
+            }
+        });
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
         changeColor(mainPanel);

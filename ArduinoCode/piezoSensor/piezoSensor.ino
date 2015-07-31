@@ -4,10 +4,11 @@
 
 // Constants
 #define nSensors 16
-#define loopDelay 1
+#define loopDelay 3
 #define commandSize 4
 #define debug false
 #define sensorMax 1023
+#define sensorMin 0
 #define numReadings 5
 #define compressor 300
 
@@ -17,6 +18,7 @@
 #define timeThresholdCommand "tthr"
 #define sensorNumberCommand "setnb"
 #define calibrationTimeSet "caltm"
+#define calibrationValue "calva"
 #define resetCommand "rst"
 
 void(*resetFunc)(void) = 0;
@@ -44,7 +46,7 @@ String commands[commandSize];
 int c;
 boolean commandComplete = false;
 int activeSensorNumber;
-int count;
+int count; //reading counter
 
 void longWDT(void)
 {
@@ -172,7 +174,12 @@ void calibrateOne(int idx){
   s.concat(smax);
   maxNoise[idx] = smax;
   Serial.println(s);
-  
+  s = ",";
+  s.concat(idx);
+  s += ",";
+  s.concat(smax);
+  s +=",";
+  Serial.println(s);  
 }
 
 void calibrateAll(){
@@ -181,6 +188,10 @@ void calibrateAll(){
     calibrateOne(i);
   }
   Serial.println("-Calibration effectuée");
+}
+
+void setCalibrationValue (int idx, int nv){
+  maxNoise[idx] = nv;
 }
 
 void setCalibrationTime(int newTime){
@@ -193,9 +204,6 @@ void setCalibrationTime(int newTime){
 
 void pushReset() 
 { 
-  String s = "-Full Reset";
-  Serial.println(s);
-  delay(10);
   asm volatile (" jmp 0");
 }
 
@@ -255,11 +263,14 @@ void loop() {
     else if(commands[0] == calibrationTimeSet){
       setCalibrationTime(commands[1].toInt());
     }
+    else if (commands[0] == calibrationValue){
+      setCalibrationValue(commands[2].toInt(), commands[1].toInt());
+    }
     else if(commands[0] == resetCommand){
       pushReset();
     }
     
-    resetCommands();
+    resetCommands(); //Empty the command Line
   }
   else{
     // Check sensors
@@ -274,7 +285,7 @@ void loop() {
         total = total + analogRead(Pins[x]);
       }
       total = total/numReadings;
-      int newValue = abs(max((total - maxNoise[x]),0) * ((double)sensorMax) / ((double)(sensorMax - maxNoise[x])));
+      int newValue = max((map(total, maxNoise[x], sensorMax, sensorMin, sensorMax)), 0);
       
       // Check for threshold
         int timeDiff = millis() - playing[x];
@@ -294,22 +305,12 @@ void loop() {
         playing[x] = millis();
         nulled[x] = false;
       }
-      else if (newValue < noiseThreshold[x] && timeDiff > timeThreshold[x] && !nulled[x] && lastValues[x] != 0){
-        newValue = ((double) lastValues[x])/1.5;
-        signal.concat(x);
-        signal+="-";
-        signal.concat(newValue);
-        signal+="-";
-        //playing[x] = millis();
-        lastValues[x] = newValue;
-        nulled[x]=false;        
-      }
-      /*else if (newValue < noiseThreshold[x] && timeDiff > timeThreshold[x] && !nulled[x] && lastValues[x] == 0){
+      else if (newValue < noiseThreshold[x] && timeDiff > timeThreshold[x] && !nulled[x]){
         signal.concat(x);
         signal+="-0-";
-        //playing[x] = millis();
-        nulled[x] = true;
-      }*/
+        lastValues[x] = 0;
+        nulled[x]=true;        
+      }
     }
     
     if(!signal.equals("")){

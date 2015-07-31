@@ -5,6 +5,8 @@ import IHM.OperatingWindows;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Vector;
 
 /**
@@ -20,6 +22,13 @@ public class NewMidiSensor extends JFrame {
         this.setResizable(false);
         this.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         open = true;
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                open = false;
+                dispose();
+            }
+        });
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
         changeColor(mainPanel);

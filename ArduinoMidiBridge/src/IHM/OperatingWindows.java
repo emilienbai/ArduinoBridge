@@ -809,7 +809,7 @@ public class OperatingWindows extends JFrame {
      */
     public static void refreshLogs(String logs) {
         SwingUtilities.invokeLater(() -> {
-            logsArea.setText(logs);
+            logsArea.append(logs);
             logsArea.repaint();
         });
     }

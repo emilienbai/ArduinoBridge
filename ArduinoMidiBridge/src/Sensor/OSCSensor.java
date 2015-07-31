@@ -103,7 +103,7 @@ public class OSCSensor extends Sensor {
                             lastWasOn = false;
                         } else {
                             args.add(OSC_ON);
-                            outputValue = 100;//fixme
+                            outputValue = 100;
                             toSend = new OSCMessage(oscAddress, args);
                             lastWasOn = true;
                         }

@@ -12,6 +12,8 @@ import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Vector;
 
 import static java.lang.System.exit;
@@ -56,6 +58,12 @@ public class MidiDeviceChoice extends JFrame {
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         this.setIconImage(new ImageIcon("logo.png").getImage());
         this.setLocationRelativeTo(null);
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                quit();
+            }
+        });
 
         arduinoConnected = !connectionToSet; //the arduino is connected if connectionToSet is false (don't need to be set)
 

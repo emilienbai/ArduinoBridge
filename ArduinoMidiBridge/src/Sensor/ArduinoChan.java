@@ -6,6 +6,7 @@ package Sensor;
 public class ArduinoChan {
     public static final int INIT_DEBOUNCE = 200;
     public static final int INIT_THRESHOLD = 100;
+    public static final int INIT_CAL_VALUE = 0;
     /**
      * The input number on the arduino
      */
@@ -18,6 +19,10 @@ public class ArduinoChan {
      * Noise threshold
      */
     private int threshold;
+    /**
+     * Calibration value
+     */
+    private int calValue;
     /**
      * Status of the input
      */
@@ -32,6 +37,7 @@ public class ArduinoChan {
         this.number = number;
         this.debounce = INIT_DEBOUNCE;
         this.threshold = INIT_THRESHOLD;
+        this.calValue = INIT_CAL_VALUE;
         this.enable = true;
     }
 
@@ -43,7 +49,7 @@ public class ArduinoChan {
      * @param threshold Noise threshold for this input
      * @param enable    status of the sensor
      */
-    public ArduinoChan(int number, int debounce, int threshold, boolean enable) {
+    public ArduinoChan(int number, int debounce, int threshold, int calValue, boolean enable) {
         this.number = number;
         this.debounce = debounce;
         this.threshold = threshold;
@@ -93,6 +99,24 @@ public class ArduinoChan {
      */
     public void setThreshold(int threshold) {
         this.threshold = threshold;
+    }
+
+    /**
+     * Getter for the calibration value
+     *
+     * @return the calibration value
+     */
+    public int getCalValue() {
+        return calValue;
+    }
+
+    /**
+     * Setter for the calibration value
+     *
+     * @param calValue the new calibration value
+     */
+    public void setCalValue(int calValue) {
+        this.calValue = calValue;
     }
 
     /**

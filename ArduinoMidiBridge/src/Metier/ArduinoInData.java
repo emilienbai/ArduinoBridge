@@ -37,15 +37,10 @@ public class ArduinoInData implements SerialPortEventListener {
      * Default bits per second for COM port.
      */
     private static final int DATA_RATE = 230400;
-    private static boolean resetting = true;
     /**
      * The Serial port used to communicate with the arduino
      */
     private static SerialPort serialPort;
-    /**
-     * Log from the arduino
-     **/
-    private static String arduiLog = "Logs :\n";
     /**
      * The output stream to the port
      */
@@ -163,6 +158,19 @@ public class ArduinoInData implements SerialPortEventListener {
     }
 
     /**
+     * Set a calibration value for a sensor
+     *
+     * @param sensorNumber the input to modify
+     * @param calValue the new calibration Value
+     * @return true if the message have been sent
+     */
+    protected static boolean setCalibrationValue(int sensorNumber, int calValue) {
+        String s = "calva " + calValue + " " + sensorNumber + "\n";
+        System.out.println(s);
+        return sendAsciiString(s);
+    }
+
+    /**
      * Send a command String on the arduino serial port
      *
      * @param toSend the string to send
@@ -183,9 +191,6 @@ public class ArduinoInData implements SerialPortEventListener {
         return true;
     }
 
-    public static boolean isResetting() {
-        return resetting;
-    }
 
     /**
      * Initialize the connection with the arduino using specified port
@@ -262,26 +267,18 @@ public class ArduinoInData implements SerialPortEventListener {
      */
     public synchronized void serialEvent(SerialPortEvent oEvent) {
         if (oEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
-            /*SimpleDateFormat ft =
-                    new SimpleDateFormat("hh:mm:ss:SSS");
-            System.out.println("DATA :" + ft.format(new Date()));*/
             try {
                 String inputLine = input.readLine();
-                if(inputLine.startsWith("*")){
-                    resetting = true;
-                    InputManager.reset();
-                } else {
-                    resetting = false;
                     new Thread(() -> {
                         Services.sendMessage(inputLine);
                         //OperatingWindows.refreshInterface(inputLine);
                     }).start();
-                }
-
             } catch (Exception e) {
                 System.err.println(e.toString());
             }
         }
         // Ignore all the other eventTypes, but you should consider the other ones.
     }
+
+
 }

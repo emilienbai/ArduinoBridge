@@ -324,7 +324,6 @@ public class MidiDeviceChoice extends JFrame {
                         okButton.setVisible(true);
                     });
                 }).start()
-
         );
 
         /***Progress Bar for reloading***/
@@ -460,6 +459,9 @@ public class MidiDeviceChoice extends JFrame {
         frame.pack();
     }
 
+    /**
+     * Properly exits the windows
+     */
     private void quit() {
         MidiManager.exit();
         ArduinoInData.close();

@@ -691,11 +691,8 @@ public class OperatingWindows extends JFrame {
                 MidiSensorRow sensorRow = new MidiSensorRow(newName, newArduChan, newMidiPort, shortcut);
                 availableMidiPort.removeElement(newMidiPort);
                 sensorRowList.add(sensorRow);
-
                 //constraints for the grid bag layout
                 centerMidiConstraint.gridy = centerMidiConstraint.gridy + 1;
-
-
                 SwingUtilities.invokeLater(() -> centerMidiPanel.add(sensorRow, centerMidiConstraint));
             } else {
                 JOptionPane.showMessageDialog(null, "<html><center>Raccourci déjà" +
@@ -839,7 +836,6 @@ public class OperatingWindows extends JFrame {
      */
     public static void setOscStatus(boolean status) {
         centerTabbedPanel.setEnabledAt(OSC_INDEX, status);
-        //centerTabbedPanel.setSelectedIndex(MIDI_INDEX);
     }
 
     public static void main(String[] args) {
@@ -1068,7 +1064,6 @@ public class OperatingWindows extends JFrame {
         getHelpItem.setForeground(FOREGROUND_COLOR);
 
         getHelpItem.addActionListener(e -> new HelpWindow());
-
     }
 
     /**
@@ -1098,9 +1093,9 @@ public class OperatingWindows extends JFrame {
                 availableMidiPort.removeElement(ms.getMidiPort());
                 System.out.println("Removing : " + ms.getMidiPort());
 
-                SwingUtilities.invokeLater(() ->{
+                SwingUtilities.invokeLater(() -> {
                     //constraints for the grid bag layout
-                    centerMidiConstraint.gridy ++;
+                    centerMidiConstraint.gridy++;
                     centerMidiPanel.add(sr, centerMidiConstraint);
                 });
             }
@@ -1148,7 +1143,11 @@ public class OperatingWindows extends JFrame {
         cleanPack();
     }
 
-    public void cleanPack(){
+    /**
+     * Pack the windows without change its size and position
+     * (Problems happened with Mac OS))
+     */
+    public void cleanPack() {
         Dimension tempSize = this.getSize();
         Point tempLocation = this.getLocation();
         this.pack();

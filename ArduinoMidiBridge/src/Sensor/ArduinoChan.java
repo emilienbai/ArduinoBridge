@@ -53,6 +53,7 @@ public class ArduinoChan {
         this.number = number;
         this.debounce = debounce;
         this.threshold = threshold;
+        this.calValue = calValue;
         this.enable = enable;
     }
 
@@ -137,7 +138,6 @@ public class ArduinoChan {
         this.enable = enable;
     }
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -145,8 +145,8 @@ public class ArduinoChan {
 
         ArduinoChan that = (ArduinoChan) o;
 
-        return number == that.number && debounce == that.debounce && threshold == that.threshold && enable == that.enable;
-
+        return number == that.number && debounce == that.debounce
+                && threshold == that.threshold && enable == that.enable;
     }
 
     @Override

@@ -4,7 +4,7 @@ import IHM.OperatingWindows;
 import IHM.Settings.MidiDeviceChoice;
 import IHM.Settings.ServerSettings;
 import Network.Server;
-import Network.SocOutTh;
+import Network.SocInTh;
 import Sensor.ArduinoChan;
 import Sensor.MidiSensor;
 import Sensor.OSCSensor;
@@ -682,9 +682,8 @@ public class Services {
      * @return true if the connexion have been established
      */
     public static boolean connectClient(String hostname, int portNumber) {
-        SocOutTh sot = new SocOutTh(hostname, portNumber);
-        if (SocOutTh.connect()) {
-            sot.start();
+        SocInTh sit = new SocInTh(hostname, portNumber);
+        if (sit.connect()) {
             MidiDeviceChoice.connect(MidiDeviceChoice.NETWORK_CONNECTION);
             clientEnabled = true;
             return true;
@@ -1094,8 +1093,8 @@ public class Services {
     /**
      * Calls getTextValue and returns a float value
      *
-     * @param ele       the xml element where to search
-     * @param tagName   the tag name
+     * @param ele     the xml element where to search
+     * @param tagName the tag name
      * @return the content between the tag
      */
     private static float getFloatValue(Element ele, String tagName) {

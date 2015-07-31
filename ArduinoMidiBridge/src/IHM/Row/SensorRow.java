@@ -167,9 +167,7 @@ public abstract class SensorRow extends JPanel {
         constraint.gridheight = 1;
         this.add(maxLabel, constraint);
 
-
-        /*maximum output value*/
-
+        /**maximum output value**/
         changeColor(maxOutValue);
         maxOutValue.setPreferredSize(new Dimension(35, 18));
         maxOutValue.setBorder(OperatingWindows.LOWERED_BORDER);
@@ -219,7 +217,6 @@ public abstract class SensorRow extends JPanel {
                 } catch (NumberFormatException e1) {
                     numberFormatWarning();
                 }
-
             }
         });
 
@@ -236,9 +233,8 @@ public abstract class SensorRow extends JPanel {
         --constraint.gridx;
         constraint.gridy = 1;
         this.add(minLabel, constraint);
+
         /**minimum output value**/
-
-
         changeColor(minOutValue);
         minOutValue.setPreferredSize(new Dimension(35, 18));
         minOutValue.setBorder(OperatingWindows.LOWERED_BORDER);
@@ -297,7 +293,6 @@ public abstract class SensorRow extends JPanel {
         constraint.gridheight = 2;
         ++constraint.gridx;
         this.add(outLabel, constraint);
-
 
         /***OutPutValue**/
         constraint.gridx++;
@@ -362,10 +357,7 @@ public abstract class SensorRow extends JPanel {
         constraint.gridy = 0;
         constraint.gridheight = 2;
         this.add(deleteButton, constraint);
-
-
     }
-
 
     /**
      * Adapt the color of a swing Component
@@ -400,7 +392,6 @@ public abstract class SensorRow extends JPanel {
         return name;
     }
 
-
     /**
      * Set the value of the input vu-meter
      *
@@ -422,14 +413,37 @@ public abstract class SensorRow extends JPanel {
         impulseButton.setBackground(c);
     }
 
+    /**
+     * Called when a modification in Max/Threshold field occurs
+     *
+     * @param newValue the new value in the field
+     */
     protected abstract void maxThreshModification(float newValue);
 
+    /**
+     * Called when a modification in Min/Debounce field occurs
+     *
+     * @param newValue the new value in the field
+     */
     protected abstract void minDebModification(float newValue);
 
+    /**
+     * Setter for the output value of the row
+     *
+     * @param outValue the value of the output
+     */
     protected abstract void setOutputValue(int outValue);
 
+    /**
+     * Getter for the type of Row
+     *
+     * @return Type of the row (FADER, MOMENTARY, ...)
+     */
     protected abstract int getType();
 
+    /**
+     * Mute this row
+     */
     protected void mute() {
         if (muteState) {
             muteState = false;
@@ -446,6 +460,9 @@ public abstract class SensorRow extends JPanel {
         }
     }
 
+    /**
+     * Solo this row
+     */
     protected void solo() {
         if (soloState) {
             soloState = false;
@@ -462,8 +479,12 @@ public abstract class SensorRow extends JPanel {
         }
     }
 
+    /**
+     * Get the key of the Row
+     *
+     * @return midi port for midiSensor, osc address for oscSensor
+     */
     public Object getKey() {
         return key;
     }
-
 }

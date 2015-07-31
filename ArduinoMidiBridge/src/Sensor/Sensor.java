@@ -234,5 +234,4 @@ public abstract class Sensor {
                 ", preamplifer = " + preamplifier + "" +
                 ", mode = " + mode + "}";
     }
-
 }

@@ -147,9 +147,13 @@ public class NewMidiSensor extends JFrame {
         this.add(mainPanel);
         this.pack();
         this.setVisible(true);
-
     }
 
+    /**
+     * Getter for the status of this windows
+     *
+     * @return True if an instance is already opened
+     */
     public static boolean isOpen() {
         return open;
     }
@@ -163,9 +167,13 @@ public class NewMidiSensor extends JFrame {
         new NewMidiSensor(v, f);
     }
 
+    /**
+     * Change the color of a JComponent to match the general look
+     *
+     * @param comp The component to change
+     */
     private void changeColor(JComponent comp) {
         comp.setBackground(OperatingWindows.BACKGROUND_COLOR);
         comp.setForeground(OperatingWindows.FOREGROUND_COLOR);
     }
 }
-

@@ -9,13 +9,12 @@ import java.awt.*;
  * Created by Emilien Bai (emilien.bai@insa-lyon.fr)on 06/2015.
  */
 
-
 public class DeleteButton extends JButton {
 
     /**
      * Constructor for a deletion Button, which remove a MidiSensorRow
      *
-     * @param toDelete     sensorRow to remove
+     * @param toDelete sensorRow to remove
      */
     public DeleteButton(SensorRow toDelete) {
         super("Supprimer");

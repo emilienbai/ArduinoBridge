@@ -91,7 +91,6 @@ public class ConnexionInfo extends JFrame {
             }
         });
 
-
         this.add(mainPanel);
         this.pack();
         this.setVisible(true);

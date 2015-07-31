@@ -65,7 +65,6 @@ public class KeyChooser extends JFrame {
 
         KeyboardFocusManager manager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
         manager.addKeyEventDispatcher(new MyDispatcher(this));
-
     }
 
     public static void main(String[] args) {

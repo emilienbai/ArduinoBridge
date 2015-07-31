@@ -161,7 +161,7 @@ public class ArduinoInData implements SerialPortEventListener {
      * Set a calibration value for a sensor
      *
      * @param sensorNumber the input to modify
-     * @param calValue the new calibration Value
+     * @param calValue     the new calibration Value
      * @return true if the message have been sent
      */
     protected static boolean setCalibrationValue(int sensorNumber, int calValue) {
@@ -187,10 +187,8 @@ public class ArduinoInData implements SerialPortEventListener {
         } catch (InterruptedException | NullPointerException e) {
             e.printStackTrace();
         }
-
         return true;
     }
-
 
     /**
      * Initialize the connection with the arduino using specified port
@@ -250,7 +248,6 @@ public class ArduinoInData implements SerialPortEventListener {
             return SERIAL_ERR;
         }
 
-
         // add event listeners
         try {
             serialPort.addEventListener(this);
@@ -269,16 +266,12 @@ public class ArduinoInData implements SerialPortEventListener {
         if (oEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE) {
             try {
                 String inputLine = input.readLine();
-                    new Thread(() -> {
-                        Services.sendMessage(inputLine);
-                        //OperatingWindows.refreshInterface(inputLine);
-                    }).start();
+                new Thread(() -> {
+                    Services.sendMessage(inputLine);
+                }).start();
             } catch (Exception e) {
                 System.err.println(e.toString());
             }
         }
-        // Ignore all the other eventTypes, but you should consider the other ones.
     }
-
-
 }

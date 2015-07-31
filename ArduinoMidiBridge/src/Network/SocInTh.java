@@ -4,6 +4,8 @@ import Metier.Services;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.Socket;
 
 /**
  * SocInTh
@@ -18,16 +20,26 @@ public class SocInTh extends Thread {
      */
     private BufferedReader socIn;
     private boolean finished;
+    private int port;
+    private String hostname;
 
 
-    /**
-     * SocInTh constructor
-     *
-     * @param br sockets's bufferedreader.
-     **/
-    public SocInTh(BufferedReader br) {
-        this.socIn = br;
+    public SocInTh(String hostname, int portNumber) {
+        this.port = portNumber;
+        this.hostname = hostname;
         finished = false;
+    }
+
+    public boolean connect() {
+        try {
+            Socket echoSocket = new Socket(this.hostname, this.port);
+            socIn = new BufferedReader(new InputStreamReader(echoSocket.getInputStream()));
+            this.start();
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     /**
@@ -43,18 +55,8 @@ public class SocInTh extends Thread {
             }
         } catch (IOException e) {
             System.err.println("Error in SocInTh");
-            finished = true;
         } catch (NullPointerException e) {
             Services.signalDisconnection();
         }
-    }
-
-    /**
-     * getter for the finished boolean
-     *
-     * @return finished, which tell if the Thread is still running.
-     */
-    public boolean GetFinished() {
-        return finished;
     }
 }

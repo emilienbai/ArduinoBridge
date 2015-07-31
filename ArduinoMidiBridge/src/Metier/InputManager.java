@@ -92,6 +92,7 @@ public class InputManager {
 
     /**
      * Setter for the calibration Time value
+     *
      * @param calibrationTime the new calibration Time.
      */
     protected static void setCalibrationTime(int calibrationTime) {
@@ -107,6 +108,7 @@ public class InputManager {
     protected static void setCalibrationValue(int number, int value) {
         arduinoInVector.get(number).setCalValue(value);
     }
+
     /**
      * Getter for an arduino channel object from its input number
      *

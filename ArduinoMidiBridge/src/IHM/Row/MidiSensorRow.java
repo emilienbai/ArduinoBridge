@@ -22,16 +22,16 @@ public class MidiSensorRow extends SensorRow {
     /**
      * Create a JPanel containing all the element of a sensorRow
      *
-     * @param name         Name of the channel
-     * @param arduChan     Arduino Input concerned
-     * @param midiPort     Midi port used for the communication
-     * @param minRange     Value of the minimum midi Message
-     * @param maxRange     Value of the maximum midi Message
-     * @param preamplifier Factor of multiplication
-     * @param shortcut     Keyboard Shortcut used to send an impulsion
-     * @param mode         The mode of the sensor
-     * @param noiseThreshold    a noise threshold for toggle and momentary mode
-     * @param debounceTime      a time of debounce for toggle and momentary mode
+     * @param name           Name of the channel
+     * @param arduChan       Arduino Input concerned
+     * @param midiPort       Midi port used for the communication
+     * @param minRange       Value of the minimum midi Message
+     * @param maxRange       Value of the maximum midi Message
+     * @param preamplifier   Factor of multiplication
+     * @param shortcut       Keyboard Shortcut used to send an impulsion
+     * @param mode           The mode of the sensor
+     * @param noiseThreshold a noise threshold for toggle and momentary mode
+     * @param debounceTime   a time of debounce for toggle and momentary mode
      */
     public MidiSensorRow(String name, int arduChan, int midiPort, int minRange, int maxRange, int preamplifier,
                          char shortcut, int mode, int noiseThreshold, int debounceTime) {
@@ -120,7 +120,6 @@ public class MidiSensorRow extends SensorRow {
                 changeMode(Sensor.MOMENTARY);
             }
         }).start());
-
     }
 
     /**
@@ -243,7 +242,6 @@ public class MidiSensorRow extends SensorRow {
                 SwingUtilities.invokeLater(() -> minOutValue.setText("0"));
             }
         }
-
     }
 
     /**

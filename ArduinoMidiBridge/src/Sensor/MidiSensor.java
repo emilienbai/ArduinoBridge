@@ -116,7 +116,6 @@ public class MidiSensor extends Sensor {
                     this.midiReceiver.send(msg2, -1);
                     this.outputValue = 0;
                 }
-
             } else {
                 int velocity; //velocity of the message to send;
                 velocity = (int) calculate(dataFromSensor);

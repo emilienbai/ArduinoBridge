@@ -109,7 +109,6 @@ public class OscSensorRow extends SensorRow {
         /**********Toggle Button**********/
         toggleButton.setEnabled(false);
         toggleButton.setBorder(OperatingWindows.ETCHED_BORDER);
-
     }
 
     /**
@@ -237,7 +236,7 @@ public class OscSensorRow extends SensorRow {
         String outVal = String.valueOf(outValue);
         try {
             outVal = outVal.substring(0, 4);
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (StringIndexOutOfBoundsException ignored) {
 
         }
         outputValue.setText(outVal);

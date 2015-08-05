@@ -1,2 +1,3 @@
 # ArduinoMidiBridge
-Project to convert analogic signal from arduino into midi messages
+
+ An app which convert analog signal received in an Arduino board into MIDI and OSC mesages
